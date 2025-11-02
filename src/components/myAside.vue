@@ -20,7 +20,7 @@
         </div>
       </div>
       <a class="collection-btn" @click="showTip()">
-        <i class="el-icon-star-off" style="margin-right: 2px"></i>朋友圈
+        <el-icon style="margin-right: 2px; vertical-align: -2px;"><StarFilled /></el-icon>朋友圈
       </a>
     </div>
 
@@ -77,7 +77,7 @@
           </div>
         </div>
         <div class="aside-post-date">
-          <i class="el-icon-date" style="color: var(--greyFont)"></i>{{ article.createTime }}
+          <el-icon style="margin-right: 4px; vertical-align: -2px;"><Calendar /></el-icon>{{ article.createTime }}
         </div>
       </div>
     </div>
@@ -113,6 +113,7 @@
 import { ref, computed, onMounted, inject } from 'vue'
 import router from '@/router'
 import { ElMessage } from 'element-plus'
+import { Calendar, StarFilled } from '@element-plus/icons-vue'
 import {useWebInfoStore, useSystemStore, useUserStore, useSortInfoStore} from '@/stores'
 import { articleApi } from '@/api'
 import newTreeHole from "./newTreeHole.vue"

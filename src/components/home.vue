@@ -18,7 +18,9 @@
              class="toolbar-mobile-menu"
              @click="toolbarDrawer = !toolbarDrawer"
              :class="{ enter: toolbar.enter }">
-          <i class="el-icon-s-operation"></i>
+          <el-icon class="mobile-menu-icon">
+            <Menu/>
+          </el-icon>
         </div>
 
         <!-- 导航列表 -->
@@ -122,14 +124,23 @@
                   <el-dropdown-menu>
                     <el-dropdown-item @click="router.push({path: '/user'})"
                                       v-if="!$common.isEmpty(userStore.currentUser)">
-                      <i class="fa fa-user-circle" aria-hidden="true"></i> <span>个人中心</span>
+                      <el-icon style="margin-right: 8px; vertical-align: -2px;">
+                        <User/>
+                      </el-icon>
+                      <span>个人中心</span>
                     </el-dropdown-item>
                     <el-dropdown-item @click="logout()" v-if="!$common.isEmpty(userStore.currentUser)">
-                      <i class="fa fa-sign-out" aria-hidden="true"></i> <span>退出</span>
+                      <el-icon style="margin-right: 8px; vertical-align: -2px;">
+                        <SwitchButton/>
+                      </el-icon>
+                      <span>退出</span>
                     </el-dropdown-item>
                     <el-dropdown-item @click="router.push({path: '/user'})"
                                       v-if="$common.isEmpty(userStore.currentUser)">
-                      <i class="fa fa-sign-in" aria-hidden="true"></i> <span>登陆</span>
+                      <el-icon style="margin-right: 8px; vertical-align: -2px;">
+                        <User/>
+                      </el-icon>
+                      <span>登陆</span>
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -145,8 +156,6 @@
       <router-view></router-view>
     </div>
 
-    <!-- 回到顶部按钮 -->
-    <!--    <div href="#" class="cd-top" v-if="!$common.mobile()" @click="toTop()"></div>-->
 
     <div class="toolButton">
       <div class="backTop" v-if="toolButton" @click="toTop()">
@@ -161,37 +170,49 @@
         </svg>
       </div>
 
+      <!-- 首页 -->
+      <div class="goHome" >
+        <el-icon style="color: var(--black);">
+          <HomeFilled/>
+        </el-icon>
+      </div>
 
       <el-popover placement="left"
                   :close-delay="500"
                   trigger="hover">
         <template #reference>
           <div>
-            <i class="fa fa-cog iconRotate" style="color: var(--black)" aria-hidden="true"></i>
+            <el-icon class="iconRotate" style="color: var(--black);">
+              <Tools/>
+            </el-icon>
           </div>
         </template>
         <div class="my-setting">
           <div>
             <!-- 太阳按钮 -->
-            <i v-if="isDark" class="el-icon-sunny iconRotate" @click="changeColor()"></i>
+            <el-icon v-if="isDark" class="iconRotate" @click="changeColor()">
+              <Sunny/>
+            </el-icon>
             <!-- 月亮按钮 -->
-            <i v-else class="fa fa-moon-o" aria-hidden="true" @click="changeColor()"></i>
+            <el-icon v-else @click="changeColor()">
+              <Moon/>
+            </el-icon>
           </div>
           <div>
-            <i class="fa fa-snowflake-o" aria-hidden="true" @click="changeMouseAnimation()"></i>
+            <el-icon @click="changeMouseAnimation()">
+              <MagicStick/>
+            </el-icon>
           </div>
         </div>
       </el-popover>
     </div>
 
-    <aPlayer></aPlayer>
-
-    <!--   <div id="aplayer"></div>-->
-
     <!-- 点击动画 -->
     <canvas v-if="mouseAnimation" id="mousedown"
             style="position:fixed;left:0;top:0;pointer-events:none;z-index: 1000">
     </canvas>
+
+    <aPlayer></aPlayer>
 
     <!-- 图片预览 -->
     <div id="outerImg">
@@ -294,21 +315,27 @@
           <template v-if="$common.isEmpty(userStore.currentUser)">
             <li @click="smallMenu({path: '/user'})">
               <div>
-                <i class="fa fa-sign-in" aria-hidden="true"></i>
-                <span>&nbsp; 登录</span>
+                <el-icon style="margin-right: 8px; vertical-align: -2px;">
+                  <User/>
+                </el-icon>
+                <span>&nbsp; 登齕</span>
               </div>
             </li>
           </template>
           <template v-else>
             <li @click="smallMenu({path: '/user'})">
               <div>
-                <i class="fa fa-user-circle" aria-hidden="true"></i>
+                <el-icon style="margin-right: 8px; vertical-align: -2px;">
+                  <User/>
+                </el-icon>
                 <span>&nbsp;个人中心</span>
               </div>
             </li>
             <li @click="smallMenuLogout()">
               <div>
-                <i class="fa fa-sign-out" aria-hidden="true"></i>
+                <el-icon style="margin-right: 8px; vertical-align: -2px;">
+                  <SwitchButton/>
+                </el-icon>
                 <span>&nbsp;退出</span>
               </div>
             </li>
@@ -325,6 +352,7 @@ import {useRoute} from 'vue-router'
 import router from '@/router'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {useUserStore, useWebInfoStore, useSystemStore, useSortInfoStore, useAuthStore} from '@/stores'
+import {HomeFilled, Tools, Sunny, Moon, MagicStick, User, SwitchButton, Menu} from '@element-plus/icons-vue'
 import aPlayer from './common/aPlayer.vue'
 import mousedown from '../utils/mousedown'
 
@@ -418,18 +446,18 @@ const setupDarkMode = () => {
   root.style.setProperty('--favoriteBg', '#1e1e1e')
 }
 
+// 监听滚动条变化
+let unwatchScrollTop = null
+
 // 计算属性
 const toolbar = computed(() => {
   return systemStore.toolbar
 })
 
 const sortInfo = computed(() => {
-  let showSort = systemStore.sortInfo.filter(item => item.status !== 0)
+  let showSort = sortInfoStore.sortInfo.filter(item => item.status !== 0)
   return showSort
 })
-
-// 监听滚动条变化
-let unwatchScrollTop = null
 
 // 清理
 onUnmounted(() => {
@@ -711,7 +739,14 @@ const changeMouseAnimation = () => {
   flex-wrap: wrap;
   justify-content: space-around;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 33px;
+}
+
+.my-setting div {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
 }
 
 .my-setting i {
@@ -745,12 +780,21 @@ const changeMouseAnimation = () => {
 .backTop {
   transition: all 0.3s ease-in;
   position: relative;
-  top: 0;
-  left: -13px;
+  top: 5px;
+  left: -8px;
+}
+
+.backTop svg {
+  width: 40px;
+  height: 40px;
 }
 
 .backTop:hover {
   top: -10px;
+}
+
+.goHome{
+ margin-bottom: 2px;
 }
 
 #outerImg {

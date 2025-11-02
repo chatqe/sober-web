@@ -52,7 +52,16 @@
 
             <div class="recent-posts" ref="recentPostsRef">
               <div class="announcement background-opacity" :style="{ maxWidth: announcementMaxWidth }">
-                <i class="fa fa-volume-up" aria-hidden="true"></i>
+                <!--                <i class="fa fa-volume-up" aria-hidden="true">🔊</i>-->
+                <i class="page-container-volume" aria-hidden="true">
+                  <svg t="1762079749878" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                       xmlns="http://www.w3.org/2000/svg" p-id="3900" width="32" height="32">
+                    <path
+                        d="M640 961.92c-19.2 0-38.4-5.12-55.68-14.72l-322.56-184.32c-12.16-7.04-25.6-10.88-39.68-10.88H192C94.72 752 16 673.28 16 576V448C16 350.72 94.72 272 192 272h30.08c14.08 0 27.52-3.84 39.68-10.24l322.56-184.32c35.2-19.84 76.8-19.84 112 0 35.2 20.48 55.68 56.32 55.68 96.64v675.2c0 40.32-21.12 76.8-55.68 96.64-17.28 10.24-37.12 15.36-56.32 15.36zM864 304a47.744 47.744 0 0 1-26.24-87.68l96-64c22.4-14.72 51.84-8.96 66.56 13.44s8.96 51.84-13.44 66.56l-96 64c-8.32 5.12-17.28 8.32-26.88 8.32zM960 880a47.36 47.36 0 0 1-26.88-8.32l-96-64a48.32 48.32 0 0 1-13.44-66.56c14.72-21.76 44.8-28.16 66.56-13.44l96 64c21.76 14.72 28.16 44.8 13.44 66.56-8.96 14.08-24.32 21.12-39.68 21.12zM960 560h-96c-26.24 0-48-21.76-48-48s21.76-48 48-48H960c26.24 0 48 21.76 48 48s-21.76 48-48 48z"
+                        p-id="3901" data-spm-anchor-id="a313x.search_index.0.i10.62673a815gb7Zm"
+                        class="selected"></path>
+                  </svg>
+                </i>
                 <div>
                   <div v-for="(notice, index) in notices" :key="index">
                     {{ notice }}
@@ -294,6 +303,7 @@ onMounted(() => {
 
 <style scoped>
 
+
 .background-image-index {
   width: 100vw;
   height: 45vh;
@@ -491,11 +501,28 @@ onMounted(() => {
   margin: 40px auto 40px;
 }
 
-.announcement i {
+/*.announcement i {
   color: var(--themeBackground);
   font-size: 22px;
   margin: auto 0;
   animation: scale 0.8s ease-in-out infinite;
+}*/
+
+.page-container-volume {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-container-volume svg {
+  color: var(--themeBackground);
+  width: 22px;
+  height: 22px;
+  animation: scale 0.8s ease-in-out infinite;
+}
+
+.page-container-volume svg path {
+  fill: currentColor;
 }
 
 .announcement div div {
