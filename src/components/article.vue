@@ -9,9 +9,11 @@
                   lazy
                   :src="!$common.isEmpty(article.articleCover)?article.articleCover:$constant.random_image+new Date()+Math.floor(Math.random()*10)"
                   fit="cover">
-          <div slot="error" class="image-slot">
-            <div class="article-image"></div>
-          </div>
+          <template #error>
+            <div class="image-slot">
+              <div class="article-image"></div>
+            </div>
+          </template>
         </el-image>
         <!-- 文章信息 -->
         <div class="article-info-container">
@@ -101,7 +103,7 @@
 
         <div class="article-info-news"
              @click="weiYanDialogVisible = true"
-             v-if="!$common.isEmpty($store.state.currentUser) && $store.state.currentUser.id === article.userId">
+             v-if="!$common.isEmpty(currentUser) && currentUser.id === article.userId">
           <svg width="30" height="30" viewBox="0 0 1024 1024">
             <path d="M0 0h1024v1024H0V0z" fill="#202425" opacity=".01"></path>
             <path
@@ -124,7 +126,7 @@
 
           <!-- 最新进展 -->
           <div v-if="!$common.isEmpty(treeHoleList)" class="process-wrap">
-            <el-collapse accordion value="1">
+            <el-collapse accordion :model-value="'1'">
               <el-collapse-item title="最新进展" name="1">
                 <process :treeHoleList="treeHoleList" @deleteTreeHole="deleteTreeHole"></process>
               </el-collapse-item>
@@ -134,7 +136,7 @@
           </div>
 
           <!-- 文章内容 -->
-          <div v-html="articleContentHtml" class="entry-content"></div>
+          <div v-html="articleContentHtml" class="entry-content" ref="entryContentRef"></div>
           <!-- 最后更新时间 -->
           <div class="article-update-time">
             <span>文章最后更新于 {{ article.updateTime }}</span>
@@ -162,8 +164,8 @@
           <!-- 订阅 -->
           <!--          <div class="myCenter" id="article-like" @click="subscribeLabel()">-->
           <div class="myCenter" id="article-like">
-            <i class="el-icon-thumb article-like-icon" :class="{'article-like': subscribe}"
-               @click="subscribeLabel()"></i>
+            <el-icon class="article-like-icon" :class="{'article-like': subscribe}"
+               @click="subscribeLabel()"><Thumb /></el-icon>
             <div class="class">
               <img class="article-newlike-img" :src="$constant.newLike" alt="点赞"
                    @click="addArticleLikeCount()">
@@ -178,64 +180,51 @@
           </div>
         </div>
 
-        <div id="toc" class="toc"></div>
+        <div ref="tocElementRef" class="toc"></div>
       </div>
 
       <div style="background: var(--background)">
         <myFooter></myFooter>
       </div>
 
-      <div id="toc-button" @click="clickTocButton()">
-        <i class="fa fa-align-justify" aria-hidden="true"></i>
-      </div>
+      <div ref="tocButtonRef" @click="clickTocButton()" :style="{bottom: tocButtonBottom}">
+    <i class="fa fa-align-justify" aria-hidden="true"></i>
+  </div>
 
 
       <el-dialog title="版权声明"
-                 :visible.sync="copyrightDialogVisible"
+                 v-model="copyrightDialogVisible"
                  width="80%"
                  :append-to-body="true"
                  class="article-copy"
                  center>
         <div style="display: flex;align-items: center;flex-direction: column">
-          <el-avatar shape="square" :size="35" :src="$store.state.webInfo.avatar"></el-avatar>
+          <el-avatar shape="square" :size="35" :src="webInfo.avatar"></el-avatar>
           <div class="copyright-container">
             <p>
-              {{ $store.state.webInfo.webName }}是指运行在{{
+              {{ webInfo.webName }}是指运行在{{
                 $constant.host
-              }}域名及相关子域名上的网站，本条款描述了{{ $store.state.webInfo.webName }}的网站版权声明：
+              }}域名及相关子域名上的网站，本条款描述了{{ webInfo.webName }}的网站版权声明：
             </p>
             <ul>
               <li>
-                {{
-                  $store.state.webInfo.webName
-                }}提供的所有文章、展示的图片素材等内容部分来源于互联网平台，仅供学习参考。如有侵犯您的版权，请联系{{
-                  $store.state.webInfo.webName
-                }}负责人，{{ $store.state.webInfo.webName }}承诺将在一个工作日内改正。
+                {{ webInfo.webName
+                }}提供的所有文章、展示的图片素材等内容部分来源于互联网平台，仅供学习参考。如有侵犯您的版权，请联系{{ webInfo.webName }}负责人，{{ webInfo.webName }}承诺将在一个工作日内改正。
               </li>
               <li>
-                {{
-                  $store.state.webInfo.webName
-                }}不保证网站内容的全部准确性、安全性和完整性，请您在阅读、下载及使用过程中自行确认，{{
-                  $store.state.webInfo.webName
-                }}亦不承担上述资源对您造成的任何形式的损失或伤害。
+                {{ webInfo.webName
+                }}不保证网站内容的全部准确性、安全性和完整性，请您在阅读、下载及使用过程中自行确认，{{ webInfo.webName }}亦不承担上述资源对您造成的任何形式的损失或伤害。
               </li>
-              <li>未经{{ $store.state.webInfo.webName }}允许，不得盗链、盗用本站内容和资源。</li>
+              <li>未经{{ webInfo.webName }}允许，不得盗链、盗用本站内容和资源。</li>
               <li>
-                {{ $store.state.webInfo.webName }}旨在为广大用户提供更多的信息；{{
-                  $store.state.webInfo.webName
-                }}不保证向用户提供的外部链接的准确性和完整性，该外部链接指向的不由本站实际控制的任何网页上的内容，{{
-                  $store.state.webInfo.webName
-                }}对其合法性亦概不负责，亦不承担任何法律责任。
+                {{ webInfo.webName }}旨在为广大用户提供更多的信息；{{ webInfo.webName }}不保证向用户提供的外部链接的准确性和完整性，该外部链接指向的不由本站实际控制的任何网页上的内容，{{ webInfo.webName }}对其合法性亦概不负责，亦不承担任何法律责任。
               </li>
               <li>
-                {{
-                  $store.state.webInfo.webName
-                }}中的文章/视频（包括转载文章/视频）的版权仅归原作者所有，若作者有版权声明或文章从其它网站转载而附带有原所有站的版权声明者，其版权归属以附带声明为准；文章仅代表作者本人的观点，与{{
-                  $store.state.webInfo.webName
-                }}立场无关。
+                {{ webInfo.webName
+                }}中的文章/视频（包括转载文章/视频）的版权仅归原作者所有，若作者有版权声明或文章从其它网站转载而附带有原所有站的版权声明者，其版权归属以附带声明为准；文章仅代表作者本人的观点，与{{ webInfo.webName }}立场无关。
               </li>
               <li>
-                {{ $store.state.webInfo.webName }}自行编写排版的文章均采用
+                {{ webInfo.webName }}自行编写排版的文章均采用
                 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: #38f;text-decoration: none;">
                   知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议
                 </a>
@@ -254,7 +243,7 @@
       </el-dialog>
 
       <el-dialog title="最新进展"
-                 :visible.sync="weiYanDialogVisible"
+                 v-model="weiYanDialogVisible"
                  width="40%"
                  :append-to-body="true"
                  :close-on-click-modal="false"
@@ -280,7 +269,7 @@
     <!-- 微信 -->
     <el-dialog title="密码"
                :modal="false"
-               :visible.sync="showPasswordDialog"
+               v-model="showPasswordDialog"
                width="25%"
                :append-to-body="true"
                destroy-on-close
@@ -296,7 +285,7 @@
         </div>
         <div style="display: flex;justify-content: center">
           <proButton :info="'提交'"
-                     @click.native="submitPassword()"
+                     @click="submitPassword()"
                      :before="$constant.before_color_2"
                      :after="$constant.after_color_2">
           </proButton>
@@ -306,384 +295,485 @@
   </div>
 </template>
 
-<script>
-import {createLogger} from "vuex";
+<script setup>
+import { ref, reactive, onMounted, onBeforeUnmount, watch, inject, computed, nextTick } from 'vue'
+import { defineAsyncComponent } from 'vue'
+import { useRoute } from 'vue-router'
+import router from '@/router'
+import { ElMessage, ElMessageBox, ElNotification, ElIcon } from 'element-plus'
+import { Thumb } from '@element-plus/icons-vue'
+// 导入状态管理
+import { useUserStore, useWebInfoStore } from '@/stores'
+import MarkdownIt from 'markdown-it'
 
-const myFooter = () => import( "./common/myFooter");
-const comment = () => import( "./comment/comment");
-const process = () => import( "./common/process");
-const commentBox = () => import( "./comment/commentBox");
-const proButton = () => import( "./common/proButton");
-const videoPlayer = () => import( "./common/videoPlayer");
-import MarkdownIt from 'markdown-it';
+// 导入API模块
+import { articleApi, userApi, weiYanApi } from '@/api'
 
-export default {
-  components: {
-    myFooter,
-    comment,
-    commentBox,
-    proButton,
-    process,
-    videoPlayer
-  },
+// 导入组件
+const myFooter = defineAsyncComponent(() => import('./common/myFooter.vue'))
+const comment = defineAsyncComponent(() => import('./comment/comment.vue'))
+const process = defineAsyncComponent(() => import('./common/process.vue'))
+const commentBox = defineAsyncComponent(() => import('./comment/commentBox.vue'))
+const proButton = defineAsyncComponent(() => import('./common/proButton.vue'))
+const videoPlayer = defineAsyncComponent(() => import('./common/videoPlayer.vue'))
 
-  data() {
-    return {
-      id: this.$route.query.id,
-      subscribe: false,
-      article: {},
-      articleContentHtml: "",
-      treeHoleList: [],
-      weiYanDialogVisible: false,
-      copyrightDialogVisible: false,
-      newsTime: "",
-      showPasswordDialog: false,
-      password: "",
-      tips: "",
-      scrollTop: 0
-    };
-  },
-  created() {
-    if (!this.$common.isEmpty(this.id)) {
-      this.getArticle(localStorage.getItem("article_password_" + this.id));
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-      if ("0" !== localStorage.getItem("showSubscribe")) {
-        this.$notify({
-          title: '文章订阅',
-          type: 'success',
-          message: '点击文章下方小手 - 订阅/取消订阅专栏（标签）',
-          duration: 0,
-          onClose: () => localStorage.setItem("showSubscribe", "0")
-        });
-      }
-    }
-  },
-  mounted() {
-    window.addEventListener("scroll", this.onScrollPage);
-  },
-  destroyed() {
-    window.removeEventListener("scroll", this.onScrollPage);
-  },
-  watch: {
-    scrollTop(scrollTop, oldScrollTop) {
-      let isShow = scrollTop - window.innerHeight > 30;
-      if (isShow) {
-        $("#toc-button").css("bottom", "15vh");
-      } else {
-        $("#toc-button").css("bottom", "8vh");
-      }
-    },
-  },
-  methods: {
-    clickTocButton() {
-      let display = $(".toc");
-      if ("none" === display.css("display")) {
-        display.css("display", "unset");
-      } else {
-        display.css("display", "none");
-      }
-    },
-    subscribeLabel() {
-      if (this.$common.isEmpty(this.$store.state.currentUser)) {
-        this.$message({
-          message: "请先登录！",
-          type: "error"
-        });
-        return;
-      }
+// 使用路由和状态管理
+const route = useRoute()
+const userStore = useUserStore()
+const webInfoStore = useWebInfoStore()
 
-      this.$confirm('确认' + (this.subscribe ? '取消订阅' : '订阅') + '专栏【' + this.article.label.labelName + '】？' + (this.subscribe ? "" : "订阅专栏后，该专栏发布新文章将通过邮件通知订阅用户。"), this.subscribe ? "取消订阅" : "文章订阅", {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        center: true
-      }).then(() => {
-        this.$http.get(this.$constant.baseURL + "/user/subscribe", {
-          labelId: this.article.labelId,
-          flag: !this.subscribe
-        })
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.$store.commit("loadCurrentUser", res.data);
-            }
-            this.subscribe = !this.subscribe;
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }).catch(() => {
-        this.$message({
-          type: 'success',
-          message: '已取消!'
-        });
-      });
-    },
-    submitPassword() {
-      if (this.$common.isEmpty(this.password)) {
-        this.$message({
-          message: "请先输入密码！",
-          type: "error"
-        });
-        return;
-      }
+// 计算属性
+const currentUser = computed(() => userStore.currentUser)
+const webInfo = computed(() => webInfoStore.webInfo)
 
-      this.getArticle(this.password);
-    },
-    deleteTreeHole(id) {
-      if (this.$common.isEmpty(this.$store.state.currentUser)) {
-        this.$message({
-          message: "请先登录！",
-          type: "error"
-        });
-        return;
-      }
+// 响应式数据
+const id = ref(route.query.id)
+const subscribe = ref(false)
+const article = ref({})
+const articleContentHtml = ref("")
+const treeHoleList = ref([])
+const weiYanDialogVisible = ref(false)
+const copyrightDialogVisible = ref(false)
+const newsTime = ref("")
+const showPasswordDialog = ref(false)
+const password = ref("")
+const tips = ref("")
+const scrollTop = ref(0)
 
-      this.$confirm('确认删除？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+// DOM引用
+const tocButtonRef = ref(null)
+const tocElementRef = ref(null)
+const articleContentRef = ref(null)
+const entryContentRef = ref(null)
+
+// 初始化Markdown解析器
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true
+})
+
+// 生命周期钩子：组件挂载后
+onMounted(async () => {
+  // 检查是否有密码
+  if (id.value) {
+    getArticle(localStorage.getItem("article_password_" + id.value))
+
+    if ("0" !== localStorage.getItem("showSubscribe")) {
+      ElNotification({
+        title: '文章订阅',
         type: 'success',
-        center: true
-      }).then(() => {
-        this.$http.get(this.$constant.baseURL + "/weiYan/deleteWeiYan", {id: id})
-          .then((res) => {
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            });
-            this.getNews();
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }).catch(() => {
-        this.$message({
-          type: 'success',
-          message: '已取消删除!'
-        });
-      });
-    },
-    submitWeiYan(content) {
-      let weiYan = {
-        content: content,
-        createTime: this.newsTime,
-        source: this.article.id
-      };
-
-      this.$http.post(this.$constant.baseURL + "/weiYan/saveNews", weiYan)
-        .then((res) => {
-          this.weiYanDialogVisible = false;
-          this.newsTime = "";
-          this.getNews();
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    getNews() {
-      this.$http.post(this.$constant.baseURL + "/weiYan/listNews", {
-        current: 1,
-        size: 9999,
-        source: this.article.id
+        message: '点击文章下方小手 - 订阅/取消订阅专栏（标签）',
+        duration: 0,
+        onClose: () => localStorage.setItem("showSubscribe", "0")
       })
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            res.data.records.forEach(c => {
-              c.content = c.content.replace(/\n{2,}/g, '<div style="height: 12px"></div>');
-              c.content = c.content.replace(/\n/g, '<br/>');
-              c.content = this.$common.faceReg(c.content);
-              c.content = this.$common.pictureReg(c.content);
-            });
-            this.treeHoleList = res.data.records;
-          }
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    onScrollPage() {
-      this.scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      if (this.scrollTop < (window.innerHeight / 4)) {
-        $(".toc").css("top", window.innerHeight / 4);
-      } else {
-        $(".toc").css("top", "90px");
-      }
-    },
-    getTocbot() {
-      let script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = this.$constant.tocbot;
-      document.getElementsByTagName('head')[0].appendChild(script);
+    }
+  }
+  window.addEventListener('scroll', onScrollPage)
+})
 
-      // 引入成功
-      script.onload = function () {
-        tocbot.init({
-          tocSelector: '#toc',
-          contentSelector: '.entry-content',
-          headingSelector: 'h1, h2, h3, h4, h5',
-          scrollSmooth: true,
-          fixedSidebarOffset: 'auto',
-          scrollSmoothOffset: -100,
-          hasInnerContainers: false
-        });
-      }
-    },
-    addId() {
-      let headings = $(".entry-content").find("h1, h2, h3, h4, h5, h6");
-      headings.attr('id', (i, id) => id || 'toc-' + i);
-    },
-    getArticle(password) {
-      this.$http.get(this.$constant.baseURL + "/article/getArticleById", {id: this.id, password: password})
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            this.article = res.data;
+// 生命周期钩子：组件卸载前
+onBeforeUnmount(() => {
+  // 移除滚动监听
+  window.removeEventListener('scroll', onScrollPage)
+})
 
-            this.checkHasLike(this.id);
+// 监听滚动位置
+const tocButtonBottom = ref('8vh')
+watch(scrollTop, (newVal) => {
+  let isShow = newVal - window.innerHeight > 30
+  tocButtonBottom.value = isShow ? '15vh' : '8vh'
+})
 
-            this.getNews();
-            const md = new MarkdownIt({breaks: true}).use(require('markdown-it-multimd-table'));
-            this.articleContentHtml = md.render(this.article.articleContent);
-            this.$nextTick(() => {
-              this.$common.imgShow(".entry-content img");
-              this.highlight();
-              this.addId();
-              this.getTocbot();
-            });
-            if (!this.$common.isEmpty(password)) {
-              localStorage.setItem("article_password_" + this.id, password);
-            }
-            this.showPasswordDialog = false;
-            if (!this.$common.isEmpty(this.$store.state.currentUser) && !this.$common.isEmpty(this.$store.state.currentUser.subscribe)) {
-              this.subscribe = JSON.parse(this.$store.state.currentUser.subscribe).includes(this.article.labelId);
-            }
-          }
-        })
-        .catch((error) => {
-          if ("密码错误" === error.message.substr(0, 4)) {
-            if (!this.$common.isEmpty(password)) {
-              this.$message({
-                message: "密码错误，请重新输入！",
-                type: "error"
-              });
-            }
-            this.tips = error.message.substr(4);
-            this.showPasswordDialog = true;
-          } else {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          }
-        });
-    },
-    highlight() {
-      let attributes = {
-        autocomplete: "off",
-        autocorrect: "off",
-        autocapitalize: "off",
-        spellcheck: "false",
-        contenteditable: "false"
-      };
+// 点击目录按针
+const showToc = ref(false)
+const clickTocButton = () => {
+  showToc.value = !showToc.value
+}
+// 点击目录按钮
+// 点击目录按钮已定义在上面
 
-      $("pre").each(function (i, item) {
-        let preCode = $(item).children("code");
-        let classNameStr = preCode[0].className;
-        let classNameArr = classNameStr.split(" ");
+// 订阅/取消订阅专栏
+const subscribeLabel = async () => {
+  if ($common.isEmpty(currentUser.value)) {
+    ElMessage({
+      message: "请先登录！",
+      type: "error"
+    })
+    return
+  }
 
-        let lang = "";
-        classNameArr.some(function (className) {
-          if (className.indexOf("language-") > -1) {
-            lang = className.substring(className.indexOf("-") + 1, className.length);
-            return true;
-          }
-        });
-
-        // 检测语言是否存在，不存在则自动检测
-        let language = hljs.getLanguage(lang.toLowerCase());
-        if (language === undefined) {
-          // 启用自动检测
-          let autoLanguage = hljs.highlightAuto(preCode.text());
-          preCode.removeClass("language-" + lang);
-          lang = autoLanguage.language;
-          if (lang === undefined) {
-            lang = "java";
-          }
-          preCode.addClass("language-" + lang);
-        } else {
-          lang = language.name;
-        }
-
-        $(item).addClass("highlight-wrap");
-        $(item).attr(attributes);
-        preCode.attr("data-rel", lang.toUpperCase()).addClass(lang.toLowerCase());
-        // 启用代码高亮
-        hljs.highlightBlock(preCode[0]);
-        // 启用代码行号
-        hljs.lineNumbersBlock(preCode[0]);
-      });
-
-      $("pre code").each(function (i, block) {
-        $(block).attr({
-          id: "hljs-" + i,
-        });
-
-        $(block).after(
-          '<a class="copy-code" href="javascript:" data-clipboard-target="#hljs-' +
-          i +
-          '"><i class="fa fa-clipboard" aria-hidden="true"></i></a>'
-        );
-        new ClipboardJS(".copy-code");
-      });
-
-      if ($(".entry-content").children("table").length > 0) {
-        $(".entry-content")
-          .children("table")
-          .wrap("<div class='table-wrapper'></div>");
-      }
-    },
-    addArticleLikeCount() {
-
-      let loginFlag = this.$common.isEmpty(this.$store.state.currentUser)
-
-      this.$http.post(this.$constant.baseURL + "/article/addArticleLikeCount",
-        {
-          articleId: this.id,
-          userId: loginFlag ? null : this.$store.state.currentUser.id,
-          operation: 0
-        })
-        .then((res) => {
-          console.log(res.data)
-        })
-    },
-
-    checkHasLike(){
-      if(this.$common.isEmpty(this.$store.state.currentUser)){
-        return false;
-      }
-    // 已登录 查看是否被当前登录用户点赞
-      this.$http.get(this.$constant.baseURL + "/article/checkHasLike",{articleId:this.id})
-        .then((res)=>{
-          console.log(res.data)
-        })
-    },
-
-    pwdCloseBtn(){
-      // console.log('点击关闭')
-      this.$router.go(-1)
-
+  try {
+    await ElMessageBox.confirm(
+      '确认' + (subscribe.value ? '取消订阅' : '订阅') + '专栏【' + article.value.label.labelName + '】？' + 
+      (subscribe.value ? "" : "订阅专栏后，该专栏发布新文章将通过邮件通知订阅用户。"), 
+      subscribe.value ? "取消订阅" : "文章订阅", {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      center: true
+    })
+    
+    const res = await userApi.subscribe({
+      labelId: article.value.labelId,
+      flag: !subscribe.value
+    })
+    
+    if (!res.data) {
+      ElMessage({
+        message: '操作成功',
+        type: "success"
+      })
+    }
+    subscribe.value = !subscribe.value
+  } catch (error) {
+    if (error.name !== 'CanceledError') {
+      ElMessage({
+        message: error.message || '操作失败',
+        type: "error"
+      })
+    } else {
+      ElMessage({
+        type: 'info',
+        message: '已取消!'
+      })
     }
   }
 }
+// 提交密码
+const submitPassword = () => {
+  if ($common.isEmpty(password.value)) {
+    ElMessage({
+      message: "请先输入密码！",
+      type: "error"
+    });
+    return;
+  }
+  
+  getArticle(password.value);
+  password.value = "";
+  showPasswordDialog.value = false;
+}
+// 删除树洞消息
+const deleteTreeHole = async (holeId) => {
+  if ($common.isEmpty(currentUser.value)) {
+    ElMessage({
+      message: "请先登录！",
+      type: "error"
+    });
+    return;
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      '确认删除该动态吗?', 
+      '删除确认', 
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        center: true
+      }
+    )
+    
+    await weiYanApi.deleteWeiYan(holeId)
+    
+    ElMessage({
+      type: 'success',
+      message: '删除成功!'
+    });
+    
+    getNews();
+  } catch (error) {
+    if (error.name !== 'CanceledError') {
+      ElMessage({
+        message: error.message || '操作失败',
+        type: "error"
+      });
+    } else {
+      ElMessage({
+        type: 'info',
+        message: '已取消删除!'
+      });
+    }
+  }
+}
+// 提交微言
+const submitWeiYan = async (content) => {
+  let weiYan = {
+    content: content,
+    createTime: newsTime.value,
+    source: article.value.id
+  }
+
+  try {
+    await weiYanApi.saveWeiYan(weiYan)
+    
+    weiYanDialogVisible.value = false;
+    newsTime.value = "";
+    getNews();
+  } catch (error) {
+    ElMessage({
+      message: error.message || '操作失败',
+      type: "error"
+    });
+  }
+}
+// 获取树洞消息列表
+const getNews = async () => {
+  try {
+    const res = await weiYanApi.listWeiYan({
+      current: 1,
+      size: 9999,
+      source: article.value.id
+    })
+    
+    if (!res.data) {
+      return;
+    }
+    
+    res.data.records.forEach(c => {
+      c.content = c.content.replace(/\n{2,}/g, '<div style="height: 12px"></div>');
+      c.content = c.content.replace(/\n/g, '<br/>');
+      c.content = $common.faceReg(c.content);
+      c.content = $common.pictureReg(c.content);
+    });
+    treeHoleList.value = res.data.records;
+  } catch (error) {
+    ElMessage({
+      message: error.message || '获取消息失败',
+      type: "error"
+    });
+  }
+}
+// 监听页面滚动
+const onScrollPage = () => {
+  scrollTop.value = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+}
+// 获取目录
+const getTocbot = () => {
+  let script = document.createElement('script')
+  script.type = 'text/javascript'
+  script.src = $constant.tocbot
+  let headElement = document.querySelector('head')
+  if (headElement) {
+    headElement.appendChild(script)
+  }
+
+  // 引入成功
+  script.onload = function () {
+    if (typeof tocbot !== 'undefined') {
+      tocbot.init({
+        tocSelector: '.toc',
+        contentSelector: '.entry-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        scrollSmooth: true,
+        fixedSidebarOffset: 'auto',
+        scrollSmoothOffset: -100,
+        hasInnerContainers: false
+      })
+    }
+  }
+}
+
+// 添加ID
+const addId = () => {
+  if (entryContentRef.value) {
+    const headings = entryContentRef.value.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    headings.forEach((heading, i) => {
+      if (!heading.id) {
+        heading.id = 'toc-' + i;
+      }
+    });
+  }
+};
+// 获取文章详情
+const getArticle = async (passwordVal) => {
+  try {
+    const res = await articleApi.getArticleById({
+      id: id.value,
+      password: passwordVal
+    })
+    
+    if (!$common.isEmpty(res.data)) {
+      article.value = res.data;
+      
+      // 检查是否点赞
+      checkHasLike();
+      
+      // 获取动态消息
+      getNews();
+      
+      // 解析文章内容
+      articleContentHtml.value = md.render(article.value.articleContent);
+      
+      nextTick(() => {
+        $common.imgShow(".entry-content img");
+        highlight();
+        addId();
+        getTocbot();
+      });
+      
+      if (!password.value) {
+        localStorage.setItem("article_password_" + id.value, password.value);
+      }
+      
+      showPasswordDialog.value = false;
+      
+      // 检查是否已订阅
+      if (!currentUser.value || !currentUser.value.subscribe) {
+        return;
+      }
+      subscribe.value = JSON.parse(currentUser.value.subscribe).includes(article.value.labelId);
+    }
+  } catch (error) {
+    if (error.message && error.message.startsWith("密码错误")) {
+      if (!password.value) {
+        ElMessage({
+          message: "密码错误，请重新输入！",
+          type: "error"
+        });
+      }
+      tips.value = error.message.substring(4);
+      showPasswordDialog.value = true;
+    } else {
+      ElMessage({
+        message: error.message || '获取文章失败',
+        type: "error"
+      });
+    }
+  }
+}
+
+// 代码高亮
+const highlight = () => {
+  // 此函数涉及第三方库（hljs、ClipboardJS）需要保持原样
+  // 仅进行必要的优化
+  if (!entryContentRef.value) return
+  
+  const preElements = entryContentRef.value.querySelectorAll('pre')
+  preElements.forEach((item, i) => {
+    const preCode = item.querySelector('code')
+    if (!preCode) return
+
+    let classNameStr = preCode.className
+    let classNameArr = classNameStr.split(' ')
+
+    let lang = ''
+    classNameArr.some(className => {
+      if (className.indexOf('language-') > -1) {
+        lang = className.substring(className.indexOf('-') + 1, className.length)
+        return true
+      }
+    })
+
+    // 检测语言是否存在，不存在则自动检测
+    let language = hljs.getLanguage(lang.toLowerCase())
+    if (language === undefined) {
+      let autoLanguage = hljs.highlightAuto(preCode.textContent)
+      preCode.classList.remove('language-' + lang)
+      lang = autoLanguage.language
+      if (lang === undefined) {
+        lang = 'java'
+      }
+      preCode.classList.add('language-' + lang)
+    } else {
+      lang = language.name
+    }
+
+    // 设置属性
+    item.classList.add('highlight-wrap')
+    item.setAttribute('autocomplete', 'off')
+    item.setAttribute('autocorrect', 'off')
+    item.setAttribute('autocapitalize', 'off')
+    item.setAttribute('spellcheck', 'false')
+    item.setAttribute('contenteditable', 'false')
+    
+    preCode.setAttribute('data-rel', lang.toUpperCase())
+    preCode.classList.add(lang.toLowerCase())
+    
+    // 启用代码高亮
+    hljs.highlightBlock(preCode)
+    // 启用代码行号
+    hljs.lineNumbersBlock(preCode)
+  })
+
+  const codeBlocks = entryContentRef.value.querySelectorAll('pre code')
+  codeBlocks.forEach((block, i) => {
+    block.id = 'hljs-' + i
+
+    const copyLink = document.createElement('a')
+    copyLink.className = 'copy-code'
+    copyLink.href = 'javascript:'
+    copyLink.setAttribute('data-clipboard-target', '#hljs-' + i)
+    copyLink.innerHTML = '<i class="fa fa-clipboard" aria-hidden="true"></i>'
+    
+    block.parentNode.appendChild(copyLink)
+  })
+  
+  // 初始化 ClipboardJS
+  if (typeof ClipboardJS !== 'undefined') {
+    new ClipboardJS('.copy-code')
+  }
+
+  // 包装表格
+  const tables = entryContentRef.value.querySelectorAll('table')
+  if (tables.length > 0) {
+    tables.forEach(table => {
+      // 仅在没有包装的时候才包装
+      if (!table.parentNode.classList.contains('table-wrapper')) {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'table-wrapper'
+        table.parentNode.insertBefore(wrapper, table)
+        wrapper.appendChild(table)
+      }
+    })
+  }
+}
+// 添加点赞数
+const addArticleLikeCount = async () => {
+  try {
+    let loginFlag = $common.isEmpty(currentUser.value)
+
+    await articleApi.addArticleLikeCount({
+      articleId: id.value,
+      userId: loginFlag ? null : currentUser.value.id,
+      operation: 0
+    })
+    
+    ElMessage({
+      type: 'success',
+      message: '点赞成功！'
+    })
+  } catch (error) {
+    ElMessage({
+      message: error.message || '点赞失败',
+      type: "error"
+    })
+  }
+};
+
+// 检查是否已点赞
+const checkHasLike = async () => {
+  if($common.isEmpty(currentUser.value)){
+    return false;
+  }
+  
+  // 已登录 查看是否被当前登录用户点赞
+  try {
+    const res = await articleApi.checkHasLike({articleId: id.value})
+    console.log(res.data)
+  } catch (error) {
+    console.error('检查点赞状态失败:', error)
+  }
+}
+
+// 密码弹窗关闭按钮
+const pwdCloseBtn = () => {
+  router.push('/')
+};
 </script>
 
 <style scoped>
@@ -823,14 +913,14 @@ blockquote {
   left: calc(95% - 20px);
 }
 
-.process-wrap >>> .el-collapse-item__header {
+.process-wrap ::v-deep(.el-collapse-item__header) {
   border-bottom: unset;
   font-size: 20px;
   background-color: var(--background);
   color: var(--lightGreen);
 }
 
-.process-wrap >>> .el-collapse-item__wrap {
+.process-wrap ::v-deep(.el-collapse-item__wrap) {
   background-color: var(--background);
 }
 
@@ -839,7 +929,7 @@ blockquote {
   border-bottom: unset;
 }
 
-.process-wrap >>> .el-collapse-item__wrap {
+.process-wrap ::v-deep(.el-collapse-item__wrap) {
   border-bottom: unset;
 }
 
@@ -849,7 +939,7 @@ blockquote {
   line-height: 1.5;
 }
 
-#toc-button {
+.toc-button {
   position: fixed;
   right: 3vh;
   bottom: 8vh;

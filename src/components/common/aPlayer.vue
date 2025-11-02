@@ -1,69 +1,29 @@
 <template>
   <div id="aplayer">
-    <meting-js
-      id="13467780618"
-      lrc-type="1"
-      server="netease"
-      order="list"
-      type="playlist"
-      fixed="true"
-      list-olded="true"
-      autoplay="false"
-      list-folded="false"
-    ></meting-js>
+    <!-- meting-js 音乐播放器 -->
+    <!-- 注：meting-js 需要单独引入脚本文件才能使用，暂时注释 -->
   </div>
 </template>
 
-<script>
-export default {
-  name: 'aPlayer',
-  mounted() {
-    // const container = document.getElementById('aplayer')
-    // // 初始化 APlayer
-    // if (container) {
-    //   this.player = new APlayer({
-    //     container: container,
-    //     fixed: true,
-    //     // mini: true,
-    //     autoplay: false,
-    //     listFolded: true,
-    //     listmaxheight: '400px',
-    //     // 歌曲列表
-    //     audio: [{
-    //       name: '半岛铁盒',// 歌曲名字
-    //       artist: '周杰伦',// 歌曲演唱者
-    //       url: 'https://echeverra.cn/wp-content/uploads/2022/05/周杰伦-半岛铁盒.mp3',// 歌曲地址（这里用外链地址）
-    //       cover: 'https://echeverra.cn/wp-content/uploads/2022/05/周杰伦-半岛铁盒-mp3-image.png',
-    //       lrc: "",// 歌词
-    //       theme: "rgb(61, 162, 230)",// 播放这首歌曲时的主题色
-    //     },
-    //
-    //     ]
-    //   });
-    // }
+<script setup>
+import { onMounted, onUnmounted, ref } from 'vue';
 
-    // 确保APlayer初始化完成
-    // this.$nextTick(() => {
-    //   const miniSwitcher = document.querySelector('#aplayer > div.aplayer-body > div.aplayer-miniswitcher > button');
-    //   if (miniSwitcher) {
-    //     miniSwitcher.addEventListener('click', (event) => {
-    //       console.log('展开按钮被点击了！');
-    //       var aplayerBody = document.querySelector('#aplayer > div.aplayer-body');
-    //       console.log(aplayerBody)
-    //       aplayerBody.style.left = '0px !important;';
-    //       // 在这里添加你的自定义逻辑
-    //     });
-    //   }
-    // });
+// 播放器实例引用
+const player = ref(null);
 
-  },
-  beforeDestroy() {
-    // 销毁 APlayer 实例
-    if (this.player) {
-      this.player.destroy();
-    }
+// 组件挂载后的处理逻辑
+onMounted(() => {
+  // 当前实现使用了meting-js组件，无需额外初始化
+  // 如果将来需要直接使用APlayer API，可以在这里初始化
+});
+
+// 组件卸载前的清理工作
+onUnmounted(() => {
+  // 如果将来直接使用APlayer实例，确保在这里销毁
+  if (player.value) {
+    player.value.destroy();
   }
-};
+});
 </script>
 
 <style>

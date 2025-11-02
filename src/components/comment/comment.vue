@@ -3,7 +3,7 @@
     <!-- 评论框 -->
     <div style="margin-bottom: 40px">
       <div class="comment-head">
-        <i class="el-icon-edit-outline" style="font-weight: bold;font-size: 22px;"></i> 留言
+        <el-icon style="font-weight: bold;font-size: 22px;"><Edit /></el-icon> 留言
       </div>
       <div>
         <!-- 文字评论 -->
@@ -29,7 +29,7 @@
         <span>{{ total }} 条留言</span>
       </div>
       <!-- 评论详情 -->
-      <div id="comment-content" class="commentInfo-detail"
+      <div ref="commentContentRef" class="commentInfo-detail"
            v-for="(item, index) in comments"
            :key="index">
         <!-- 头像 -->
@@ -104,7 +104,7 @@
     </div>
 
     <el-dialog title="留言"
-               :visible.sync="replyDialogVisible"
+               v-model="replyDialogVisible"
                width="30%"
                :before-close="handleClose"
                :append-to-body="true"
@@ -120,211 +120,221 @@
   </div>
 </template>
 
-<script>
-  // const graffiti = () => import( "./graffiti");
-  const commentBox = () => import( "./commentBox");
-  const proPage = () => import( "../common/proPage");
+<script setup>
+import { ref, reactive, onMounted, nextTick, inject } from 'vue'
+import { ElMessage, ElIcon } from 'element-plus'
+import { Edit } from '@element-plus/icons-vue'
+import { commentApi } from '@/api'
+import commentBox from './commentBox.vue'
+import proPage from '../common/proPage.vue'
 
-  export default {
-    components: {
-      // graffiti,
-      commentBox,
-      proPage
-    },
-    props: {
-      source: {
-        type: Number
-      },
-      type: {
-        type: String
-      },
-      userId: {
-        type: Number
-      }
-    },
-    data() {
-      return {
-        isGraffiti: false,
-        total: 0,
-        replyDialogVisible: false,
-        floorComment: {},
-        replyComment: {},
-        comments: [],
-        pagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          source: this.source,
-          commentType: this.type,
-          floorCommentId: null
-        }
-      };
-    },
+// 注入全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-    computed: {},
-
-    created() {
-      this.getComments(this.pagination);
-      this.getTotal();
-    },
-    methods: {
-      toPage(page) {
-        this.pagination.current = page;
-        window.scrollTo({
-          top: document.getElementById('comment-content').offsetTop
-        });
-        this.getComments(this.pagination);
-      },
-      getTotal() {
-        this.$http.get(this.$constant.baseURL + "/comment/getCommentCount", {source: this.source, type: this.type})
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.total = res.data;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      toChildPage(floorComment) {
-        floorComment.childComments.current += 1;
-        let pagination = {
-          current: floorComment.childComments.current,
-          size: 5,
-          total: 0,
-          source: this.source,
-          commentType: this.type,
-          floorCommentId: floorComment.id
-        }
-        this.getComments(pagination, floorComment, true);
-      },
-      emoji(comments, flag) {
-        comments.forEach(c => {
-          c.commentContent = c.commentContent.replace(/\n/g, '<br/>');
-          c.commentContent = this.$common.faceReg(c.commentContent);
-          c.commentContent = this.$common.pictureReg(c.commentContent);
-          if (flag) {
-            if (!this.$common.isEmpty(c.childComments) && !this.$common.isEmpty(c.childComments.records)) {
-              c.childComments.records.forEach(cc => {
-                c.commentContent = c.commentContent.replace(/\n/g, '<br/>');
-                cc.commentContent = this.$common.faceReg(cc.commentContent);
-                cc.commentContent = this.$common.pictureReg(cc.commentContent);
-              });
-            }
-          }
-        });
-      },
-      getComments(pagination, floorComment = {}, isToPage = false) {
-        this.$http.post(this.$constant.baseURL + "/comment/listComment", pagination)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data) && !this.$common.isEmpty(res.data.records)) {
-              if (this.$common.isEmpty(floorComment)) {
-                this.comments = res.data.records;
-                pagination.total = res.data.total;
-                this.emoji(this.comments, true);
-              } else {
-                if (isToPage === false) {
-                  floorComment.childComments = res.data;
-                } else {
-                  floorComment.childComments.total = res.data.total;
-                  floorComment.childComments.records = floorComment.childComments.records.concat(res.data.records);
-                }
-                this.emoji(floorComment.childComments.records, false);
-              }
-              this.$nextTick(() => {
-                this.$common.imgShow("#comment-content .pictureReg");
-              });
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      addGraffitiComment(graffitiComment) {
-        this.submitComment(graffitiComment);
-      },
-      submitComment(commentContent) {
-        let comment = {
-          source: this.source,
-          type: this.type,
-          commentContent: commentContent
-        };
-
-        this.$http.post(this.$constant.baseURL + "/comment/saveComment", comment)
-          .then((res) => {
-            this.$message({
-              type: 'success',
-              message: '保存成功！'
-            });
-            this.pagination = {
-              current: 1,
-              size: 10,
-              total: 0,
-              source: this.source,
-              commentType: this.type,
-              floorCommentId: null
-            }
-            this.getComments(this.pagination);
-            this.getTotal();
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      submitReply(commentContent) {
-        let comment = {
-          source: this.source,
-          type: this.type,
-          floorCommentId: this.floorComment.id,
-          commentContent: commentContent,
-          parentCommentId: this.replyComment.id,
-          parentUserId: this.replyComment.userId
-        };
-
-        let floorComment = this.floorComment;
-
-        this.$http.post(this.$constant.baseURL + "/comment/saveComment", comment)
-          .then((res) => {
-            let pagination = {
-              current: 1,
-              size: 5,
-              total: 0,
-              source: this.source,
-              commentType: this.type,
-              floorCommentId: floorComment.id
-            }
-            this.getComments(pagination, floorComment);
-            this.getTotal();
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-        this.handleClose();
-      },
-      replyDialog(comment, floorComment) {
-        this.replyComment = comment;
-        this.floorComment = floorComment;
-        this.replyDialogVisible = true;
-      },
-      handleClose() {
-        this.replyDialogVisible = false;
-        this.floorComment = {};
-        this.replyComment = {};
-      }
-    }
+// Props定义
+const props = defineProps({
+  source: {
+    type: Number
+  },
+  type: {
+    type: String
+  },
+  userId: {
+    type: Number
   }
+})
+
+// 响应式数据
+const isGraffiti = ref(false)
+const total = ref(0)
+const replyDialogVisible = ref(false)
+const floorComment = reactive({})
+const replyComment = reactive({})
+const comments = ref([])
+const commentContentRef = ref(null)
+const pagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0,
+  source: props.source,
+  commentType: props.type,
+  floorCommentId: null
+})
+
+// 方法
+defineExpose({
+  toPage,
+  getTotal,
+  toChildPage,
+  emoji,
+  getComments,
+  addGraffitiComment,
+  submitComment,
+  submitReply,
+  replyDialog,
+  handleClose
+})
+
+function toPage(page) {
+  pagination.current = page
+  window.scrollTo({
+    top: commentContentRef.value?.offsetTop || 0
+  })
+  getComments(pagination)
+}
+
+function getTotal() {
+  commentApi.getCommentCount({ source: props.source, type: props.type })
+    .then((res) => {
+      if (!res.data) return
+      total.value = res.data
+    })
+    .catch((error) => {
+      ElMessage.error(error.message || '获取评论数量失败')
+    })
+}
+
+function toChildPage(comment) {
+  if (!comment.childComments) comment.childComments = { current: 0 }
+  comment.childComments.current += 1
+  const pageData = {
+    current: comment.childComments.current,
+    size: 5,
+    total: 0,
+    source: props.source,
+    commentType: props.type,
+    floorCommentId: comment.id
+  }
+  getComments(pageData, comment, true)
+}
+
+function emoji(commentsList, flag) {
+  commentsList.forEach(c => {
+    c.commentContent = c.commentContent.replace(/\n/g, '<br/>')
+    c.commentContent = $common.faceReg(c.commentContent)
+    c.commentContent = $common.pictureReg(c.commentContent)
+    if (flag) {
+      if (!c.childComments || !c.childComments.records) return
+      if ($common.isEmpty(c.childComments) || $common.isEmpty(c.childComments.records)) return
+      c.childComments.records.forEach(cc => {
+        // 修复这里的错误，应该是cc.commentContent而不是c.commentContent
+        cc.commentContent = cc.commentContent.replace(/\n/g, '<br/>')
+        cc.commentContent = $common.faceReg(cc.commentContent)
+        cc.commentContent = $common.pictureReg(cc.commentContent)
+      })
+    }
+  })
+}
+
+function getComments(pageData, comment = {}, isToPage = false) {
+  commentApi.listComment(pageData)
+    .then((res) => {
+      if (!res.data || !res.data.records) return
+      if ($common.isEmpty(res.data) || $common.isEmpty(res.data.records)) return
+      
+      if ($common.isEmpty(comment)) {
+        comments.value = res.data.records
+        pageData.total = res.data.total
+        emoji(comments.value, true)
+      } else {
+        if (isToPage === false) {
+          comment.childComments = res.data
+        } else {
+          comment.childComments.total = res.data.total
+          if (!comment.childComments.records) comment.childComments.records = []
+          comment.childComments.records = comment.childComments.records.concat(res.data.records)
+        }
+        emoji(comment.childComments.records, false)
+      }
+      
+      nextTick(() => {
+        $common.imgShow("#comment-content .pictureReg")
+      })
+    })
+    .catch((error) => {
+      ElMessage.error(error.message || '获取评论失败')
+    })
+}
+
+function addGraffitiComment(graffitiComment) {
+  submitComment(graffitiComment)
+}
+
+function submitComment(commentContent) {
+  const comment = {
+    source: props.source,
+    type: props.type,
+    commentContent: commentContent
+  }
+
+  commentApi.saveComment(comment)
+    .then((res) => {
+      ElMessage.success('保存成功！')
+      Object.assign(pagination, {
+        current: 1,
+        size: 10,
+        total: 0,
+        source: props.source,
+        commentType: props.type,
+        floorCommentId: null
+      })
+      getComments(pagination)
+      getTotal()
+    })
+    .catch((error) => {
+      ElMessage.error(error.message || '保存评论失败')
+    })
+}
+
+function submitReply(commentContent) {
+  const comment = {
+    source: props.source,
+    type: props.type,
+    floorCommentId: floorComment.id,
+    commentContent: commentContent,
+    parentCommentId: replyComment.id,
+    parentUserId: replyComment.userId
+  }
+
+  const currentFloorComment = { ...floorComment }
+
+  commentApi.saveComment(comment)
+    .then((res) => {
+      const pageData = {
+        current: 1,
+        size: 5,
+        total: 0,
+        source: props.source,
+        commentType: props.type,
+        floorCommentId: currentFloorComment.id
+      }
+      getComments(pageData, currentFloorComment)
+      getTotal()
+    })
+    .catch((error) => {
+      ElMessage.error(error.message || '保存回复失败')
+    })
+  handleClose()
+}
+
+function replyDialog(comment, floorCommentData) {
+  Object.assign(replyComment, comment)
+  Object.assign(floorComment, floorCommentData)
+  replyDialogVisible.value = true
+}
+
+function handleClose() {
+  replyDialogVisible.value = false
+  Object.keys(floorComment).forEach(key => delete floorComment[key])
+  Object.keys(replyComment).forEach(key => delete replyComment[key])
+}
+
+// 生命周期钩子
+onMounted(() => {
+  getComments(pagination)
+  getTotal()
+})
 </script>
 
 <style scoped>

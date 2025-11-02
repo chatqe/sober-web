@@ -1,21 +1,22 @@
 <template>
   <div v-if="!$common.isEmpty(articleList)" class="recent-post-container">
     <div class="recent-post-item shadow-box background-opacity wow"
-         v-for="(article, index) in articleList"
-         :key="index"
-         @click="$router.push({path: '/article', query: {id: article.id}})">
+         v-for="article in articleList"
+         :key="article.id"
+         @click="router.push({path: '/article', query: {id: article.id}})">
       <!-- 封面 -->
       <div class="recent-post-item-image">
         <el-image class="my-el-image"
-                  v-once
                   lazy
                   :src="!$common.isEmpty(article.articleCover)?article.articleCover:$constant.random_image+new Date()+Math.floor(Math.random()*10)"
                   fit="cover">
-          <div slot="error" class="image-slot myCenter" style="background-color: var(--lightGreen)">
-            <div class="error-text">
-              <div>遇事不决，可问春风</div>
+          <template #error>
+            <div class="image-slot myCenter" style="background-color: var(--lightGreen)">
+              <div class="error-text">
+                <div>遇事不决，可问春风</div>
+              </div>
             </div>
-          </div>
+          </template>
         </el-image>
       </div>
       <!-- 内容 -->
@@ -36,7 +37,7 @@
         <!-- 标题 -->
 
         <el-tooltip placement="top" effect="light">
-          <div slot="content">{{ article.articleTitle }}</div>
+          <template #content>{{ article.articleTitle }}</template>
           <h3>{{ article.articleTitle }}</h3>
         </el-tooltip>
 
@@ -99,7 +100,7 @@
         <!-- 分类 标签 -->
         <div class="sort-label">
           <span style="margin-right: 12px"
-                @click.stop="$router.push({path: '/sort', query: {sortId: article.sortId}})">
+                @click.stop="router.push({path: '/sort', query: {sortId: article.sortId}})">
             <svg viewBox="0 0 1024 1024" width="15" height="15" style="vertical-align: -3px;">
               <path
                 d="M179.2 153.6m89.6 0l588.8 0q89.6 0 89.6 89.6l0 486.4q0 89.6-89.6 89.6l-588.8 0q-89.6 0-89.6-89.6l0-486.4q0-89.6 89.6-89.6Z"
@@ -118,7 +119,7 @@
                 fill="#FFA86A"></path>
             </svg> {{ article.sort.sortName }}
           </span>
-          <span @click.stop="$router.push({path: '/sort', query: {sortId: article.sortId, labelId: article.labelId}})">
+          <span @click.stop="router.push({path: '/sort', query: {sortId: article.sortId, labelId: article.labelId}})">
             <svg viewBox="0 0 1024 1024" width="15" height="15" style="vertical-align: -3px;">
               <path
                 d="M905.0112 560.4352l-342.784 342.784c-56.7808 56.7808-148.7872 56.7808-205.568 0l-231.5776-231.5776c-56.7808-56.7808-56.7808-148.7872 0-205.568l342.9376-342.9376a114.8928 114.8928 0 0 1 84.224-33.5872l266.3936 7.2192c60.7744 1.6384 109.7216 50.3808 111.5648 111.1552l8.2944 267.8272c1.024 31.6928-11.1104 62.3104-33.4848 84.6848z"
@@ -134,15 +135,20 @@
   </div>
 </template>
 
-<script>
-  export default {
-    props: {
-      articleList: {
-        type: Array
-      }
-    },
-    methods: {}
+<script setup>
+import { inject } from 'vue';
+import router from '@/router';
+
+// 定义props
+const props = defineProps({
+  articleList: {
+    type: Array
   }
+});
+
+// 获取公共属性
+const $common = inject('$common');
+const $constant = inject('$constant');
 </script>
 
 <style scoped>
@@ -171,11 +177,11 @@
     height: 170px;
   }
 
-  .recent-post-item-image >>> .el-image__inner {
+  .recent-post-item-image ::v-deep(.el-image__inner) {
     transition: all 1s;
   }
 
-  .recent-post-item-image >>> .el-image__inner:hover {
+  .recent-post-item-image ::v-deep(.el-image__inner):hover {
     transform: scale(1.2);
   }
 

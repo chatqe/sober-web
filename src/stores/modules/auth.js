@@ -8,7 +8,7 @@ export const useAuthStore = defineStore('authorization', () => {
     // 状态定义
     const userToken = ref('');
     const adminToken = ref('');
-
+    const isAdmin = ref(false);
     // 设置用户令牌
     const setUserToken = (token) => {
         userToken.value = token;
@@ -17,6 +17,10 @@ export const useAuthStore = defineStore('authorization', () => {
     // 设置管理员令牌
     const setAdminToken = (token) => {
         adminToken.value = token;
+    };
+
+    const setIsAdmin = (isAdmin) => {
+        isAdmin.value = isAdmin;
     };
 
     // 同时设置两种令牌
@@ -54,6 +58,8 @@ export const useAuthStore = defineStore('authorization', () => {
     return {
         userToken,
         adminToken,
+        isAdmin,
+        setIsAdmin,
         setUserToken,
         setAdminToken,
         setTokens,

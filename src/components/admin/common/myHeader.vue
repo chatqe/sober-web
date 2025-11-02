@@ -45,20 +45,21 @@
 </template>
 
 <script setup>
-import {useUserStore} from '@/stores'
-import {useRouter} from 'vue-router'
+import {useAuthStore, useUserStore} from '@/stores'
+import router from '@/router'
 import {ElMessage} from 'element-plus'
-import constant from '@/utils/constant'
 import {House} from "@element-plus/icons-vue";
+import {authApi} from '@/api/index'
 
 const userStore = useUserStore()
-const router = useRouter()
+const authStore = useAuthStore()
 
 const currentAdmin = userStore.currentAdmin
 
 const logout = async () => {
   try {
-    await $http.get(constant.baseURL + "/user/logout", {}, true)
+    // await $http.get(constant.baseURL + "/user/logout", {}, true)
+    await authApi.logout()
   } catch (error) {
     ElMessage({
       message: error.message,
@@ -67,7 +68,7 @@ const logout = async () => {
   }
 
   userStore.loadCurrentAdmin({})
-  userStore.rmItem('adminToken')
+  authStore.clearAdminToken()
   await router.push({path: '/'})
 }
 </script>

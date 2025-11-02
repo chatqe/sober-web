@@ -12,8 +12,12 @@
         </svg>
         基础信息
       </el-tag>
-      <el-form :model="webInfo" :rules="rules" ref="ruleForm" label-width="100px"
-               class="demo-ruleForm">
+      <el-form
+          ref="ruleFormRef"
+          :model="webInfo"
+          :rules="rules"
+          label-width="100px"
+          class="demo-ruleForm">
         <el-form-item label="网站名称" prop="webName">
           <el-input v-model="webInfo.webName"></el-input>
         </el-form-item>
@@ -27,7 +31,7 @@
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
-          <el-switch @click.native="changeWebStatus(webInfo)" v-model="webInfo.status"></el-switch>
+          <el-switch v-model="webInfo.status" @change="() => changeWebStatus(webInfo)"></el-switch>
         </el-form-item>
 
         <el-form-item label="背景" prop="backgroundImage">
@@ -97,7 +101,7 @@
         v-model="inputNoticeValue"
         ref="saveNoticeInput"
         size="small"
-        @keyup.enter.native="handleInputNoticeConfirm"
+        @keyup.enter="handleInputNoticeConfirm"
         @blur="handleInputNoticeConfirm">
       </el-input>
       <el-button v-else class="button-new-tag" size="small" @click="showNoticeInput()">+ 公告</el-button>
@@ -134,7 +138,7 @@
         v-model="inputRandomNameValue"
         ref="saveRandomNameInput"
         size="small"
-        @keyup.enter.native="handleInputRandomNameConfirm"
+        @keyup.enter="handleInputRandomNameConfirm"
         @blur="handleInputRandomNameConfirm">
       </el-input>
       <el-button v-else class="button-new-tag" size="small" @click="showRandomNameInput">+ 随机名称</el-button>
@@ -180,7 +184,7 @@
         v-model="inputRandomAvatarValue"
         ref="saveRandomAvatarInput"
         size="small"
-        @keyup.enter.native="handleInputRandomAvatarConfirm"
+        @keyup.enter="handleInputRandomAvatarConfirm"
         @blur="handleInputRandomAvatarConfirm">
       </el-input>
       <el-button v-else class="button-new-tag" size="small" @click="showRandomAvatarInput">+ 随机头像</el-button>
@@ -229,7 +233,7 @@
         v-model="inputRandomCoverValue"
         ref="saveRandomCoverInput"
         size="small"
-        @keyup.enter.native="handleInputRandomCoverConfirm"
+        @keyup.enter="handleInputRandomCoverConfirm"
         @blur="handleInputRandomCoverConfirm">
       </el-input>
       <el-button v-else class="button-new-tag" size="small" @click="showRandomCoverInput">+ 随机封面</el-button>
@@ -247,261 +251,271 @@
   </div>
 </template>
 
-<script>
-  const uploadPicture = () => import( "../common/uploadPicture");
+<script setup>
+  import { ref, reactive, onMounted, nextTick, inject } from 'vue';
+  import { ElMessage, ElMessageBox } from 'element-plus';
+  import { webInfoApi } from '@/api';
+  const uploadPicture = () => import("../common/uploadPicture");
 
-  export default {
-    components: {
-      uploadPicture
-    },
-    data() {
-      return {
-        disabled: true,
-        types: ['', 'success', 'info', 'danger', 'warning'],
-        inputNoticeVisible: false,
-        inputNoticeValue: "",
-        inputRandomNameVisible: false,
-        inputRandomNameValue: "",
-        inputRandomAvatarVisible: false,
-        inputRandomAvatarValue: "",
-        inputRandomCoverVisible: false,
-        inputRandomCoverValue: "",
-        webInfo: {
-          id: null,
-          webName: "",
-          webTitle: "",
-          footer: "",
-          backgroundImage: "",
-          avatar: "",
-          waifuJson: "",
-          status: false
-        },
-        notices: [],
-        randomAvatar: [],
-        randomName: [],
-        randomCover: [],
-        rules: {
-          webName: [
-            {required: true, message: '请输入网站名称', trigger: 'blur'},
-            {min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'change'}
-          ],
-          webTitle: [
-            {required: true, message: '请输入网站标题', trigger: 'blur'}
-          ],
-          footer: [
-            {required: true, message: '请输入页脚', trigger: 'blur'}
-          ],
-          backgroundImage: [
-            {required: true, message: '请输入背景', trigger: 'change'}
-          ],
-          status: [
-            {required: true, message: '请设置网站状态', trigger: 'change'}
-          ],
-          avatar: [
-            {required: true, message: '请上传头像', trigger: 'change'}
-          ]
-        }
-      }
-    },
+  // 注入全局属性
+  const $constant = inject('$constant');
+  const $common = inject('$common');
 
-    computed: {},
+  // 响应式数据
+  const disabled = ref(true);
+  const types = ['', 'success', 'info', 'danger', 'warning'];
+  const inputNoticeVisible = ref(false);
+  const inputNoticeValue = ref("");
+  const inputRandomNameVisible = ref(false);
+  const inputRandomNameValue = ref("");
+  const inputRandomAvatarVisible = ref(false);
+  const inputRandomAvatarValue = ref("");
+  const inputRandomCoverVisible = ref(false);
+  const inputRandomCoverValue = ref("");
+  const webInfo = reactive({
+    id: null,
+    webName: "",
+    webTitle: "",
+    footer: "",
+    backgroundImage: "",
+    avatar: "",
+    waifuJson: "",
+    status: false
+  });
+  const notices = ref([]);
+  const randomAvatar = ref([]);
+  const randomName = ref([]);
+  const randomCover = ref([]);
+  const rules = {
+    webName: [
+      {required: true, message: '请输入网站名称', trigger: 'blur'},
+      {min: 1, max: 10, message: '长度在 1 到 10 个字符', trigger: 'change'}
+    ],
+    webTitle: [
+      {required: true, message: '请输入网站标题', trigger: 'blur'}
+    ],
+    footer: [
+      {required: true, message: '请输入页脚', trigger: 'blur'}
+    ],
+    backgroundImage: [
+      {required: true, message: '请输入背景', trigger: 'change'}
+    ],
+    status: [
+      {required: true, message: '请设置网站状态', trigger: 'change'}
+    ],
+    avatar: [
+      {required: true, message: '请上传头像', trigger: 'change'}
+    ]
+  };
+  
+  // 表单引用
+  const ruleFormRef = ref(null);
+  const saveNoticeInput = ref(null);
+  const saveRandomNameInput = ref(null);
+  const saveRandomAvatarInput = ref(null);
+  const saveRandomCoverInput = ref(null);
 
-    watch: {},
+  // 生命周期
+  onMounted(() => {
+    getWebInfo();
+  });
 
-    created() {
-      this.getWebInfo();
-    },
+  // 方法定义
+  const addBackgroundImage = (res) => {
+    webInfo.backgroundImage = res;
+  };
 
-    mounted() {
+  const addAvatar = (res) => {
+    webInfo.avatar = res;
+  };
 
-    },
+  const addRandomAvatar = (res) => {
+    randomAvatar.value.push(res);
+  };
 
-    methods: {
-      addBackgroundImage(res) {
-        this.webInfo.backgroundImage = res;
-      },
-      addAvatar(res) {
-        this.webInfo.avatar = res;
-      },
-      addRandomAvatar(res) {
-        this.randomAvatar.push(res);
-      },
-      addRandomCover(res) {
-        this.randomCover.push(res);
-      },
-      changeWebStatus(webInfo) {
-        this.$http.post(this.$constant.baseURL + "/webInfo/updateWebInfo", {
-          id: webInfo.id,
-          status: webInfo.status
-        }, true)
-          .then((res) => {
-            this.getWebInfo();
-            this.$message({
-              message: "保存成功！",
-              type: "success"
-            });
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      getWebInfo() {
-        this.$http.get(this.$constant.baseURL + "/admin/webInfo/getAdminWebInfo", {}, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.webInfo.id = res.data.id;
-              this.webInfo.webName = res.data.webName;
-              this.webInfo.webTitle = res.data.webTitle;
-              this.webInfo.footer = res.data.footer;
-              this.webInfo.backgroundImage = res.data.backgroundImage;
-              this.webInfo.avatar = res.data.avatar;
-              this.webInfo.waifuJson = res.data.waifuJson;
-              this.webInfo.status = res.data.status;
-              this.notices = JSON.parse(res.data.notices);
-              this.randomAvatar = JSON.parse(res.data.randomAvatar);
-              this.randomName = JSON.parse(res.data.randomName);
-              this.randomCover = JSON.parse(res.data.randomCover);
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            this.updateWebInfo(this.webInfo)
-          } else {
-            this.$message({
-              message: "请完善必填项！",
-              type: "error"
-            });
-          }
-        });
-      },
-      resetForm(formName) {
-        this.$refs[formName].resetFields();
-        this.getWebInfo();
-      },
-      handleClose(array, item) {
-        array.splice(array.indexOf(item), 1);
-      },
-      handleInputNoticeConfirm() {
-        if (this.inputNoticeValue) {
-          this.notices.push(this.inputNoticeValue);
-        }
-        this.inputNoticeVisible = false;
-        this.inputNoticeValue = '';
-      },
-      showNoticeInput() {
-        this.inputNoticeVisible = true;
-        this.$nextTick(() => {
-          this.$refs.saveNoticeInput.$refs.input.focus();
-        });
-      },
-      saveNotice() {
-        let param = {
-          id: this.webInfo.id,
-          notices: JSON.stringify(this.notices)
-        }
-        this.updateWebInfo(param);
-      },
-      handleInputRandomNameConfirm() {
-        if (this.inputRandomNameValue) {
-          this.randomName.push(this.inputRandomNameValue);
-        }
-        this.inputRandomNameVisible = false;
-        this.inputRandomNameValue = '';
-      },
-      showRandomNameInput() {
-        this.inputRandomNameVisible = true;
-        this.$nextTick(() => {
-          this.$refs.saveRandomNameInput.$refs.input.focus();
-        });
-      },
-      saveRandomName() {
-        let param = {
-          id: this.webInfo.id,
-          randomName: JSON.stringify(this.randomName)
-        }
-        this.updateWebInfo(param);
-      },
-      handleInputRandomAvatarConfirm() {
-        if (this.inputRandomAvatarValue) {
-          this.randomAvatar.push(this.inputRandomAvatarValue);
-        }
-        this.inputRandomAvatarVisible = false;
-        this.inputRandomAvatarValue = '';
-      },
-      showRandomAvatarInput() {
-        this.inputRandomAvatarVisible = true;
-        this.$nextTick(() => {
-          this.$refs.saveRandomAvatarInput.$refs.input.focus();
-        });
-      },
-      saveRandomAvatar() {
-        let param = {
-          id: this.webInfo.id,
-          randomAvatar: JSON.stringify(this.randomAvatar)
-        }
-        this.updateWebInfo(param);
-      },
-      handleInputRandomCoverConfirm() {
-        if (this.inputRandomCoverValue) {
-          this.randomCover.push(this.inputRandomCoverValue);
-        }
-        this.inputRandomCoverVisible = false;
-        this.inputRandomCoverValue = '';
-      },
-      showRandomCoverInput() {
-        this.inputRandomCoverVisible = true;
-        this.$nextTick(() => {
-          this.$refs.saveRandomCoverInput.$refs.input.focus();
-        });
-      },
-      saveRandomCover() {
-        let param = {
-          id: this.webInfo.id,
-          randomCover: JSON.stringify(this.randomCover)
-        }
-        this.updateWebInfo(param);
-      },
-      updateWebInfo(value) {
-        this.$confirm('确认保存？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.post(this.$constant.baseURL + "/webInfo/updateWebInfo", value, true)
-            .then((res) => {
-              this.getWebInfo();
-              this.$message({
-                message: "保存成功！",
-                type: "success"
-              });
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消保存!'
-          });
-        });
+  const addRandomCover = (res) => {
+    randomCover.value.push(res);
+  };
+
+  const changeWebStatus = async (webInfo) => {
+    try {
+      await webInfoApi.updateWebInfo({
+        id: webInfo.id,
+        status: webInfo.status
+      });
+      await getWebInfo();
+      ElMessage.success("保存成功！");
+    } catch (error) {
+      ElMessage.error(error.message);
+    }
+  };
+
+  const getWebInfo = async () => {
+    try {
+      const res = await $http.get($constant.baseURL + "/admin/webInfo/getAdminWebInfo", {}, true);
+      if (!res.data) return;
+      webInfo.id = res.data.id;
+      webInfo.webName = res.data.webName;
+      webInfo.webTitle = res.data.webTitle;
+      webInfo.footer = res.data.footer;
+      webInfo.backgroundImage = res.data.backgroundImage;
+      webInfo.avatar = res.data.avatar;
+      webInfo.waifuJson = res.data.waifuJson;
+      webInfo.status = res.data.status;
+      notices.value = JSON.parse(res.data.notices || '[]');
+      randomAvatar.value = JSON.parse(res.data.randomAvatar || '[]');
+      randomName.value = JSON.parse(res.data.randomName || '[]');
+      randomCover.value = JSON.parse(res.data.randomCover || '[]');
+    } catch (error) {
+      ElMessage.error(error.message);
+    }
+  };
+
+  const submitForm = async () => {
+    try {
+      await ruleFormRef.value.validate();
+      await updateWebInfo(webInfo);
+    } catch (error) {
+      if (error !== false) {
+        ElMessage.error(error.message);
       }
     }
-  }
+  };
+
+  const resetForm = () => {
+    if (ruleFormRef.value) {
+      ruleFormRef.value.resetFields();
+    }
+    getWebInfo();
+  };
+
+  const handleClose = (array, item) => {
+    const index = array.indexOf(item);
+    if (index !== -1) {
+      array.splice(index, 1);
+    }
+  };
+
+  const handleInputNoticeConfirm = () => {
+    if (inputNoticeValue.value) {
+      notices.value.push(inputNoticeValue.value);
+    }
+    inputNoticeVisible.value = false;
+    inputNoticeValue.value = '';
+  };
+
+  const showNoticeInput = () => {
+    inputNoticeVisible.value = true;
+    nextTick(() => {
+      if (saveNoticeInput.value?.input) {
+        saveNoticeInput.value.input.focus();
+      }
+    });
+  };
+
+  const saveNotice = () => {
+    const param = {
+      id: webInfo.id,
+      notices: JSON.stringify(notices.value)
+    };
+    updateWebInfo(param);
+  };
+
+  const handleInputRandomNameConfirm = () => {
+    if (inputRandomNameValue.value) {
+      randomName.value.push(inputRandomNameValue.value);
+    }
+    inputRandomNameVisible.value = false;
+    inputRandomNameValue.value = '';
+  };
+
+  const showRandomNameInput = () => {
+    inputRandomNameVisible.value = true;
+    nextTick(() => {
+      if (saveRandomNameInput.value?.input) {
+        saveRandomNameInput.value.input.focus();
+      }
+    });
+  };
+
+  const saveRandomName = () => {
+    const param = {
+      id: webInfo.id,
+      randomName: JSON.stringify(randomName.value)
+    };
+    updateWebInfo(param);
+  };
+
+  const handleInputRandomAvatarConfirm = () => {
+    if (inputRandomAvatarValue.value) {
+      randomAvatar.value.push(inputRandomAvatarValue.value);
+    }
+    inputRandomAvatarVisible.value = false;
+    inputRandomAvatarValue.value = '';
+  };
+
+  const showRandomAvatarInput = () => {
+    inputRandomAvatarVisible.value = true;
+    nextTick(() => {
+      if (saveRandomAvatarInput.value?.input) {
+        saveRandomAvatarInput.value.input.focus();
+      }
+    });
+  };
+
+  const saveRandomAvatar = () => {
+    const param = {
+      id: webInfo.id,
+      randomAvatar: JSON.stringify(randomAvatar.value)
+    };
+    updateWebInfo(param);
+  };
+
+  const handleInputRandomCoverConfirm = () => {
+    if (inputRandomCoverValue.value) {
+      randomCover.value.push(inputRandomCoverValue.value);
+    }
+    inputRandomCoverVisible.value = false;
+    inputRandomCoverValue.value = '';
+  };
+
+  const showRandomCoverInput = () => {
+    inputRandomCoverVisible.value = true;
+    nextTick(() => {
+      if (saveRandomCoverInput.value?.input) {
+        saveRandomCoverInput.value.input.focus();
+      }
+    });
+  };
+
+  const saveRandomCover = () => {
+    const param = {
+      id: webInfo.id,
+      randomCover: JSON.stringify(randomCover.value)
+    };
+    updateWebInfo(param);
+  };
+
+  const updateWebInfo = async (value) => {
+    try {
+      await ElMessageBox.confirm('确认保存？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'success',
+        center: true
+      });
+      
+      await webInfoApi.updateWebInfo(value);
+      await getWebInfo();
+      ElMessage.success("保存成功！");
+    } catch (error) {
+      if (error === 'cancel') {
+        ElMessage.success('已取消保存!');
+        return;
+      }
+      ElMessage.error(error.message || '保存失败');
+    }
+  };
 </script>
 
 <style scoped>

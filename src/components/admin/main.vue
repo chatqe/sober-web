@@ -119,7 +119,7 @@
                     align="center"
                     label="头像"
                     width="100">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       <el-avatar class="user-avatar" :size="30"
                                  :src="scope.row.avatar">
                       </el-avatar>
@@ -157,7 +157,7 @@
                     align="center"
                     label="头像"
                     width="100">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                       <el-avatar class="user-avatar" :size="30"
                                  :src="scope.row.avatar">
                       </el-avatar>
@@ -179,43 +179,41 @@
   </div>
 </template>
 
-<script>
-  export default {
-    data() {
-      return {
-        historyInfo: {}
-      }
-    },
+<script setup>
+import { ref, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
+import { webInfoApi } from '@/api/index';
 
-    computed: {},
+// 响应式数据
+const historyInfo = ref({});
 
-    watch: {},
-
-    created() {
-      this.getHistoryInfo();
-    },
-
-    mounted() {
-
-    },
-
-    methods: {
-      getHistoryInfo() {
-        this.$http.get(this.$constant.baseURL + "/webInfo/getHistoryInfo", {}, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.historyInfo = res.data;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }
+// 获取统计信息
+const getHistoryInfo = async () => {
+  try {
+    const res = await webInfoApi.getHistoryInfo();
+    if (!res.data) {
+      ElMessage({
+        message: '获取数据失败',
+        type: "error"
+      });
+      return;
     }
+    // 直接检查res.data是否有值
+    if (Object.keys(res.data).length > 0) {
+      historyInfo.value = res.data;
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '请求失败',
+      type: "error"
+    });
   }
+};
+
+// 组件挂载时获取数据
+onMounted(() => {
+  getHistoryInfo();
+});
 </script>
 
 <style scoped>

@@ -6,9 +6,11 @@
               style="position: absolute;margin-top: -50px"
               v-once
               lazy
-              :src="$store.state.webInfo.randomCover[Math.floor(Math.random() * $store.state.webInfo.randomCover.length)]"
+              :src="webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]"
               fit="cover">
-      <div slot="error" class="image-slot"></div>
+      <template #error>
+        <div class="image-slot"></div>
+      </template>
     </el-image>
     <div class="poem-wrap">
       <div v-if="isShehui"><span>鬼畜全明星</span></div>
@@ -20,84 +22,84 @@
     </div>
   </div>
 </template>
-<script>
-  export default {
-    props: {
-      isHitokoto: {
-        type: Boolean,
-        default: true
-      },
-      isShehui: {
-        type: Boolean,
-        default: false
-      }
-    },
-    data() {
-      return {
-        guShi: {
-          "content": "...",
-          "origin": "...",
-          "author": "...",
-          "category": "..."
-        },
-        hitokoto: {
-          "hitokoto": "...",
-          "from": "...",
-          "from_who": "..."
-        }
-      };
-    },
-    created() {
-      if (!this.isShehui) {
-        if (this.isHitokoto) {
-          this.getHitokoto();
-        } else {
-          this.getGuShi();
-        }
-      } else {
-        this.hitokoto.from = "";
-        this.hitokoto.from_who = "";
-        this.sendShehui();
-      }
-    },
+<script setup>
+import { ref, onMounted, inject } from 'vue';
+import { useWebInfoStore } from '@/stores';
 
-    methods: {
-      sendShehui() {
-        let that = this;
-        let xhr = new XMLHttpRequest();
-        xhr.open('get', this.$constant.shehui);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4) {
-            let shehui = xhr.responseText;
-            that.hitokoto.hitokoto = shehui.substring(1, shehui.length - 1);
-          }
-        };
-        xhr.send();
-      },
-      getGuShi() {
-        let that = this;
-        let xhr = new XMLHttpRequest();
-        xhr.open('get', this.$constant.jinrishici);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4) {
-            that.guShi = JSON.parse(xhr.responseText);
-          }
-        };
-        xhr.send();
-      },
-      getHitokoto() {
-        let that = this;
-        let xhr = new XMLHttpRequest();
-        xhr.open('get', this.$constant.hitokoto);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4) {
-            that.hitokoto = JSON.parse(xhr.responseText);
-          }
-        }
-        xhr.send();
-      }
+// 定义props
+const props = defineProps({
+  isHitokoto: {
+    type: Boolean,
+    default: true
+  },
+  isShehui: {
+    type: Boolean,
+    default: false
+  }
+});
+
+// 获取公共属性
+const $constant = inject('$constant');
+const $common = inject('$common');
+const webInfoStore = useWebInfoStore();
+
+// 响应式数据
+const guShi = ref({
+  "content": "...",
+  "origin": "...",
+  "author": "...",
+  "category": "..."
+});
+
+const hitokoto = ref({
+  "hitokoto": "...",
+  "from": "...",
+  "from_who": "..."
+});
+
+// 发送请求获取数据的方法
+const sendShehui = async () => {
+  try {
+    const response = await fetch($constant.shehui);
+    const shehui = await response.text();
+    hitokoto.value.hitokoto = shehui.substring(1, shehui.length - 1);
+  } catch (error) {
+    console.error('获取鬼畜数据失败:', error);
+  }
+};
+
+const getGuShi = async () => {
+  try {
+    const response = await fetch($constant.jinrishici);
+    guShi.value = await response.json();
+  } catch (error) {
+    console.error('获取诗句失败:', error);
+  }
+};
+
+const getHitokoto = async () => {
+  try {
+    const response = await fetch($constant.hitokoto);
+    hitokoto.value = await response.json();
+  } catch (error) {
+    console.error('获取一言失败:', error);
+  }
+};
+
+// 组件挂载后初始化数据
+onMounted(() => {
+  if (!props.isShehui) {
+    if (props.isHitokoto) {
+      getHitokoto();
+    } else {
+      getGuShi();
     }
-  };
+  } else {
+    hitokoto.value.from = "";
+    hitokoto.value.from_who = "";
+    sendShehui();
+  }
+});
 </script>
 <style scoped>
 

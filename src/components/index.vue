@@ -27,13 +27,13 @@
         <!-- 首页文字 -->
         <div class="signature-wall myCenter my-animation-hideToShow">
           <h1 class="playful">
-            <span v-for="(char, index) in webTitle" :key="index">{{ char }}</span>
+            <span v-for="(char, index) in webTitle" :key="index"> {{ char }} </span>
           </h1>
-          <div class="printer" @click="getGuShi">
+          <div class="printer" @click="getGuShi()">
             <Printer :printerInfo="printerInfo">
               <template #paper="{ content }">
                 <h3>
-                  {{ content }}<span class="cursor">|</span>
+                  {{ content }} <span class="cursor">|</span>
                 </h3>
               </template>
             </Printer>
@@ -50,8 +50,8 @@
               <MyAside @select-sort="selectSort" @select-article="selectArticle"/>
             </div>
 
-            <div class="recent-posts">
-              <div class="announcement background-opacity">
+            <div class="recent-posts" ref="recentPostsRef">
+              <div class="announcement background-opacity" :style="{ maxWidth: announcementMaxWidth }">
                 <i class="fa fa-volume-up" aria-hidden="true"></i>
                 <div>
                   <div v-for="(notice, index) in notices" :key="index">
@@ -95,7 +95,7 @@
               <div v-show="indexType === 2">
                 <ArticleList :articleList="articles"/>
                 <div class="pagination-wrap">
-                  <div @click="pageArticles" class="pagination" v-if="pagination.total !== articles.length">
+                  <div @click="pageArticles()" class="pagination" v-if="pagination.total !== articles.length">
                     下一页
                   </div>
                   <div v-else style="user-select: none">
@@ -117,12 +117,20 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, watch, defineAsyncComponent, nextTick} from 'vue'
-import {useStore} from '@/stores'
-import {useRouter} from 'vue-router'
+import {ref, computed, onMounted, watch, defineAsyncComponent, nextTick, inject} from 'vue'
+import {useUserStore, useWebInfoStore, useSystemStore, useSortInfoStore} from '@/stores'
+import router from '@/router'
 import {ElMessage} from 'element-plus'
-import {constant} from '@/utils/constant'
-import {common} from '@/utils/common'
+import {articleApi} from '@/api'
+import {getArticleList, listSortArticle} from "@/api/modules/articleApi.js";
+
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
+
+// DOM 引用
+const announcementRef = ref(null)
+const recentPostsRef = ref(null)
 
 // 异步组件
 const Loader = defineAsyncComponent(() => import('./common/loader.vue'))
@@ -133,12 +141,15 @@ const SortArticle = defineAsyncComponent(() => import('./common/sortArticle.vue'
 const MyFooter = defineAsyncComponent(() => import('./common/myFooter.vue'))
 const MyAside = defineAsyncComponent(() => import('./myAside.vue'))
 
-const store = useStore()
-const router = useRouter()
+const userStore = useUserStore()
+const webInfoStore = useWebInfoStore()
+const sortInfoStore = useSortInfoStore()
+const systemStore = useSystemStore()
 
 const loading = ref(false)
 const showAside = ref(true)
 const indexType = ref(1)
+const announcementMaxWidth = ref('auto')
 const printerInfo = ref("你看对面的青山多漂亮")
 const pagination = ref({
   current: 1,
@@ -159,13 +170,13 @@ const sortArticles = ref({})
 
 // 计算属性
 const backgroundImage = computed(() => {
-  const bgImage = store.state.webInfo.backgroundImage
-  return !common.isEmpty(bgImage) ? bgImage : constant.index_image
+  const bgImage = webInfoStore.webInfo?.backgroundImage
+  return !$common.isEmpty(bgImage) ? bgImage : $constant.index_image
 })
 
-const webTitle = computed(() => store.state.webInfo.webTitle || '')
-const notices = computed(() => store.state.webInfo.notices || [])
-const sortInfo = computed(() => store.state.sortInfo || [])
+const webTitle = computed(() => webInfoStore.webInfo?.webTitle || '')
+const notices = computed(() => webInfoStore.webInfo?.notices || [])
+const sortInfo = computed(() => sortInfoStore.sortInfo || [])
 
 // 方法
 const selectSort = async (sort) => {
@@ -182,12 +193,14 @@ const selectSort = async (sort) => {
 
   await nextTick(() => {
     indexType.value = 2
-    document.querySelector('.announcement').style.maxWidth = '780px'
-    document.querySelector('.recent-posts').scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-      inline: "nearest"
-    })
+    announcementMaxWidth.value = '780px'
+    if (recentPostsRef.value) {
+      recentPostsRef.value.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest"
+      })
+    }
   })
 }
 
@@ -203,14 +216,16 @@ const selectArticle = async (articleSearch) => {
   articles.value = []
   await getArticles()
 
-  nextTick(() => {
+  await nextTick(() => {
     indexType.value = 2
-    document.querySelector('.announcement').style.maxWidth = '780px'
-    document.querySelector('.recent-posts').scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-      inline: "nearest"
-    })
+    announcementMaxWidth.value = '780px'
+    if (recentPostsRef.value) {
+      recentPostsRef.value.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest"
+      })
+    }
   })
 }
 
@@ -221,8 +236,8 @@ const pageArticles = () => {
 
 const getArticles = async () => {
   try {
-    const response = await $http.post(constant.baseURL + "/article/listArticle", pagination.value)
-    if (!common.isEmpty(response.data)) {
+    const response = await articleApi.getArticleList(pagination.value)
+    if (!$common.isEmpty(response.data)) {
       articles.value = articles.value.concat(response.data.records)
       pagination.value.total = response.data.total
     }
@@ -236,8 +251,8 @@ const getArticles = async () => {
 
 const getSortArticles = async () => {
   try {
-    const response = await $http.get(constant.baseURL + "/article/listSortArticle")
-    if (!common.isEmpty(response.data)) {
+    const response = await articleApi.listSortArticle()
+    if (!$common.isEmpty(response.data)) {
       sortArticles.value = response.data
     }
   } catch (error) {
@@ -249,10 +264,10 @@ const getSortArticles = async () => {
 }
 
 const navigation = (selector) => {
-  const pageId = document.querySelector(selector)
-  if (pageId) {
+  const element = document.querySelector(selector)
+  if (element) {
     window.scrollTo({
-      top: pageId.offsetTop,
+      top: element.offsetTop,
       behavior: "smooth"
     })
   }
@@ -260,7 +275,7 @@ const navigation = (selector) => {
 
 const getGuShi = () => {
   const xhr = new XMLHttpRequest()
-  xhr.open('get', constant.jinrishici)
+  xhr.open('get', $constant.jinrishici)
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
       guShi.value = JSON.parse(xhr.responseText)
@@ -308,7 +323,7 @@ onMounted(() => {
   flex-direction: column;
   position: relative;
   user-select: none;
-  //height: 100vh;
+  /* height: 100vh; */
   height: 45vh;
   overflow: hidden;
 }

@@ -38,68 +38,66 @@
   </div>
 </template>
 
-<script>
-  export default {
-    props: {
-      current: {
-        type: Number,
-        default: 1
-      },
-      size: {
-        type: Number,
-        default: 10
-      },
-      total: {
-        type: Number,
-        default: 0
-      },
-      buttonSize: {
-        type: Number,
-        default: 3
-      },
-      color: {
-        type: String,
-        default: ""
-      }
-    },
+<script setup>
+import { ref, watch, onMounted } from 'vue';
 
-    data() {
-      return {
-        totalSize: 0,
-        realButtonSize: 0
-      }
-    },
-
-    computed: {},
-
-    watch: {
-      total(newVal) {
-        this.totalSize = Math.ceil(this.total / this.size);
-        this.realButtonSize = this.buttonSize < this.totalSize ? this.buttonSize : this.totalSize;
-      }
-    },
-
-    created() {
-      this.totalSize = Math.ceil(this.total / this.size);
-      this.realButtonSize = this.buttonSize < this.totalSize ? this.buttonSize : this.totalSize;
-    },
-
-    mounted() {
-
-    },
-
-    methods: {
-      toPage(flag) {
-        if (flag === -1) {
-          this.$emit("toPage", this.current - 1);
-        } else if (flag === -2) {
-          this.$emit("toPage", this.current + 1);
-        } else {
-          this.$emit("toPage", flag);
-        }
-      }
-    }
+// 定义props
+const props = defineProps({
+  current: {
+    type: Number,
+    default: 1
+  },
+  size: {
+    type: Number,
+    default: 10
+  },
+  total: {
+    type: Number,
+    default: 0
+  },
+  buttonSize: {
+    type: Number,
+    default: 3
+  },
+  color: {
+    type: String,
+    default: ""
   }
+});
+
+// 定义事件
+const emit = defineEmits(['toPage']);
+
+// 响应式数据
+const totalSize = ref(0);
+const realButtonSize = ref(0);
+
+// 页面跳转处理函数
+const toPage = (flag) => {
+  if (flag === -1) {
+    emit("toPage", props.current - 1);
+  } else if (flag === -2) {
+    emit("toPage", props.current + 1);
+  } else {
+    emit("toPage", flag);
+  }
+};
+
+// 初始化分页数据
+const initPageData = () => {
+  totalSize.value = Math.ceil(props.total / props.size);
+  realButtonSize.value = props.buttonSize < totalSize.value ? props.buttonSize : totalSize.value;
+};
+
+// 监听total变化
+watch(() => props.total, () => {
+  initPageData();
+});
+
+// 组件挂载时初始化
+onMounted(() => {
+  initPageData();
+});
 </script>
 
 <style scoped>

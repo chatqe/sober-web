@@ -4,7 +4,10 @@ import {ref} from 'vue'
 export const useUserStore = defineStore('user', () => {
 
         const currentUser = ref( {})
-        const currentAdmin = ref( {})
+        const currentAdmin = ref( {
+            avatar:'',
+            isBoss: false,
+        })
 
         const loadCurrentUser = (user) => {
             currentUser.value = user

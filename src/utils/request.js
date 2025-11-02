@@ -1,9 +1,17 @@
-// Axios 请求封装
+/**
+ * axios 请求封装
+ *
+ * @author sjq
+ * @since 2025-10-27 22:20
+ */
+
 import axios from "axios";
-//处理url参数
+// 处理url参数
 // import qs from "qs";
-import { stringify } from 'query-string';
-import {useAuthStore,useUserStore} from "@/stores";
+// import {stringify} from 'query-string';
+import {useAuthStore, useUserStore} from "@/stores/index.js";
+import {API_CODES, TIMEOUT} from "@/constant/index.js";
+import {ElMessage} from "element-plus";
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
@@ -13,7 +21,7 @@ const webUrl = import.meta.env.VITE_WEB_URL;
 
 const request = axios.create({
     baseURL,
-    timeout: 10000,
+    timeout: TIMEOUT.DEFAULT,
     withCredentials: true
 })
 
@@ -21,37 +29,62 @@ const request = axios.create({
 
 
 // 添加请求拦截器
-request.interceptors.request.use(function (config) {
+request.interceptors.request.use((config) => {
     // 在发送请求之前做些什么
     return config;
-}, function (error) {
+}, (error) => {
     // 对请求错误做些什么
     return Promise.reject(error);
 });
 
 // 添加响应拦截器
-request.interceptors.response.use(function (response) {
-    if (response.data !== null && response.data.hasOwnProperty("code") && response.data.code !== 200) {
-        if (response.data.code === 300) {
-
-            userStore.loadCurrentUser({})
-            userStore.loadCurrentAdmin({})
-            userStore.clearUserData()
-            window.location.href = webUrl + "/user";
-        }
-        return Promise.reject(new Error(response.data.message));
-    } else {
-        return response;
+request.interceptors.response.use((resp) => {
+    const {data} = resp
+    // 业务成功
+    if (data && typeof data === 'object' && data.code === API_CODES.SUCCESS && data.hasOwnProperty("code")) {
+        // return data.data || true
+        return resp
     }
-}, function (error) {
+
+    const msg = data?.message || `请求失败[${data?.code || 'unknown'}]`
+
+    // 跳转
+    if (data?.code === API_CODES.CLIENT_REDIRECT_LOGIN) {
+        userStore.loadCurrentUser({})
+        userStore.loadCurrentAdmin({})
+        userStore.clearUserData()
+        window.location.href = webUrl + "/user"
+    } else {
+        // 请求失败
+        console.log('[API Error]', msg)
+        ElMessage.error(msg)
+    }
+    return Promise.reject(new Error(msg));
+}, (error) => {
     // 对响应错误做点什么
+    let msg = '网络异常，请稍后重试';
+    if (error.response) {
+        const {status} = error.response;
+        const statusMap = {
+            [API_CODES.UNAUTHORIZED]: '登录已过期，请重新登录',
+            [API_CODES.FORBIDDEN]: '没有权限访问该资源',
+            [API_CODES.NOT_FOUND]: '请求资源不存在',
+            [API_CODES.SERVER_ERROR]: '服务器内部错误',
+        };
+        msg = statusMap[status] || `请求失败 [${status}]`;
+    } else if (!error.request) {
+        msg = '请求配置错误';
+    }
+    console.error('[Network Error]', error);
+    ElMessage.error(msg);
     return Promise.reject(error);
 });
 
-// 当data为URLSearchParams对象时设置为application/x-www-form-urlencoded;charset=utf-8
-// 当data为普通对象时，会被设置为application/json;charset=utf-8
 
-
+/**
+ * 当data为URLSearchParams对象时设置为application/x-www-form-urlencoded;charset=utf-8
+ * 当data为普通对象时，会被设置为application/json;charset=utf-8
+ */
 export default {
     post(url, params = {}, isAdmin = false, json = true) {
         let config;
@@ -65,9 +98,12 @@ export default {
             };
         }
 
+        // 将参数转为 URLSearchParams（如果不是 json）
+        const data = json ? params : new URLSearchParams(params);
+
         return new Promise((resolve, reject) => {
             request
-                .post(url, json ? params : stringify(params), config)
+                .post(url, data, config)
                 .then(res => {
                     resolve(res.data);
                 })
@@ -101,12 +137,12 @@ export default {
         let config;
         if (isAdmin) {
             config = {
-                headers: {"Authorization": localStorage.getItem("adminToken"), "Content-Type": "multipart/form-data"},
+                headers: {"Authorization": authStore.adminToken, "Content-Type": "multipart/form-data"},
                 timeout: 60000
             };
         } else {
             config = {
-                headers: {"Authorization": localStorage.getItem("userToken"), "Content-Type": "multipart/form-data"},
+                headers: {"Authorization": authStore.userToken, "Content-Type": "multipart/form-data"},
                 timeout: 60000
             };
         }

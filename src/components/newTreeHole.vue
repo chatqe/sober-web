@@ -1,139 +1,160 @@
 <template>
-  <!-- 赞赏 -->
   <div class="shadow-box-mini background-opacity wow new-treehole-box "
        v-if="!$common.isEmpty(newTreeHoleList)">
     <div style="font-weight: bold;margin-bottom: 20px">🧨最新树洞</div>
-    <div>
-      <vue-seamless-scroll :data="newTreeHoleList" style="height: 300px;overflow: hidden">
-        <div v-for="(item, i) in newTreeHoleList"
-             style="display: flex;justify-content: space-between"
-             :key="i">
-          <div style="display: flex">
-            <el-avatar style="margin-bottom: 10px" :size="36" :src="item.avatar"></el-avatar>
-            <div style="margin-left: 10px;height: 36px;line-height: 36px;overflow: hidden;max-width: 80px">
-              {{ item.message }}
-            </div>
-          </div>
-<!--          <div style="height: 36px;line-height: 36px">-->
-<!--            {{ item.admire }}元-->
-<!--          </div>-->
-        </div>
-      </vue-seamless-scroll>
+    <div class="seamless-scroll-container">
+      <div class="seamless-scroll-content">
+        <Vue3SeamlessScroll
+            class="scroll-wrap"
+            :list="newTreeHoleList"
+            :wheel="true"
+            :v-model="true"
+            :hover="true">
+          <ul class="ui-wrap">
+            <li v-for="(item, i) in newTreeHoleList" :key="i" class="li-item">
+              <div style="display: flex">
+                <el-avatar style="margin-bottom: 10px" :size="36" :src="item.avatar"></el-avatar>
+                <div style="margin-left: 10px;height: 36px;line-height: 36px;overflow: hidden;max-width: 80px">
+                  {{ item.message }}
+                </div>
+              </div>
+            </li>
+          </ul>
+        </Vue3SeamlessScroll>
+      </div>
     </div>
-    </div>
+  </div>
+
 </template>
 
 
-<script>
+<script setup>
+import {ref, computed, onMounted, onUnmounted, inject} from 'vue'
+import router from '@/router'
+import {ElMessage} from 'element-plus'
+import {useUserStore, useWebInfoStore, useSystemStore} from '@/stores'
+import {webInfoApi, articleApi} from '@/api'
+import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
 
-/**
- *  基于 Vue.js 的插件，用于实现 无缝滚动 效果。
- *  该插件允许你创建一个内容循环滚动的效果，使得用户可以在一个可滚动区域中看到持续流动的内容，类似于新闻滚动条、广告横幅等。
- *
- */
-import vueSeamlessScroll from "vue-seamless-scroll";
+// 获取公共属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-export default {
-  components: {
-    vueSeamlessScroll
-  },
-  data() {
+const userStore = useUserStore()
+const webInfoStore = useWebInfoStore()
+const systemStore = useSystemStore()
 
-    return {
-      pagination: {
-        current: 1,
-        size: 5,
-        recommendStatus: true
-      },
-      recommendArticles: [],
-      newTreeHoleList: [],
-      showAdmireDialog: false,
-      articleSearch: ""
-    }
-  },
-  computed: {
-    webInfo() {
-      return this.$store.state.webInfo;
-    },
-    sortInfo() {
-      return this.$store.state.sortInfo;
-    }
-  },
-  created() {
-    this.getRecommendArticles();
-    // this.getAdmire();
-    this.getLatestTreeHole();
-  },
-  methods: {
-    selectSort(sort) {
-      this.$emit("selectSort", sort);
-    },
-    selectArticle() {
-      this.$emit("selectArticle", this.articleSearch);
-    },
-    showAdmire() {
-      if (this.$common.isEmpty(this.$store.state.currentUser)) {
-        this.$message({
-          message: "请先登录！",
-          type: "error"
-        });
-        return;
-      }
+const recommendArticles = ref([])
+const newTreeHoleList = ref([])
+const showAdmireDialog = ref(false)
+const articleSearch = ref("")
 
-      this.showAdmireDialog = true;
-    },
-    getAdmire() {
-      this.$http.get(this.$constant.baseURL + "/webInfo/getAdmire")
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            this.admires = res.data;
-          }
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    getRecommendArticles() {
-      this.$http.post(this.$constant.baseURL + "/article/listArticle", this.pagination)
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            this.recommendArticles = res.data.records;
-          }
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    showTip() {
-      this.$router.push({path: '/weiYan'});
-    },
 
-    getLatestTreeHole() {
-      this.$http.get(this.$constant.baseURL + "/webInfo/latestTreeHole")
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            this.newTreeHoleList = res.data;
-          }
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    }
+// let scrollAnimationId = null
+
+onMounted(() => {
+  getRecommendArticles()
+  getLatestTreeHole()
+})
+// 定义emit
+const emit = defineEmits(['selectSort', 'selectArticle'])
+// 响应式数据
+const pagination = ref({
+  current: 1,
+  size: 5,
+  recommendStatus: true
+})
+
+
+// 计算属性
+const webInfo = computed(() => webInfoStore.webInfo)
+const sortInfo = computed(() => systemStore.sortInfo)
+
+
+// 方法
+const selectSort = (sort) => {
+  emit("selectSort", sort)
+}
+
+const selectArticle = () => {
+  emit("selectArticle", articleSearch.value)
+}
+
+const showAdmire = () => {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage({
+      message: "请先登录！",
+      type: "error"
+    })
+    return
   }
 
+  showAdmireDialog.value = true
 }
+
+const getRecommendArticles = async () => {
+  try {
+    const res = await articleApi.getArticleList(pagination.value)
+    if (!$common.isEmpty(res.data)) {
+      recommendArticles.value = res.data.records
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+const showTip = () => {
+  router.push({path: '/weiYan'})
+}
+
+const getLatestTreeHole = async () => {
+  try {
+    const res = await webInfoApi.latestTreeHole()
+    if (!$common.isEmpty(res.data)) {
+      try {
+        newTreeHoleList.value = res.data
+      } catch (error) {
+        ElMessage({
+          message: error.message,
+          type: "error"
+        })
+      }
+
+
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+
 </script>
 
 <style scoped>
+
+.scroll-wrap {
+  height: 300px; /* 或者你需要的固定高度 */
+  overflow: hidden; /* 必须设置 */
+}
+
+/*重置ul浏览器默认样式*/
+.ui-wrap {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.li-item {
+  display: flex;
+  justify-content: space-between ;
+}
+
 .card-content1 {
   background: linear-gradient(-45deg, #e8d8b9, #eccec5, #a3e9eb, #bdbdf0, #eec1ea);
   background-size: 400% 400%;
@@ -297,6 +318,18 @@ export default {
   border-radius: 10px;
   animation: hideToShow 1s ease-in-out;
   margin-top: 30px;
+}
+
+/* 无缝滚动容器样式 */
+.seamless-scroll-container {
+  height: 300px;
+  overflow: hidden;
+  position: relative;
+}
+
+.seamless-scroll-content {
+  will-change: transform;
+  transition: none;
 }
 
 .admire-btn {

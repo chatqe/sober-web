@@ -5,9 +5,11 @@
                 class="background-image"
                 v-once
                 lazy
-                :src="$store.state.webInfo.randomCover[Math.floor(Math.random() * ($store.state.webInfo.randomCover.length))]"
+                :src="randomCover"
                 fit="cover">
-        <div slot="error" class="image-slot background-image-error"></div>
+        <template #error>
+          <div class="image-slot background-image-error"></div>
+        </template>
       </el-image>
       <!-- 输入框 -->
       <div class="message-in" style="text-align: center">
@@ -34,96 +36,113 @@
     </div>
     <div class="comment-wrap">
       <div class="comment-content">
-        <comment :source="$constant.source" :type="'message'" :userId="$constant.userId"></comment>
+        <comment :source="source" :type="'message'" :userId="userId"></comment>
       </div>
       <myFooter></myFooter>
     </div>
   </div>
 </template>
 
-<script>
-  const comment = () => import( "./comment/comment");
-  const myFooter = () => import( "./common/myFooter");
+<script setup>
+import { ref, onMounted, computed, inject } from 'vue';
+import { useUserStore, useWebInfoStore } from '@/stores';
+import { ElMessage } from 'element-plus';
+import { webInfoApi } from '@/api';
+import { defineAsyncComponent } from 'vue';
 
-  export default {
-    components: {
-      comment,
-      myFooter
-    },
-    data() {
-      return {
-        show: false,
-        messageContent: "",
-        // background: {"background": "url(" + this.$stores.state.webInfo.backgroundImage + ") center center / cover no-repeat"},
-        barrageList: []
-      };
-    },
-    created() {
-      this.getTreeHole();
-    },
-    methods: {
-      getTreeHole() {
-        this.$http.get(this.$constant.baseURL + "/webInfo/listTreeHole")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              res.data.forEach(m => {
-                this.barrageList.push({
-                  id: m.id,
-                  avatar: m.avatar,
-                  msg: m.message,
-                  time: Math.floor(Math.random() * 5 + 10)
-                });
-              });
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      submitMessage() {
-        if (this.messageContent.trim() === "") {
-          this.$message({
-            message: "你还没写呢~",
-            type: "warning"
-          });
-          return;
-        }
+// 获取注入的全局属性
+const $common = inject('$common')
 
-        let treeHole = {
-          message: this.messageContent.trim()
-        };
+// 异步导入组件
+const comment = defineAsyncComponent(() => import('@/components/comment/comment.vue'))
+const myFooter = defineAsyncComponent(() => import('@/components/common/myFooter.vue'))
 
-        if (!this.$common.isEmpty(this.$store.state.currentUser) && !this.$common.isEmpty(this.$store.state.currentUser.avatar)) {
-          treeHole.avatar = this.$store.state.currentUser.avatar;
-        }
+// 响应式数据
+const show = ref(false);
+const messageContent = ref("");
+const barrageList = ref([]);
+const source = ref(1);
+const userId = ref(0);
 
+// 状态管理
+const userStore = useUserStore();
+const webInfoStore = useWebInfoStore();
 
-        this.$http.post(this.$constant.baseURL + "/webInfo/saveTreeHole", treeHole)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.barrageList.push({
-                id: res.data.id,
-                avatar: res.data.avatar,
-                msg: res.data.message,
-                time: Math.floor(Math.random() * 5 + 10)
-              });
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-
-        this.messageContent = "";
-        this.show = false;
-      }
-    }
+// 计算属性
+const randomCover = computed(() => {
+  const covers = webInfoStore.webInfo?.randomCover || [];
+  if (covers.length > 0) {
+    return covers[Math.floor(Math.random() * covers.length)];
   }
+  return '';
+});
+
+// 获取树洞数据
+const getTreeHole = async () => {
+  try {
+    const res = await webInfoApi.listTreeHole();
+    if (!$common.isEmpty(res.data)) {
+      res.data.forEach(m => {
+        barrageList.value.push({
+          id: m.id,
+          avatar: m.avatar,
+          msg: m.message,
+          time: Math.floor(Math.random() * 5 + 10)
+        });
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    });
+  }
+};
+
+// 提交消息
+const submitMessage = async () => {
+  if (messageContent.value.trim() === "") {
+    ElMessage({
+      message: "你还没写呢~",
+      type: "warning"
+    });
+    return;
+  }
+
+  let treeHole = {
+    message: messageContent.value.trim()
+  };
+
+  const currentUser = userStore.currentUser;
+  if (!$common.isEmpty(currentUser) && !$common.isEmpty(currentUser.avatar)) {
+    treeHole.avatar = currentUser.avatar;
+  }
+
+  try {
+    const res = await webInfoApi.saveTreeHole(treeHole);
+    if (!$common.isEmpty(res.data)) {
+      barrageList.value.push({
+        id: res.data.id,
+        avatar: res.data.avatar,
+        msg: res.data.message,
+        time: Math.floor(Math.random() * 5 + 10)
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    });
+  }
+
+  messageContent.value = "";
+  show.value = false;
+};
+
+// 生命周期
+onMounted(() => {
+  getTreeHole();
+});
 </script>
 
 <style scoped>

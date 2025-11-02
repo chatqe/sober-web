@@ -10,12 +10,14 @@
                   :preview-src-list="[resourcePath.cover]"
                   :src="resourcePath.cover"
                   fit="cover">
-          <div slot="error" class="image-slot"></div>
+          <template #error>
+            <div class="image-slot"></div>
+          </template>
         </el-image>
       </div>
       <div class="card-body">
         <el-tooltip placement="bottom-start" effect="light">
-          <div slot="content">{{resourcePath.title}}</div>
+          <template #content>{{resourcePath.title}}</template>
           <div class="card-desc">
             {{resourcePath.title}}
           </div>
@@ -28,32 +30,18 @@
   </div>
 </template>
 
-<script>
-  export default {
-    props: {
-      resourcePathList: {
-        type: Array
-      }
-    },
+<script setup>
+import { inject } from 'vue';
 
-    data() {
-      return {}
-    },
-
-    computed: {},
-
-    watch: {},
-
-    created() {
-
-    },
-
-    mounted() {
-
-    },
-
-    methods: {}
+// 定义props
+const props = defineProps({
+  resourcePathList: {
+    type: Array
   }
+});
+
+// 获取公共属性
+const $common = inject('$common');
 </script>
 
 <style scoped>
@@ -87,11 +75,11 @@
     margin-bottom: 1rem;
   }
 
-  .card-image >>> .el-image__inner {
+  .card-image ::v-deep(.el-image__inner) {
     transition: all 1s;
   }
 
-  .card-image >>> .el-image__inner:hover {
+  .card-image ::v-deep(.el-image__inner):hover {
     transform: scale(1.2);
   }
 

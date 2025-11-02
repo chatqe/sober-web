@@ -14,7 +14,7 @@
           <el-option key="1" label="启用" :value="true"></el-option>
           <el-option key="2" label="禁用" :value="false"></el-option>
         </el-select>
-        <el-button type="primary" icon="el-icon-search" @click="search()">搜索</el-button>
+        <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
         <el-button type="primary" @click="addResourcePathDialog = true">新增资源路径</el-button>
       </div>
       <el-table :data="resourcePaths" border class="table" header-cell-class-name="table-header">
@@ -23,7 +23,7 @@
         <el-table-column prop="classify" label="分类" align="center"></el-table-column>
         <el-table-column prop="introduction" label="简介" align="center"></el-table-column>
         <el-table-column label="封面" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-image lazy :preview-src-list="[scope.row.cover]" class="table-td-thumb" :src="scope.row.cover"
                       fit="cover"></el-image>
           </template>
@@ -32,19 +32,19 @@
 
         <el-table-column prop="type" label="资源类型" align="center"></el-table-column>
         <el-table-column label="状态" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-tag :type="scope.row.status === false ? 'danger' : 'success'"
                     disable-transitions>
-              {{scope.row.status === false ? '禁用' : '启用'}}
+              {{ scope.row.status === false ? '禁用' : '启用' }}
             </el-tag>
-            <el-switch @click.native="changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
+            <el-switch @change="changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
           </template>
         </el-table-column>
 
         <el-table-column prop="remark" label="备注" align="center"></el-table-column>
         <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
         <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button type="text" icon="el-icon-delete" style="color: var(--orangeRed)"
                        @click="handleDelete(scope.row)">
@@ -64,7 +64,7 @@
     </div>
 
     <el-dialog title="图片"
-               :visible.sync="coverDialog"
+               v-model="coverDialog"
                width="25%"
                :append-to-body="true"
                :close-on-click-modal="false"
@@ -77,7 +77,7 @@
     </el-dialog>
 
     <el-dialog title="文件"
-               :visible.sync="uploadDialog"
+               v-model="uploadDialog"
                width="25%"
                :append-to-body="true"
                :close-on-click-modal="false"
@@ -90,7 +90,7 @@
     </el-dialog>
 
     <el-dialog title="资源路径"
-               :visible.sync="addResourcePathDialog"
+               v-model="addResourcePathDialog"
                width="50%"
                :before-close="clearDialog"
                :append-to-body="true"
@@ -111,7 +111,7 @@
             <el-input v-model="resourcePath.cover"></el-input>
             <div style="width: 66px;margin: 3.5px 0 0 10px">
               <proButton :info="'上传封面'"
-                         @click.native="addResourcePathCover()"
+                         @click="addResourcePathCover"
                          :before="$constant.before_color_1"
                          :after="$constant.after_color_1">
               </proButton>
@@ -123,7 +123,7 @@
                       v-model="resourcePath.url"></el-input>
             <div style="width: 66px;margin: 3.5px 0 0 10px">
               <proButton :info="'上传文件'"
-                         @click.native="addResourcePathUrl()"
+                         @click="addResourcePathUrl"
                          :before="$constant.before_color_1"
                          :after="$constant.after_color_1">
               </proButton>
@@ -144,7 +144,7 @@
         </div>
         <div style="display: flex;margin-top: 30px" class="myCenter">
           <proButton :info="'提交'"
-                     @click.native="addResourcePath()"
+                     @click="addResourcePath"
                      :before="$constant.before_color_2"
                      :after="$constant.after_color_2">
           </proButton>
@@ -154,206 +154,204 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import * as resourceApi from '../../api/modules/resourceApi';
 
-  const uploadPicture = () => import( "../common/uploadPicture");
-  const proButton = () => import( "../common/proButton");
+// 引入组件
+const uploadPicture = () => import("../common/uploadPicture");
+const proButton = () => import("../common/proButton");
 
-  export default {
-    components: {
-      uploadPicture,
-      proButton
-    },
-    data() {
-      return {
-        resourceTypes: [
-          {label: "友链", value: "friendUrl"},
-          {label: "恋爱图片", value: "lovePhoto"},
-          {label: "音乐", value: "funny"},
-          {label: "收藏夹", value: "favorites"}
-        ],
-        pagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          resourceType: "",
-          status: null
-        },
-        resourcePaths: [],
-        coverDialog: false,
-        uploadDialog: false,
-        addResourcePathDialog: false,
-        isUpdate: false,
-        resourcePath: {
-          title: "",
-          classify: "",
-          introduction: "",
-          cover: "",
-          url: "",
-          type: "",
-          remark: ""
-        }
-      }
-    },
+// 响应式数据
+const resourceTypes = ref([
+  {label: "友链", value: "friendUrl"},
+  {label: "恋爱图片", value: "lovePhoto"},
+  {label: "音乐", value: "funny"},
+  {label: "收藏夹", value: "favorites"}
+]);
 
-    computed: {},
+const pagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0,
+  resourceType: "",
+  status: null
+});
 
-    watch: {},
+const resourcePaths = ref([]);
+const coverDialog = ref(false);
+const uploadDialog = ref(false);
+const addResourcePathDialog = ref(false);
+const isUpdate = ref(false);
+const resourcePath = reactive({
+  title: "",
+  classify: "",
+  introduction: "",
+  cover: "",
+  url: "",
+  type: "",
+  remark: ""
+});
 
-    created() {
-      this.getResourcePaths();
-    },
+// 方法实现
+const addPicture = (res) => {
+  resourcePath.cover = res;
+  coverDialog.value = false;
+};
 
-    mounted() {
-    },
+const addFile = (res) => {
+  resourcePath.url = res;
+  uploadDialog.value = false;
+};
 
-    methods: {
-      addPicture(res) {
-        this.resourcePath.cover = res;
-        this.coverDialog = false;
-      },
-      addFile(res) {
-        this.resourcePath.url = res;
-        this.uploadDialog = false;
-      },
-      addResourcePathUrl() {
-        if (this.addResourcePathDialog === false) {
-          return;
-        }
-        if (!['funny'].includes(this.resourcePath.type)) {
-          this.$message({
-            message: "请选择有效资源类型！",
-            type: "error"
-          });
-          return;
-        }
-        this.uploadDialog = true;
-      },
-      addResourcePathCover() {
-        if (this.addResourcePathDialog === false) {
-          return;
-        }
-        if (this.$common.isEmpty(this.resourcePath.type)) {
-          this.$message({
-            message: "请选择资源类型！",
-            type: "error"
-          });
-          return;
-        }
-        this.coverDialog = true;
-      },
-      addResourcePath() {
-        if (this.$common.isEmpty(this.resourcePath.title) || this.$common.isEmpty(this.resourcePath.type)) {
-          this.$message({
-            message: "标题和资源类型不能为空！",
-            type: "error"
-          });
-          return;
-        }
-        this.$http.post(this.$constant.baseURL + "/webInfo/" + (this.isUpdate ? "updateResourcePath" : "saveResourcePath"), this.resourcePath, true)
-          .then((res) => {
-            this.$message({
-              message: "保存成功！",
-              type: "success"
-            });
-            this.addResourcePathDialog = false;
-            this.clearDialog();
-            this.search();
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      search() {
-        this.pagination.total = 0;
-        this.pagination.current = 1;
-        this.getResourcePaths();
-      },
-      getResourcePaths() {
-        this.$http.post(this.$constant.baseURL + "/webInfo/listResourcePath", this.pagination, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.resourcePaths = res.data.records;
-              this.pagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      changeStatus(item) {
-        this.$http.post(this.$constant.baseURL + "/webInfo/updateResourcePath", item, true)
-          .then((res) => {
-            this.$message({
-              message: "修改成功！",
-              type: "success"
-            });
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      handlePageChange(val) {
-        this.pagination.current = val;
-        this.getResourcePaths();
-      },
-      handleDelete(item) {
-        this.$confirm('确认删除？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.get(this.$constant.baseURL + "/webInfo/deleteResourcePath", {id: item.id}, true)
-            .then((res) => {
-              this.search();
-              this.$message({
-                message: "删除成功！",
-                type: "success"
-              });
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消删除!'
-          });
-        });
-      },
-      handleEdit(item) {
-        this.resourcePath = JSON.parse(JSON.stringify(item));
-        this.addResourcePathDialog = true;
-        this.isUpdate = true;
-      },
-      clearDialog() {
-        this.isUpdate = false;
-        this.addResourcePathDialog = false;
-        this.resourcePath = {
-          title: "",
-          classify: "",
-          introduction: "",
-          cover: "",
-          url: "",
-          type: "",
-          remark: ""
-        }
-      }
+const addResourcePathUrl = () => {
+  if (addResourcePathDialog.value === false) {
+    return;
+  }
+  if (!['funny'].includes(resourcePath.type)) {
+    ElMessage({
+      message: "请选择有效资源类型！",
+      type: "error"
+    });
+    return;
+  }
+  uploadDialog.value = true;
+};
+
+const addResourcePathCover = () => {
+  if (addResourcePathDialog.value === false) {
+    return;
+  }
+  if (!resourcePath.type) {
+    ElMessage({
+      message: "请选择资源类型！",
+      type: "error"
+    });
+    return;
+  }
+  coverDialog.value = true;
+};
+
+const addResourcePath = async () => {
+  if (!resourcePath.title || !resourcePath.type) {
+    ElMessage({
+      message: "标题和资源类型不能为空！",
+      type: "error"
+    });
+    return;
+  }
+  try {
+    if (isUpdate.value) {
+      await resourceApi.updateResourcePath(resourcePath);
+    } else {
+      await resourceApi.saveResourcePath(resourcePath);
+    }
+    ElMessage({
+      message: "保存成功！",
+      type: "success"
+    });
+    addResourcePathDialog.value = false;
+    clearDialog();
+    search();
+  } catch (error) {
+    ElMessage({
+      message: error.message || '请求失败',
+      type: "error"
+    });
+  }
+};
+
+const search = () => {
+  pagination.total = 0;
+  pagination.current = 1;
+  getResourcePaths();
+};
+
+const getResourcePaths = async () => {
+  try {
+    const res = await resourceApi.listResourcePath(pagination);
+    if (res.data && Object.keys(res.data).length > 0) {
+      resourcePaths.value = res.data.records;
+      pagination.total = res.data.total;
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '请求失败',
+      type: "error"
+    });
+  }
+};
+
+const changeStatus = async (item) => {
+  try {
+    await resourceApi.updateResourcePath(item);
+    ElMessage({
+      message: "修改成功！",
+      type: "success"
+    });
+  } catch (error) {
+    ElMessage({
+      message: error.message || '请求失败',
+      type: "error"
+    });
+  }
+};
+
+const handlePageChange = (val) => {
+  pagination.current = val;
+  getResourcePaths();
+};
+
+const handleDelete = async (item) => {
+  try {
+    await ElMessageBox.confirm('确认删除？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success',
+      center: true
+    });
+    
+    await resourceApi.deleteResourcePath(item.id);
+    search();
+    ElMessage({
+      message: "删除成功！",
+      type: "success"
+    });
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage({
+        message: error.message || '已取消删除',
+        type: "info"
+      });
     }
   }
+};
+
+const handleEdit = (item) => {
+  Object.assign(resourcePath, JSON.parse(JSON.stringify(item)));
+  addResourcePathDialog.value = true;
+  isUpdate.value = true;
+};
+
+const clearDialog = () => {
+  isUpdate.value = false;
+  addResourcePathDialog.value = false;
+  Object.assign(resourcePath, {
+    title: "",
+    classify: "",
+    introduction: "",
+    cover: "",
+    url: "",
+    type: "",
+    remark: ""
+  });
+};
+
+// 组件挂载时获取数据
+onMounted(() => {
+  getResourcePaths();
+});
 </script>
 
 <style scoped>

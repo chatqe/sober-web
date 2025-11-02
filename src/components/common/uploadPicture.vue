@@ -2,7 +2,7 @@
   <div>
     <el-upload
       class="upload-demo"
-      ref="upload"
+      ref="uploadRef"
       multiple
       drag
       :action="$constant.qiniuUrl"
@@ -27,13 +27,13 @@
         </svg>
         <div>拖拽上传 / 点击上传</div>
       </div>
-      <template v-if="listType === 'picture'">
-        <div slot="tip" class="el-upload__tip">
+      <template v-if="listType === 'picture'" #tip>
+        <div class="el-upload__tip">
           一次最多上传{{maxNumber}}张图片，且每张图片不超过{{maxSize}}M！
         </div>
       </template>
-      <template v-else>
-        <div slot="tip" class="el-upload__tip">
+      <template v-else #tip>
+        <div class="el-upload__tip">
           一次最多上传{{maxNumber}}个文件，且每个文件不超过{{maxSize}}M！
         </div>
       </template>
@@ -48,149 +48,147 @@
   </div>
 </template>
 
-<script>
-  import upload from '../../utils/ajaxUpload';
+<script setup>
+import { ref, onMounted, inject } from 'vue';
+import { ElMessage } from 'element-plus';
+import upload from '../../utils/ajaxUpload';
+import { uploadApi } from '@/api';
+import { useUserStore } from '@/stores';
 
-  export default {
-    props: {
-      isAdmin: {
-        type: Boolean,
-        default: false
-      },
-      prefix: {
-        type: String,
-        default: ""
-      },
-      listType: {
-        type: String,
-        default: "picture"
-      },
-      storeType: {
-        type: String,
-        default: localStorage.getItem("defaultStoreType")
-      },
-      accept: {
-        type: String,
-        default: "image/*"
-      },
-      maxSize: {
-        type: Number,
-        default: 5
-      },
-      maxNumber: {
-        type: Number,
-        default: 5
-      }
-    },
-
-    data() {
-      return {}
-    },
-
-    computed: {},
-
-    watch: {},
-
-    created() {
-    },
-
-    mounted() {
-
-    },
-
-    methods: {
-      submitUpload() {
-        this.$refs.upload.submit();
-      },
-
-      customUpload(options) {
-        let suffix = "";
-        if (options.file.name.lastIndexOf('.') !== -1) {
-          suffix = options.file.name.substring(options.file.name.lastIndexOf('.'));
-        }
-
-        let key = this.prefix + "/" + (!this.$common.isEmpty(this.$store.state.currentUser.username) ? (this.$store.state.currentUser.username.replace(/[^a-zA-Z]/g, '') + this.$store.state.currentUser.id) : (this.$store.state.currentAdmin.username.replace(/[^a-zA-Z]/g, '') + this.$store.state.currentAdmin.id)) + new Date().getTime() + Math.floor(Math.random() * 1000) + suffix;
-
-        if (this.storeType === "local") {
-          let fd = new FormData();
-          fd.append("file", options.file);
-          fd.append("originalName", options.file.name);
-          fd.append("key", key);
-          fd.append("relativePath", key);
-          fd.append("type", this.prefix);
-          fd.append("storeType", this.storeType);
-
-          return this.$http.upload(this.$constant.baseURL + "/resource/upload", fd, this.isAdmin, options);
-        } else if (this.storeType === "qiniu") {
-          const xhr = new XMLHttpRequest();
-          xhr.open('get', this.$constant.baseURL + "/qiniu/getUpToken?key=" + key, false);
-          if (this.isAdmin) {
-            xhr.setRequestHeader("Authorization", localStorage.getItem("adminToken"));
-          } else {
-            xhr.setRequestHeader("Authorization", localStorage.getItem("userToken"));
-          }
-
-          try {
-            xhr.send();
-            const res = JSON.parse(xhr.responseText);
-            if (res !== null && res.hasOwnProperty("code") && res.code === 200) {
-              options.data = {
-                token: res.data,
-                key: key
-              };
-              return upload(options);
-            } else if (res !== null && res.hasOwnProperty("code") && res.code !== 200) {
-              return Promise.reject(res.message);
-            } else {
-              return Promise.reject("服务异常！");
-            }
-          } catch (e) {
-            return Promise.reject(e.message);
-          }
-        }
-      },
-
-      // 文件上传成功时的钩子
-      handleSuccess(response, file, fileList) {
-        let url;
-        if (this.storeType === "local") {
-          url = response.data;
-        } else if (this.storeType === "qiniu") {
-          url = this.$constant.qiniuDownload + response.key;
-          this.$common.saveResource(this, this.prefix, url, file.size, file.raw.type, file.name, "qiniu", this.isAdmin);
-        }
-        this.$emit("addPicture", url);
-      },
-      handleError(err, file, fileList) {
-        this.$message({
-          message: err,
-          type: "error"
-        });
-      },
-      // 上传文件之前的钩子，参数为上传的文件，若返回 false 或者返回 Promise 且被 reject，则停止上传
-      beforeUpload(file) {
-      },
-      // 文件列表移除文件时的钩子
-      handleRemove(file, fileList) {
-      },
-      // 添加文件、上传成功和上传失败时都会被调用
-      handleChange(file, fileList) {
-        let flag = false;
-
-        if (file.size > this.maxSize * 1024 * 1024) {
-          this.$message({
-            message: "图片最大为" + this.maxSize + "M！",
-            type: "warning"
-          });
-          flag = true;
-        }
-
-        if (flag) {
-          fileList.splice(fileList.size - 1, 1);
-        }
-      }
-    }
+// 定义props
+const props = defineProps({
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  prefix: {
+    type: String,
+    default: ""
+  },
+  listType: {
+    type: String,
+    default: "picture"
+  },
+  storeType: {
+    type: String,
+    default: localStorage.getItem("defaultStoreType")
+  },
+  accept: {
+    type: String,
+    default: "image/*"
+  },
+  maxSize: {
+    type: Number,
+    default: 5
+  },
+  maxNumber: {
+    type: Number,
+    default: 5
   }
+});
+
+// 定义emits
+const emit = defineEmits(['addPicture']);
+
+// 获取实例和全局属性
+const uploadRef = ref(null);
+const $common = inject('$common');
+const $constant = inject('$constant');
+
+// 使用Pinia状态管理
+const userStore = useUserStore();
+
+// 提交上传
+function submitUpload() {
+  uploadRef.value.submit();
+}
+
+// 自定义上传
+function customUpload(options) {
+  let suffix = "";
+  if (options.file.name.lastIndexOf('.') !== -1) {
+    suffix = options.file.name.substring(options.file.name.lastIndexOf('.'));
+  }
+
+  let currentUser = userStore.currentUser;
+  let key = props.prefix + "/" + (!($common.isEmpty(currentUser?.username)) ? (currentUser.username.replace(/[^a-zA-Z]/g, '') + currentUser.id) : '') + new Date().getTime() + Math.floor(Math.random() * 1000) + suffix;
+
+  if (props.storeType === "local") {
+    let fd = new FormData();
+    fd.append("file", options.file);
+    fd.append("originalName", options.file.name);
+    fd.append("key", key);
+    fd.append("relativePath", key);
+    fd.append("type", props.prefix);
+    fd.append("storeType", props.storeType);
+
+    return uploadApi.uploadFile(fd, props.isAdmin, options);
+  } else if (props.storeType === "qiniu") {
+    return uploadApi.getUpToken(key, props.isAdmin)
+      .then(res => {
+        options.data = {
+          token: res.data,
+          key: key
+        };
+        return upload(options);
+      })
+      .catch(error => {
+        return Promise.reject(error.message || "服务异常！");
+      });
+  }
+}
+
+// 文件上传成功时的钩子
+function handleSuccess(response, file, fileList) {
+  let url;
+  if (props.storeType === "local") {
+    url = response.data;
+  } else if (props.storeType === "qiniu") {
+    url = $constant.qiniuDownload + response.key;
+    $common.saveResource(props.prefix, url, file.size, file.raw.type, file.name, "qiniu", props.isAdmin);
+  }
+  emit("addPicture", url);
+}
+
+// 处理错误
+function handleError(err, file, fileList) {
+  ElMessage({
+    message: err,
+    type: "error"
+  });
+}
+
+// 上传文件之前的钩子
+function beforeUpload(file) {
+  // 可以添加逻辑，返回false或Promise.reject会停止上传
+}
+
+// 文件列表移除文件时的钩子
+function handleRemove(file, fileList) {
+  // 可以添加移除文件时的逻辑
+}
+
+// 添加文件、上传成功和上传失败时都会被调用
+function handleChange(file, fileList) {
+  let flag = false;
+
+  if (file.size > props.maxSize * 1024 * 1024) {
+    ElMessage({
+      message: "图片最大为" + props.maxSize + "M！",
+      type: "warning"
+    });
+    flag = true;
+  }
+
+  if (flag && fileList.length > 0) {
+    fileList.splice(fileList.length - 1, 1);
+  }
+}
+
+// 生命周期钩子
+onMounted(() => {
+  // 组件挂载后的逻辑
+});
 </script>
 
 <style scoped>

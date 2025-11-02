@@ -59,102 +59,92 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, inject } from 'vue'
+import { ElMessage } from 'element-plus'
+import { defineAsyncComponent } from 'vue'
+import { webInfoApi } from '@/api'
 
-  const myFooter = () => import( "./common/myFooter");
-  const photo = () => import( "./common/photo");
-  const proTag = () => import( "./common/proTag");
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-  export default {
-    components: {
-      photo,
-      proTag,
-      myFooter
-    },
+const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
+const photo = defineAsyncComponent(() => import("./common/photo.vue"))
+const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
 
-    data() {
-      return {
-        photoPagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          resourceType: "lovePhoto",
-          classify: ""
-        },
-        photoTitleList: [],
-        photoList: []
+// 响应式数据
+const photoPagination = ref({
+  current: 1,
+  size: 10,
+  total: 0,
+  resourceType: "lovePhoto",
+  classify: ""
+})
+const photoTitleList = ref([])
+const photoList = ref([])
+
+// 方法
+const getPhotoTitles = async () => {
+  try {
+    const res = await webInfoApi.listAdminLovePhoto()
+    if (!$common.isEmpty(res.data)) {
+      photoTitleList.value = res.data
+      photoPagination.value = {
+        current: 1,
+        size: 10,
+        total: 0,
+        resourceType: "lovePhoto",
+        classify: photoTitleList.value[0].classify
       }
-    },
-
-    computed: {},
-
-    watch: {},
-
-    created() {
-      this.getPhotoTitles();
-    },
-
-    mounted() {
-
-    },
-
-    methods: {
-      getPhotoTitles() {
-        this.$http.get(this.$constant.baseURL + "/webInfo/listAdminLovePhoto")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.photoTitleList = res.data;
-              this.photoPagination = {
-                current: 1,
-                size: 10,
-                total: 0,
-                resourceType: "lovePhoto",
-                classify: this.photoTitleList[0].classify
-              };
-              this.changePhoto();
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      changePhotoTitle(classify) {
-        if (classify !== this.photoPagination.classify) {
-          this.photoPagination = {
-            current: 1,
-            size: 10,
-            total: 0,
-            resourceType: "lovePhoto",
-            classify: classify
-          };
-          this.photoList = [];
-          this.changePhoto();
-        }
-      },
-      pagePhotos() {
-        this.photoPagination.current = this.photoPagination.current + 1;
-        this.changePhoto();
-      },
-      changePhoto() {
-        this.$http.post(this.$constant.baseURL + "/webInfo/listResourcePath", this.photoPagination)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.photoList = this.photoList.concat(res.data.records);
-              this.photoPagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }
+      changePhoto()
     }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
   }
+}
+
+const changePhotoTitle = (classify) => {
+  if (classify !== photoPagination.value.classify) {
+    photoPagination.value = {
+      current: 1,
+      size: 10,
+      total: 0,
+      resourceType: "lovePhoto",
+      classify: classify
+    }
+    photoList.value = []
+    changePhoto()
+  }
+}
+
+const pagePhotos = () => {
+  photoPagination.value.current += 1
+  changePhoto()
+}
+
+const changePhoto = async () => {
+  try {
+    const res = await webInfoApi.listResourcePath(photoPagination.value)
+    if (!$common.isEmpty(res.data)) {
+      photoList.value = photoList.value.concat(res.data.records)
+      photoPagination.value.total = res.data.total
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+// 生命周期
+onMounted(() => {
+  getPhotoTitles()
+})
 </script>
 
 <style scoped>

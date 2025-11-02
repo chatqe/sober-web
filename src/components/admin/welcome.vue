@@ -11,26 +11,9 @@
   </div>
 </template>
 
-<script>
-  export default {
-    data() {
-      return {}
-    },
-
-    computed: {},
-
-    watch: {},
-
-    created() {
-
-    },
-
-    mounted() {
-
-    },
-
-    methods: {}
-  }
+<script setup>
+// Vue 3 Composition API 语法
+// 此组件仅包含UI展示，无需响应式数据或方法
 </script>
 
 <style scoped>

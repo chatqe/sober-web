@@ -2,82 +2,95 @@
   <div class="myCenter verify-container">
     <div class="verify-content">
       <div>
-        <el-avatar :size="50" :src="$store.state.webInfo.avatar"></el-avatar>
+        <el-avatar :size="50" :src="webInfoAvatar"></el-avatar>
       </div>
       <div>
         <el-input v-model="account">
-          <template slot="prepend">账号</template>
+          <template #prepend>账号</template>
         </el-input>
       </div>
       <div>
         <el-input v-model="password" type="password">
-          <template slot="prepend">密码</template>
+          <template #prepend>密码</template>
         </el-input>
       </div>
       <div>
         <proButton :info="'提交'"
-                   @click.native="login()"
-                   :before="$constant.before_color_2"
-                   :after="$constant.after_color_2">
+                   @click="login()"
+                   :before="beforeColor"
+                   :after="afterColor">
         </proButton>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-  const proButton = () => import( "../common/proButton");
+<script setup>
+import { ref, inject, computed } from 'vue';
+import { useRoute } from 'vue-router'
+import router from '@/router';
+import { ElMessage } from 'element-plus';
+import { useUserStore } from '@/stores';
+import { authApi } from '@/api';
 
-  export default {
-    components: {
-      proButton
-    },
-    data() {
-      return {
-        redirect: this.$route.query.redirect,
-        account: "",
-        password: ""
-      }
-    },
-    computed: {},
-    created() {
+// 异步导入组件
+const proButton = () => import("../common/proButton");
 
-    },
-    methods: {
-      login() {
-        if (this.$common.isEmpty(this.account) || this.$common.isEmpty(this.password)) {
-          this.$message({
-            message: "请输入账号或密码！",
-            type: "error"
-          });
-          return;
-        }
+// 注入全局属性
+const $constant = inject('$constant');
+const $common = inject('$common');
+const userStore = useUserStore();
+const route = useRoute();
 
-        let user = {
-          account: this.account.trim(),
-          password: this.$common.encrypt(this.password.trim()),
-          isAdmin: true
-        };
+// 响应式数据
+const account = ref('');
+const password = ref('');
+const redirect = computed(() => route.query.redirect || '/welcome');
+const webInfoAvatar = computed(() => userStore.webInfo?.avatar || '');
+const beforeColor = computed(() => $constant?.before_color_2 || '');
+const afterColor = computed(() => $constant?.after_color_2 || '');
 
-        this.$http.post(this.$constant.baseURL + "/user/login", user, true, false)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              localStorage.setItem("adminToken", res.data.accessToken);
-              this.$store.commit("loadCurrentAdmin", res.data);
-              this.account = "";
-              this.password = "";
-              this.$router.push({path: this.redirect});
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }
-    }
+// 登录方法
+const login = async () => {
+  if ($common.isEmpty(account.value) || $common.isEmpty(password.value)) {
+    ElMessage({
+      message: "请输入账号或密码！",
+      type: "error"
+    });
+    return;
   }
+
+  try {
+    let user = {
+      account: account.value.trim(),
+      password: $common.encrypt(password.value.trim()),
+      isAdmin: true
+    };
+
+    const res = await authApi.login(user)
+    
+    if (!res.data) {
+      ElMessage({
+        message: '登录失败，无返回数据',
+        type: "error"
+      });
+      return;
+    }
+    
+    if (!($common.isEmpty(res.data))) {
+      localStorage.setItem("adminToken", res.data.accessToken);
+      userStore.loadCurrentAdmin(res.data);
+      account.value = "";
+      password.value = "";
+      router.push({path: redirect.value});
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '登录失败',
+      type: "error"
+    });
+  }
+};
 </script>
 
 <style scoped>

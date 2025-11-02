@@ -4,6 +4,7 @@
     <div style="padding: 5px" @mousemove="canvasOutMove($event)" @touchmove="canvasOutMove($event)">
       <div class="graffiti-container">
         <canvas id="canvas"
+                ref="canvasRef"
                 width="766"
                 height="400"
                 @mousedown="canvasDown($event)"
@@ -35,12 +36,13 @@
       <div class="graffiti-tools">
         <span class="graffiti-title">画笔大小</span>
         <div class="myCenter" style="margin-left: 2rem">
-          <i v-for="(pen, index) in brushSize"
+          <el-icon v-for="(pen, index) in brushSize"
              :key="index"
              class="graffiti-size"
              :class="[pen.className, { activeSize: config.lineWidth === pen.lineWidth }]"
              @click="setBrush(pen.lineWidth)">
-          </i>
+          <Edit />
+          </el-icon>
         </div>
       </div>
 
@@ -48,13 +50,14 @@
       <div class="graffiti-tools">
         <span class="graffiti-title">操作</span>
         <div class="myCenter" style="margin-left: 3.7rem">
-          <i v-for="(control, index) in controls"
+          <el-icon v-for="(control, index) in controls"
              :title="control.title"
              :class="control.className"
              class="graffiti-operate"
              @click="controlCanvas(control.action)"
              :key="index">
-          </i>
+          <component :is="control.icon" />
+          </el-icon>
         </div>
       </div>
 
@@ -76,263 +79,269 @@
   </div>
 </template>
 
-<script>
-  const proButton = () => import( "../common/proButton");
-
-  export default {
-    components: {
-      proButton
-    },
-    data() {
-      return {
-        context: {},
-        canvasMoveUse: false,
-        // 存储当前表面状态数组-上一步
-        preDrawAry: [],
-        // 存储当前表面状态数组-下一步
-        nextDrawAry: [],
-        // 中间数组
-        middleAry: [],
-        // 配置参数
-        config: {
-          lineWidth: 5,
-          lineColor: "#8154A3",
-          shadowBlur: 2,
-        },
-        colors: ["#8154A3", "#fef4ac", "#0018ba", "#ffc200", "#f32f15", "#cccccc", "#5ab639"],
-        brushSize: [{
-          className: "small el-icon-edit",
-          lineWidth: 5,
-        }, {
-          className: "middle el-icon-edit",
-          lineWidth: 10,
-        }, {
-          className: "big el-icon-edit",
-          lineWidth: 15,
-        }]
-      };
-    },
-    computed: {
-      controls() {
-        return [{
-          title: "上一步",
-          action: "prev",
-          className: this.preDrawAry.length
-            ? "active el-icon-arrow-left"
-            : "ban el-icon-arrow-left",
-        }, {
-          title: "下一步",
-          action: "next",
-          className: this.nextDrawAry.length
-            ? "active el-icon-arrow-right"
-            : "ban el-icon-arrow-right",
-        }, {
-          title: "清除",
-          action: "clear",
-          className:
-            this.preDrawAry.length || this.nextDrawAry.length
-              ? "active el-icon-refresh"
-              : "ban el-icon-refresh",
-        }];
+<script setup>
+  import { ref, reactive, computed, onMounted, inject } from 'vue'
+  import { ElMessage, ElIcon } from 'element-plus'
+  import { Edit, ArrowLeft, ArrowRight, Refresh } from '@element-plus/icons-vue'
+  import { useUserStore } from '../../store/index'
+  import { resourceApi, qiniuApi } from '@/api'
+  import { defineAsyncComponent } from 'vue'
+  
+  // 动态导入组件
+  const proButton = defineAsyncComponent(() => import("../common/proButton"))
+  
+  // 注入全局属性
+  const $common = inject('$common')
+  const $constant = inject('$constant')
+  
+  // 定义事件
+  const emit = defineEmits(['showComment', 'addGraffitiComment'])
+  
+  // 状态管理
+  const userStore = useUserStore()
+  
+  // 画布引用
+  const canvasRef = ref(null)
+  const canvasMoveUse = ref(false)
+  // 存储当前表面状态数组-上一步
+  const preDrawAry = ref([])
+  // 存储当前表面状态数组-下一步
+  const nextDrawAry = ref([])
+  // 中间数组
+  const middleAry = ref([])
+  // 配置参数
+  const config = reactive({
+    lineWidth: 5,
+    lineColor: "#8154A3",
+    shadowBlur: 2,
+  })
+  
+  const colors = ["#8154A3", "#fef4ac", "#0018ba", "#ffc200", "#f32f15", "#cccccc", "#5ab639"]
+  const brushSize = [{
+    className: "small",
+    lineWidth: 5,
+    icon: 'Edit'
+  }, {
+    className: "middle",
+    lineWidth: 10,
+    icon: 'Edit'
+  }, {
+    className: "big",
+    lineWidth: 15,
+    icon: 'Edit'
+  }]
+  
+  // 计算属性
+  const controls = computed(() => {
+    return [{
+      title: "上一步",
+      action: "prev",
+      icon: ArrowLeft,
+      className: preDrawAry.value.length
+        ? "active"
+        : "ban",
+    }, {
+      title: "下一步",
+      action: "next",
+      icon: ArrowRight,
+      className: nextDrawAry.value.length
+        ? "active"
+        : "ban",
+    }, {
+      title: "清除",
+      action: "clear",
+      icon: Refresh,
+      className:
+        preDrawAry.value.length || nextDrawAry.value.length
+          ? "active"
+          : "ban",
+    }]
+  })
+  
+  onMounted(() => {
+    if (canvasRef.value) {
+      context.value = canvasRef.value.getContext("2d", {willReadFrequently: true})
+      initDraw()
+      setCanvasStyle()
+    }
+  })
+    // 方法定义
+      function canvasOutMove(e) {
+        if (canvasRef.value && e.target !== canvasRef.value) {
+          canvasMoveUse.value = false
+        }
       }
-    },
-    mounted() {
-      const canvas = document.querySelector("#canvas");
-      this.context = canvas.getContext("2d", {willReadFrequently: true});
-      this.initDraw();
-      this.setCanvasStyle();
-    },
-    created() {
-    },
-    methods: {
-      canvasOutMove(e) {
-        const canvas = document.querySelector("#canvas");
-        if (e.target !== canvas) {
-          this.canvasMoveUse = false;
-        }
-      },
-      initDraw() {
-        const preData = this.context.getImageData(0, 0, 1200, 600);
+      
+      function initDraw() {
+        const preData = context.value.getImageData(0, 0, 1200, 600)
         // 空绘图表面进栈
-        this.middleAry.push(preData);
-      },
-      canvasUp(e) {
-        const preData = this.context.getImageData(0, 0, 1200, 600);
-        if (!this.nextDrawAry.length) {
+        middleAry.value.push(preData)
+      }
+      
+      function canvasUp(e) {
+        const preData = context.value.getImageData(0, 0, 1200, 600)
+        if (!nextDrawAry.value.length) {
           // 当前绘图表面进栈
-          this.middleAry.push(preData);
+          middleAry.value.push(preData)
         } else {
-          this.middleAry = [];
-          this.middleAry = this.middleAry.concat(this.preDrawAry);
-          this.middleAry.push(preData);
-          this.nextDrawAry = [];
+          middleAry.value = []
+          middleAry.value = middleAry.value.concat(preDrawAry.value)
+          middleAry.value.push(preData)
+          nextDrawAry.value = []
         }
-        this.canvasMoveUse = false;
-        this.context.beginPath();
-      },
-      canvasDown(e) {
-        this.canvasMoveUse = true;
+        canvasMoveUse.value = false
+        context.value.beginPath()
+      }
+      
+      function canvasDown(e) {
+        canvasMoveUse.value = true
         // client是基于整个页面的坐标
         // offset是canvas距离顶部以及左边的距离
-        this.setCanvasStyle();
+        setCanvasStyle()
         // 清除子路径
-        this.context.beginPath();
-        this.context.moveTo(e.layerX, e.layerY);
+        context.value.beginPath()
+        context.value.moveTo(e.layerX, e.layerY)
         // 当前绘图表面状态
-        const preData = this.context.getImageData(0, 0, 1200, 600);
+        const preData = context.value.getImageData(0, 0, 1200, 600)
         // 当前绘图表面进栈
-        this.preDrawAry.push(preData);
-      },
-      canvasMove(e) {
-        if (this.canvasMoveUse) {
-          this.context.lineTo(e.layerX, e.layerY);
-          this.context.stroke();
+        preDrawAry.value.push(preData)
+      }
+      
+      function canvasMove(e) {
+        if (canvasMoveUse.value) {
+          context.value.lineTo(e.layerX, e.layerY)
+          context.value.stroke()
         }
-      },
+      }
+      
       // 设置绘画配置
-      setCanvasStyle() {
-        this.context.lineWidth = this.config.lineWidth;
-        this.context.shadowBlur = this.config.shadowBlur;
-        this.context.shadowColor = this.config.lineColor;
-        this.context.strokeStyle = this.config.lineColor;
-      },
+      function setCanvasStyle() {
+        context.value.lineWidth = config.lineWidth
+        context.value.shadowBlur = config.shadowBlur
+        context.value.shadowColor = config.lineColor
+        context.value.strokeStyle = config.lineColor
+      }
+      
       // 设置颜色
-      setColor(color) {
-        this.config.lineColor = color;
-      },
+      function setColor(color) {
+        config.lineColor = color
+      }
+      
       // 设置笔刷大小
-      setBrush(size) {
-        this.config.lineWidth = size;
-      },
-      controlCanvas(action) {
+      function setBrush(size) {
+        config.lineWidth = size
+      }
+      
+      function controlCanvas(action) {
         switch (action) {
           case "prev":
-            if (this.preDrawAry.length) {
-              const popData = this.preDrawAry.pop();
-              const midData = this.middleAry[this.preDrawAry.length + 1];
-              this.nextDrawAry.push(midData);
-              this.context.putImageData(popData, 0, 0);
+            if (preDrawAry.value.length) {
+              const popData = preDrawAry.value.pop()
+              const midData = middleAry.value[preDrawAry.value.length + 1]
+              nextDrawAry.value.push(midData)
+              context.value.putImageData(popData, 0, 0)
             }
-            break;
+            break
           case "next":
-            if (this.nextDrawAry.length) {
-              const popData = this.nextDrawAry.pop();
-              const midData = this.middleAry[this.middleAry.length - this.nextDrawAry.length - 2];
-              this.preDrawAry.push(midData);
-              this.context.putImageData(popData, 0, 0);
+            if (nextDrawAry.value.length) {
+              const popData = nextDrawAry.value.pop()
+              const midData = middleAry.value[middleAry.value.length - nextDrawAry.value.length - 2]
+              preDrawAry.value.push(midData)
+              context.value.putImageData(popData, 0, 0)
             }
-            break;
+            break
           case "clear":
-            this.clearContext();
-            this.middleAry = [this.middleAry[0]];
-            break;
+            clearContext()
+            middleAry.value = [middleAry.value[0]]
+            break
         }
-      },
-      clearContext() {
-        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-        this.preDrawAry = [];
-        this.nextDrawAry = [];
-      },
-      showComment() {
-        this.clearContext();
-        this.$emit("showComment");
-      },
-      getImage() {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
-
-        if (this.preDrawAry.length < 1) {
-          this.$message({
-            message: "你还没画呢~",
-            type: "warning"
-          });
-          return;
+      }
+      
+      function clearContext() {
+        context.value.clearRect(0, 0, context.value.canvas.width, context.value.canvas.height)
+        preDrawAry.value = []
+        nextDrawAry.value = []
+      }
+      
+      function showComment() {
+        clearContext()
+        emit("showComment")
+      }
+      
+      function getImage() {
+        if ($common.isEmpty(userStore.currentUser)) {
+          ElMessage.error("请先登录！")
+          return
         }
 
-        const canvas = document.querySelector("#canvas");
-        const dataURL = canvas.toDataURL("image/png");
-        let arr = dataURL.split(","),
-          mine = arr[0].match(/:(.*?);/)[1],
-          str = atob(arr[1]),
-          n = str.length,
-          u8arr = new Uint8Array(n);
+        if (preDrawAry.value.length < 1) {
+          ElMessage.warning("你还没画呢~")
+          return
+        }
+
+        if (!canvasRef.value) return
+        const dataURL = canvasRef.value.toDataURL("image/png")
+        let arr = dataURL.split(",")
+        let mine = arr[0].match(/:(.*?);/)[1]
+        let str = atob(arr[1])
+        let n = str.length
+        let u8arr = new Uint8Array(n)
         while (n--) {
-          u8arr[n] = str.charCodeAt(n);
+          u8arr[n] = str.charCodeAt(n)
         }
-        let obj = new Blob([u8arr], {type: mine});
-        let key = "graffiti" + "/" + this.$store.state.currentUser.username.replace(/[^a-zA-Z]/g, '') + this.$store.state.currentUser.id + new Date().getTime() + Math.floor(Math.random() * 1000) + ".png";
+        let obj = new Blob([u8arr], {type: mine})
+        let key = "graffiti" + "/" + userStore.currentUser.username.replace(/[^a-zA-Z]/g, '') + userStore.currentUser.id + new Date().getTime() + Math.floor(Math.random() * 1000) + ".png"
 
-        let storeType = localStorage.getItem("defaultStoreType");
+        let storeType = localStorage.getItem("defaultStoreType")
 
-        let fd = new FormData();
-        fd.append("file", obj);
-        fd.append("key", key);
-        fd.append("relativePath", key);
-        fd.append("type", "graffiti");
-        fd.append("storeType", storeType);
+        let fd = new FormData()
+        fd.append("file", obj)
+        fd.append("key", key)
+        fd.append("relativePath", key)
+        fd.append("type", "graffiti")
+        fd.append("storeType", storeType)
 
         if (storeType === "local") {
-          this.saveLocal(fd);
+          saveLocal(fd)
         } else if (storeType === "qiniu") {
-          this.saveQiniu(fd);
+          saveQiniu(fd)
         }
-      },
-      saveLocal(fd) {
-        this.$http.upload(this.$constant.baseURL + "/resource/upload", fd)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.clearContext();
-              let url = res.data;
-              let img = "[你画我猜," + url + "]";
-              this.$emit("addGraffitiComment", img);
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      saveQiniu(fd) {
-        this.$http.get(this.$constant.baseURL + "/qiniu/getUpToken", {key: fd.get("key")})
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              fd.append("token", res.data);
-
-              this.$http.uploadQiniu(this.$constant.qiniuUrl, fd)
-                .then((res) => {
-                  if (!this.$common.isEmpty(res.key)) {
-                    this.clearContext();
-                    let url = this.$constant.qiniuDownload + res.key;
-                    let file = fd.get("file");
-                    this.$common.saveResource(this, "graffiti", url, file.size, file.type, null, "qiniu");
-                    let img = "[你画我猜," + url + "]";
-                    this.$emit("addGraffitiComment", img);
-                  }
-                })
-                .catch((error) => {
-                  this.$message({
-                    message: error.message,
-                    type: "error"
-                  });
-                });
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
       }
-    }
-  }
+      
+      async function saveLocal(fd) {
+        try {
+          const res = await resourceApi.upload(fd)
+          if (!res.data) return
+          
+          clearContext()
+          let url = res.data
+          let img = "[你画我猜," + url + "]"
+          emit("addGraffitiComment", img)
+        } catch (error) {
+          ElMessage.error(error.message || '上传失败')
+        }
+      }
+      
+      async function saveQiniu(fd) {
+        try {
+          const tokenRes = await qiniuApi.getUpToken({key: fd.get("key")})
+          if (!tokenRes.data) return
+          
+          fd.append("token", tokenRes.data)
+          
+          const uploadRes = await qiniuApi.uploadQiniu($constant.qiniuUrl, fd)
+          if (!uploadRes.key) return
+          
+          clearContext()
+          let url = $constant.qiniuDownload + uploadRes.key
+          let file = fd.get("file")
+          $common.saveResource(null, "graffiti", url, file.size, file.type, null, "qiniu")
+          let img = "[你画我猜," + url + "]"
+          emit("addGraffitiComment", img)
+        } catch (error) {
+          ElMessage.error(error.message || '上传失败')
+        }
+      }
 </script>
 
 <style scoped>

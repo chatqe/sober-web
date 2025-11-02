@@ -36,114 +36,114 @@
   </div>
 </template>
 
-<script>
-  const twoPoem = () => import( "./common/twoPoem");
-  const proTag = () => import( "./common/proTag");
-  const articleList = () => import( "./articleList");
-  const myFooter = () => import( "./common/myFooter");
+<script setup>
+import { ref, computed, inject, onMounted, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+import router from '@/router'
+import { ElMessage } from 'element-plus'
+import { defineAsyncComponent } from 'vue'
+import { useSystemStore } from '@/stores'
+import { articleApi } from '@/api'
 
-  export default {
-    components: {
-      twoPoem,
-      proTag,
-      articleList,
-      myFooter
-    },
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-    data() {
-      return {
-        sortId: this.$route.query.sortId,
-        labelId: this.$route.query.labelId,
-        sort: null,
-        pagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          searchKey: "",
-          sortId: this.$route.query.sortId,
-          labelId: this.$route.query.labelId
-        },
-        articles: []
-      }
-    },
+const route = useRoute()
+const systemStore = useSystemStore()
 
-    computed: {},
+const twoPoem = defineAsyncComponent(() => import("./common/twoPoem.vue"))
+const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
+const articleList = defineAsyncComponent(() => import("./articleList.vue"))
+const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 
-    watch: {
-      $route() {
-        this.pagination = {
-          current: 1,
-          size: 10,
-          total: 0,
-          searchKey: "",
-          sortId: this.$route.query.sortId,
-          labelId: this.$route.query.labelId
-        };
-        this.articles.splice(0, this.articles.length);
-        this.sortId = this.$route.query.sortId;
-        this.labelId = this.$route.query.labelId;
-        this.getSort();
-        this.getArticles();
-      }
-    },
+// 响应式数据
+const sortId = ref(route.query.sortId)
+const labelId = ref(route.query.labelId)
+const sort = ref(null)
+const pagination = ref({
+  current: 1,
+  size: 10,
+  total: 0,
+  searchKey: "",
+  sortId: route.query.sortId,
+  labelId: route.query.labelId
+})
+const articles = ref([])
 
-    created() {
-      this.getSort();
-      this.getArticles();
-    },
+// 计算属性
+const sortInfo = computed(() => systemStore.sortInfo)
 
-    mounted() {
-    },
+// 监听路由变化
+watch(() => route.query, () => {
+  pagination.value = {
+    current: 1,
+    size: 10,
+    total: 0,
+    searchKey: "",
+    sortId: route.query.sortId,
+    labelId: route.query.labelId
+  }
+  articles.value = []
+  sortId.value = route.query.sortId
+  labelId.value = route.query.labelId
+  getSort()
+  getArticles()
+})
 
-    methods: {
-      pageArticles() {
-        this.pagination.current = this.pagination.current + 1;
-        this.getArticles();
-      },
+// 方法
+const pageArticles = () => {
+  pagination.value.current += 1
+  getArticles()
+}
 
-      getSort() {
-        let sortInfo = this.$store.state.sortInfo;
-        if (!this.$common.isEmpty(sortInfo)) {
-          let sortArray = sortInfo.filter(f => {
-            return f.id === parseInt(this.sortId);
-          });
-          if (!this.$common.isEmpty(sortArray)) {
-            this.sort = sortArray[0];
-          }
-        }
-      },
-      listArticle(label) {
-        this.labelId = label.id;
-        this.pagination = {
-          current: 1,
-          size: 10,
-          total: 0,
-          searchKey: "",
-          sortId: this.$route.query.sortId,
-          labelId: label.id
-        };
-        this.articles.splice(0, this.articles.length);
-        this.$nextTick(() => {
-          this.getArticles();
-        });
-      },
-      getArticles() {
-        this.$http.post(this.$constant.baseURL + "/article/listArticle", this.pagination)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.articles = this.articles.concat(res.data.records);
-              this.pagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }
+const getSort = () => {
+  if (!$common.isEmpty(sortInfo.value)) {
+    let sortArray = sortInfo.value.filter(f => {
+      return f.id === parseInt(sortId.value)
+    })
+    if (!$common.isEmpty(sortArray)) {
+      sort.value = sortArray[0]
     }
   }
+}
+
+const listArticle = (label) => {
+  labelId.value = label.id
+  pagination.value = {
+    current: 1,
+    size: 10,
+    total: 0,
+    searchKey: "",
+    sortId: route.query.sortId,
+    labelId: label.id
+  }
+  articles.value = []
+  nextTick(() => {
+    getArticles()
+  })
+}
+
+const getArticles = async () => {
+  try {
+    const res = await articleApi.listArticle(pagination.value)
+    if (!$common.isEmpty(res.data)) {
+      articles.value = articles.value.concat(res.data.records)
+      pagination.value.total = res.data.total
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+// 生命周期
+onMounted(() => {
+  getSort()
+  getArticles()
+})
 </script>
 
 <style scoped>

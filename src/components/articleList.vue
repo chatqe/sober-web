@@ -25,11 +25,13 @@
                   lazy
                   :src="!$common.isEmpty(article.articleCover)?article.articleCover:$constant.random_image+new Date()+Math.floor(Math.random()*10)"
                   fit="cover">
-          <div slot="error" class="image-slot myCenter" style="background-color: var(--lightGreen)">
-            <div class="error-text">
-              <div>遇事不决，可问春风</div>
+          <template #error>
+            <div class="image-slot myCenter" style="background-color: var(--lightGreen)">
+              <div class="error-text">
+                <div>遇事不决，可问春风</div>
+              </div>
             </div>
-          </div>
+          </template>
         </el-image>
       </div>
       <!-- 内容 -->
@@ -50,7 +52,7 @@
         <!-- 标题 -->
 
         <el-tooltip placement="top" effect="light">
-          <div slot="content">{{ article.articleTitle }}</div>
+          <template #content>{{ article.articleTitle }}</template>
           <h3>{{ article.articleTitle }}</h3>
         </el-tooltip>
 
@@ -149,15 +151,27 @@
   </div>
 </template>
 
-<script>
-  export default {
-    props: {
-      articleList: {
-        type: Array
-      }
-    },
-    methods: {}
+<script setup>
+import { inject } from 'vue'
+import router from '@/router'
+import { useUserStore, useWebInfoStore } from '@/stores'
+
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
+
+// 使用路由
+// ... existing code ...
+
+// 初始化状态管理模块实例
+const userStore = useUserStore()
+const webInfoStore = useWebInfoStore()
+
+const props = defineProps({
+  articleList: {
+    type: Array
   }
+})
 </script>
 
 <style scoped>
@@ -194,11 +208,11 @@
     height: 100%;
   }
 
-  .recent-post-item-image >>> .el-image__inner {
+  .recent-post-item-image ::v-deep(.el-image__inner) {
     transition: all 1s;
   }
 
-  .recent-post-item-image >>> .el-image__inner:hover {
+  .recent-post-item-image ::v-deep(.el-image__inner):hover {
     transform: scale(1.2);
   }
 

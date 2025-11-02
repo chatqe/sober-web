@@ -3,10 +3,22 @@
     box-sizing: border-box;
 }
 
+html {
+    height: 100%;
+}
+
 body {
     color: var(--fontColor);
     font-family: var(--globalFont), serif;
     word-break: break-word;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+#app {
+    min-height: 100vh;
+    width: 100%;
 }
 
 /* 字体 */
@@ -172,7 +184,26 @@ body {
     background: var(--gradualRed);
 }
 
-/* 看板娘 */
+
+/**
+ * el 下拉菜单
+ * 记录下拉框 新样式 - 毛玻璃效果容器
+ */
+
+
+.new-el-dropdown .el-dropdown-menu__item > div {
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.new-el-dropdown .el-dropdown-menu__item:hover {
+    background-color: var(--white) !important;
+    color: var(--themeBackground) !important;
+}
+
+
 #waifu-toggle, #waifu {
     z-index: 100;
 }

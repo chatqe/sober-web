@@ -47,7 +47,7 @@
               <div style="width: 150px" v-for="(funny, i) in item.data" :key="i">
                 <el-avatar class="funny-avatar myCenter" :size="110"
                            style="margin: 20px"
-                           @click.native="playSound(funny.url, item.data, i)"
+                           @click="playSound(funny.url, item.data, i)"
                            :src="funny.cover">
                 </el-avatar>
                 <div class="funny-item-title">{{funny.title}}</div>
@@ -61,139 +61,130 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onBeforeUnmount, inject } from 'vue'
+import { ElMessage } from 'element-plus'
+import { webInfoApi } from '@/api'
 
-  export default {
-    components: {},
+// 获取注入的全局属性
+const $common = inject('$common')
 
-    data() {
-      return {
-        pagination: {
-          current: 1,
-          size: 9999,
-          order: "title",
-          desc: false,
-          resourceType: "funny",
-          classify: ""
-        },
-        activeName: 0,
-        audio: null,
-        playList: null,
-        index: null,
-        funnys: [{
-          classify: "",
-          count: null,
-          data: [{
-            classify: "",
-            cover: "",
-            url: "",
-            title: ""
-          }]
-        }],
-        funny: {
-          classify: "",
-          title: "",
-          cover: "",
-          url: ""
-        }
+// 响应式数据
+const pagination = ref({
+  current: 1,
+  size: 9999,
+  order: "title",
+  desc: false,
+  resourceType: "funny",
+  classify: ""
+})
+
+const activeName = ref(0)
+const audio = ref(null)
+const playList = ref(null)
+const index = ref(null)
+const funnys = ref([{
+  classify: "",
+  count: null,
+  data: [{
+    classify: "",
+    cover: "",
+    url: "",
+    title: ""
+  }]
+}])
+
+const funny = ref({
+  classify: "",
+  title: "",
+  cover: "",
+  url: ""
+})
+
+// 生命周期钩子
+onMounted(() => {
+  getFunny()
+})
+
+onBeforeUnmount(() => {
+  if (audio.value != null && !audio.value.paused) {
+    audio.value.pause()
+  }
+})
+
+// 方法
+function getFunny() {
+  webInfoApi.listFunny()
+    .then((res) => {
+      if (!res.data) return
+      if (!res.data || $common.isEmpty(res.data)) return
+      funnys.value = res.data
+      if (funnys.value.length > 0) {
+        changeFunny(funnys.value[0].classify)
       }
-    },
+    })
+    .catch((error) => {
+      ElMessage.error(error.message || '获取趣味内容失败')
+    })
+}
 
-    computed: {},
-
-    watch: {},
-
-    created() {
-      this.getFunny();
-    },
-
-    mounted() {
-
-    },
-
-    beforeDestroy() {
-      if (this.audio != null && !this.audio.paused) {
-        this.audio.pause();
-      }
-    },
-
-    methods: {
-      getFunny() {
-        this.$http.get(this.$constant.baseURL + "/webInfo/listFunny")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.funnys = res.data;
-              this.changeFunny(this.funnys[0].classify);
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      listFunny() {
-        this.$http.post(this.$constant.baseURL + "/webInfo/listResourcePath", this.pagination)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data) && !this.$common.isEmpty(res.data.records)) {
-              this.funnys.forEach(funny => {
-                if (funny.classify === this.pagination.classify) {
-                  funny.data = res.data.records;
-                  this.$forceUpdate();
-                }
-              });
-            }
-            this.pagination.classify = "";
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      changeFunny(classify) {
-        this.funnys.forEach(funny => {
-          if (funny.classify === classify && this.$common.isEmpty(funny.data)) {
-            this.pagination.classify = classify;
-            this.listFunny();
-          }
-        });
-      },
-      playSound(src, playList, index) {
-        this.playList = playList;
-        this.index = index;
-        if (this.audio != null) {
-          if (this.audio.src === src) {
-            if (this.audio.paused) {
-              this.audio.play();
-            } else {
-              this.audio.pause();
-            }
-          } else {
-            this.audio.pause();
-            this.audio.src = src;
-            this.audio.load();
-            this.audio.play();
-          }
-        } else {
-          this.audio = new Audio(src);
-          this.audio.play();
-          this.audio.onended = () => {
-            this.index = this.index + 1;
-            if (this.index < this.playList.length) {
-              this.audio.src = this.playList[this.index].url;
-              this.audio.load();
-              setTimeout(() => {
-                this.audio.play();
-              }, 3000);
-            }
-          };
+function listFunny() {
+  webInfoApi.listResourcePath(pagination.value)
+    .then((res) => {
+      if (!res.data) return
+      if (!res.data || $common.isEmpty(res.data.records)) return
+      funnys.value.forEach(funny => {
+        if (funny.classify === pagination.value.classify) {
+          funny.data = res.data.records
         }
+      })
+      pagination.value.classify = ""
+    })
+    .catch((error) => {
+      ElMessage.error(error.message || '获取资源路径失败')
+    })
+}
+
+function changeFunny(classify) {
+  funnys.value.forEach(funny => {
+    if (funny.classify === classify && $common.isEmpty(funny.data)) {
+      pagination.value.classify = classify
+      listFunny()
+    }
+  })
+}
+
+function playSound(src, list, idx) {
+  playList.value = list
+  index.value = idx
+  if (audio.value != null) {
+    if (audio.value.src === src) {
+      if (audio.value.paused) {
+        audio.value.play()
+      } else {
+        audio.value.pause()
+      }
+    } else {
+      audio.value.pause()
+      audio.value.src = src
+      audio.value.load()
+      audio.value.play()
+    }
+  } else {
+    audio.value = new Audio(src)
+    audio.value.play()
+    audio.value.onended = () => {
+      index.value = index.value + 1
+      if (index.value < playList.value.length) {
+        audio.value.src = playList.value[index.value].url
+        audio.value.load()
+        setTimeout(() => {
+          audio.value.play()
+        }, 3000)
       }
     }
   }
+}
 </script>
 
 <style scoped>
@@ -237,7 +228,7 @@
     left: calc(95% - 20px);
   }
 
-  .process-wrap >>> .el-collapse-item__header {
+  .process-wrap ::v-deep(.el-collapse-item__header) {
     border-bottom: unset;
     font-size: 20px;
     font-weight: 700;
@@ -246,7 +237,7 @@
     padding: 40px;
   }
 
-  .process-wrap >>> .el-collapse-item__wrap {
+  .process-wrap ::v-deep(.el-collapse-item__wrap) {
     background-color: var(--maxMaxLightGray);
   }
 
@@ -257,7 +248,7 @@
     overflow: hidden;
   }
 
-  .process-wrap >>> .el-collapse-item__wrap {
+  .process-wrap ::v-deep(.el-collapse-item__wrap) {
     border-bottom: unset;
   }
 

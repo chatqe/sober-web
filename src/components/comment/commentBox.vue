@@ -11,10 +11,10 @@
       <div style="display: flex">
         <div :class="{'emoji-active':showEmoji}"
              @click="showEmoji = !showEmoji">
-          <i class="el-icon-orange myEmoji"></i>
+          <el-icon class="myEmoji"><Orange /></el-icon>
         </div>
         <div @click="openPicture()">
-          <i class="el-icon-picture myPicture"></i>
+          <el-icon class="myPicture"><Picture /></el-icon>
         </div>
       </div>
 
@@ -27,7 +27,7 @@
 <!--                   style="margin-right: 6px">-->
 <!--        </proButton>-->
         <proButton :info="'提交'"
-                   @click.native="submitComment()"
+                   @click="submitComment()"
                    :before="$constant.before_color_2"
                    :after="$constant.after_color_2">
         </proButton>
@@ -37,7 +37,7 @@
     <emoji @addEmoji="addEmoji" :showEmoji="showEmoji"></emoji>
 
     <el-dialog title="图片"
-               :visible.sync="showPicture"
+               v-model="showPicture"
                width="25%"
                :append-to-body="true"
                :close-on-click-modal="false"
@@ -51,93 +51,91 @@
   </div>
 </template>
 
-<script>
-  const emoji = () => import( "../common/emoji");
-  const proButton = () => import( "../common/proButton");
-  const uploadPicture = () => import( "../common/uploadPicture");
+<script setup>
+import { ref, reactive, inject } from 'vue'
+import { ElMessage, ElIcon } from 'element-plus'
+import { Orange, Picture } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores'
+import emoji from '@/components/common/emoji.vue'
+import proButton from '@/components/common/proButton.vue'
+import uploadPicture from '@/components/common/uploadPicture.vue'
 
-  export default {
-    components: {
-      emoji,
-      proButton,
-      uploadPicture
-    },
-    props: {
-      disableGraffiti: {
-        type: Boolean,
-        default: false
-      }
-    },
-    data() {
-      return {
-        commentContent: "",
-        showEmoji: false,
-        showPicture: false,
-        picture: {
-          name: this.$store.state.currentUser.username,
-          url: ""
-        }
-      };
-    },
-    methods: {
-      openPicture() {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
+// 注入全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-        this.showPicture = true;
-      },
-
-      addPicture(res) {
-        this.picture.url = res;
-        this.savePicture();
-      },
-      savePicture() {
-        let img = "[" + this.picture.name + "," + this.picture.url + "]";
-        this.commentContent += img;
-        this.picture.url = "";
-        this.showPicture = false;
-      },
-      addEmoji(key) {
-        this.commentContent += key;
-      },
-      showGraffiti() {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
-
-        this.commentContent = "";
-        this.$emit("showGraffiti");
-      },
-      submitComment() {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
-
-        if (this.commentContent.trim() === "") {
-          this.$message({
-            message: "你还没写呢~",
-            type: "warning"
-          });
-          return;
-        }
-        this.$emit("submitComment", this.commentContent.trim());
-        this.commentContent = "";
-      }
-    }
+// Props定义
+const props = defineProps({
+  disableGraffiti: {
+    type: Boolean,
+    default: false
   }
+})
+
+// Emits定义
+const emit = defineEmits(['showGraffiti', 'submitComment'])
+
+// 状态管理
+const userStore = useUserStore()
+
+// 响应式数据
+const commentContent = ref('')
+const showEmoji = ref(false)
+const showPicture = ref(false)
+const picture = reactive({
+  name: userStore.currentUser?.username || '',
+  url: ''
+})
+
+// 方法
+function openPicture() {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage.error('请先登录！')
+    return
+  }
+
+  showPicture.value = true
+}
+
+function addPicture(res) {
+  picture.url = res
+  savePicture()
+}
+
+function savePicture() {
+  const img = `[${picture.name},${picture.url}]`
+  commentContent.value += img
+  picture.url = ''
+  showPicture.value = false
+}
+
+function addEmoji(key) {
+  commentContent.value += key
+}
+
+function showGraffiti() {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage.error('请先登录！')
+    return
+  }
+
+  commentContent.value = ''
+  emit('showGraffiti')
+}
+
+function submitComment() {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage.error('请先登录！')
+    return
+  }
+
+  if (commentContent.value.trim() === '') {
+    ElMessage.warning('你还没写呢~')
+    return
+  }
+  emit('submitComment', commentContent.value.trim())
+  commentContent.value = ''
+}
 </script>
 
 <style scoped>

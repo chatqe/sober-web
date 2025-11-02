@@ -1,43 +1,18 @@
 <template>
-  <div>
-    <myHeader></myHeader>
-    <sidebar></sidebar>
+  <div class="admin-container">
+    <myHeader />
+    <sidebar />
     <div class="content-box">
       <div class="content">
-        <router-view></router-view>
+        <router-view />
       </div>
     </div>
   </div>
 </template>
 
-<script>
-  import myHeader from "./common/myHeader.vue";
-  import sidebar from "./common/sidebar.vue";
-
-  export default {
-    components: {
-      myHeader,
-      sidebar
-    },
-
-    data() {
-      return {}
-    },
-
-    computed: {},
-
-    watch: {},
-
-    created() {
-
-    },
-
-    mounted() {
-
-    },
-
-    methods: {}
-  }
+<script setup>
+import MyHeader from "@/components/admin/common/myHeader.vue";
+import Sidebar from "@/components/admin/common/sidebar.vue";
 </script>
 
 <style scoped>

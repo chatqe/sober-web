@@ -14,29 +14,28 @@
     </transition>
   </div>
 </template>
-<script>
-  export default {
-    props: {
-      loading: {
-        type: Boolean,
-        default: false
-      }
-    },
-    data() {
-      return {
-        loaderVisible: this.loading,
-        bodyVisible: !this.loading
-      };
-    },
-    watch: {
-      loading(loading) {
-        this.loaderVisible = loading;
-        setTimeout(() => {
-          this.bodyVisible = !loading;
-        }, 300);
-      }
-    }
-  };
+<script setup>
+import { ref, watch } from 'vue';
+
+// 定义props
+const props = defineProps({
+  loading: {
+    type: Boolean,
+    default: false
+  }
+});
+
+// 响应式数据
+const loaderVisible = ref(props.loading);
+const bodyVisible = ref(!props.loading);
+
+// 监听loading变化
+watch(() => props.loading, (loading) => {
+  loaderVisible.value = loading;
+  setTimeout(() => {
+    bodyVisible.value = !loading;
+  }, 300);
+});
 </script>
 <style scoped>
   /*
@@ -55,11 +54,11 @@
     transition: all 0.5s;
   }
 
-  .loader-enter, .loader-leave-to {
+  .loader-enter-from, .loader-leave-to {
     opacity: 0;
   }
 
-  .body-enter, .body-leave-to {
+  .body-enter-from, .body-leave-to {
     opacity: 0;
     transform: scale(0.5) translateY(50%);
   }

@@ -3,26 +3,27 @@
     <div class="myFooter">
 <!--    云想衣裳花想容， 春风拂槛露华浓。  -->
 <!--        罗带同心结未成，江边潮已平。-->
-      <div class="footer-title">{{$store.state.webInfo.footer}}</div>
+      <div class="footer-title">{{ webInfo.footer }}</div>
       <div class="icp">Powered By<a href="https://youngwanton.top" target="_blank"> YoungWanton</a> </div>
     </div>
   </div>
 </template>
 
-<script>
-  export default {
-    props: {
-      showFooter: {
-        type: Boolean,
-        default: true
-      }
-    },
-    data() {
-      return {}
-    },
-    created() {
-    }
+<script setup>
+import { computed } from 'vue';
+import { useWebInfoStore } from '@/stores';
+
+// 定义props
+const props = defineProps({
+  showFooter: {
+    type: Boolean,
+    default: true
   }
+});
+
+// 从Pinia获取状态
+const webInfoStore = useWebInfoStore();
+const webInfo = computed(() => webInfoStore.webInfo);
 </script>
 
 <style scoped>

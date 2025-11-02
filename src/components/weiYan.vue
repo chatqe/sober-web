@@ -8,7 +8,7 @@
     <div style="background: var(--background);animation: hideToShow 2.5s" >
       <div>
         <treeHole :treeHoleList="treeHoleList"
-                  :avatar="!$common.isEmpty($store.state.currentUser)?$store.state.currentUser.avatar:$store.state.webInfo.avatar"
+                  :avatar="!$common.isEmpty(userStore.currentUser)?userStore.currentUser.avatar:webInfoStore.webInfo?.avatar"
                   @launch="launch"
                   @deleteTreeHole="deleteTreeHole">
         </treeHole>
@@ -26,7 +26,7 @@
     </div>
 
     <el-dialog title="微言"
-               :visible.sync="weiYanDialogVisible"
+               v-model="weiYanDialogVisible"
                width="40%"
                :before-close="handleClose"
                :append-to-body="true"
@@ -48,156 +48,156 @@
   </div>
 </template>
 
-<script>
-  const twoPoem = () => import( "./common/twoPoem");
-  const myFooter = () => import( "./common/myFooter");
-  const treeHole = () => import( "./common/treeHole");
-  const proPage = () => import( "./common/proPage");
-  const commentBox = () => import( "./comment/commentBox");
+<script setup>
+import { reactive, ref, onMounted, nextTick, inject } from 'vue'
+import { defineAsyncComponent } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore, useWebInfoStore } from '@/stores'
+import router from '@/router'
+import { weiYanApi } from '@/api'
 
-  export default {
-    components: {
-      twoPoem,
-      myFooter,
-      treeHole,
-      proPage,
-      commentBox
-    },
+// 组件动态导入
+const twoPoem = defineAsyncComponent(() => import("./common/twoPoem.vue"))
+const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
+const treeHole = defineAsyncComponent(() => import("./common/treeHole.vue"))
+const proPage = defineAsyncComponent(() => import("./common/proPage.vue"))
+const commentBox = defineAsyncComponent(() => import("./comment/commentBox.vue"))
 
-    data() {
-      return {
-        treeHoleList: [],
-        pagination: {
-          current: 1,
-          size: 10,
-          total: 0
-        },
-        weiYanDialogVisible: false,
-        isPublic: true,
-        showFooter: false
-      }
-    },
+// 获取公共属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-    computed: {},
+// ... existing code ...
 
-    watch: {},
+// 状态管理
+const userStore = useUserStore()
+const webInfoStore = useWebInfoStore()
 
-    created() {
-      this.getWeiYan();
-    },
+// 响应式数据
+const treeHoleList = ref([])
+const pagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0
+})
+const weiYanDialogVisible = ref(false)
+const isPublic = ref(true)
+const showFooter = ref(false)
 
-    mounted() {
+// 方法
+const toPage = (page) => {
+  pagination.current = page
+  window.scrollTo({
+    top: 240,
+    behavior: "smooth"
+  })
+  getWeiYan()
+}
 
-    },
+const launch = () => {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage({
+      message: "请先登录！",
+      type: "error"
+    })
+    return
+  }
 
-    methods: {
-      toPage(page) {
-        this.pagination.current = page;
-        window.scrollTo({
-          top: 240,
-          behavior: "smooth"
-        });
-        this.getWeiYan();
-      },
-      launch() {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
+  weiYanDialogVisible.value = true
+}
 
-        this.weiYanDialogVisible = true;
-      },
-      handleClose() {
-        this.weiYanDialogVisible = false;
-      },
-      submitWeiYan(content) {
-        let weiYan = {
-          content: content,
-          isPublic: this.isPublic
-        };
+const handleClose = () => {
+  weiYanDialogVisible.value = false
+}
 
-        this.$http.post(this.$constant.baseURL + "/weiYan/saveWeiYan", weiYan)
-          .then((res) => {
-            this.getWeiYan();
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-        this.handleClose();
-      },
-      deleteTreeHole(id) {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
+const submitWeiYan = async (content) => {
+  let weiYan = {
+    content: content,
+    isPublic: isPublic.value
+  }
 
-        this.$confirm('确认删除？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.get(this.$constant.baseURL + "/weiYan/deleteWeiYan", {id: id})
-            .then((res) => {
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              });
-              this.pagination.current = 1;
-              this.getWeiYan();
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消删除!'
-          });
-        });
-      },
-      getWeiYan() {
-        this.$http.post(this.$constant.baseURL + "/weiYan/listWeiYan", this.pagination)
-          .then((res) => {
-            this.showFooter = false;
-            if (!this.$common.isEmpty(res.data)) {
-              res.data.records.forEach(c => {
-                c.content = c.content.replace(/\n{2,}/g, '<div style="height: 12px"></div>');
-                c.content = c.content.replace(/\n/g, '<br/>');
-                c.content = this.$common.faceReg(c.content);
-                c.content = this.$common.pictureReg(c.content);
-              });
-              this.treeHoleList = res.data.records;
-              this.pagination.total = res.data.total;
-            }
-            this.$nextTick(() => {
-              this.showFooter = true;
-              this.$common.imgShow(".tree-hole-box .pictureReg");
-            });
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }
+  try {
+    await weiYanApi.saveWeiYan(weiYan)
+    getWeiYan()
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+  handleClose()
+}
+
+const deleteTreeHole = async (id) => {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage({
+      message: "请先登录！",
+      type: "error"
+    })
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm('确认删除？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success',
+      center: true
+    })
+
+    await weiYanApi.deleteWeiYan(id)
+    ElMessage({
+      type: 'success',
+      message: '删除成功!'
+    })
+    pagination.current = 1
+    getWeiYan()
+  } catch (error) {
+    if (error.name !== 'CanceledError') {
+      ElMessage({
+        message: error.message,
+        type: "error"
+      })
+    } else {
+      ElMessage({
+        type: 'success',
+        message: '已取消删除!'
+      })
     }
   }
+}
+
+const getWeiYan = async () => {
+  try {
+    const res = await weiYanApi.listWeiYan(pagination)
+    showFooter.value = false
+    if (!($common.isEmpty(res.data))) {
+      res.data.records.forEach(c => {
+        c.content = c.content.replace(/\n{2,}/g, '<div style="height: 12px"></div>')
+        c.content = c.content.replace(/\n/g, '<br/>')
+        c.content = $common.faceReg(c.content)
+        c.content = $common.pictureReg(c.content)
+      })
+      treeHoleList.value = res.data.records
+      pagination.total = res.data.total
+    }
+    nextTick(() => {
+      showFooter.value = true
+      $common.imgShow(".tree-hole-box .pictureReg")
+    })
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+// 生命周期
+onMounted(() => {
+  getWeiYan()
+})
 </script>
 
 <style scoped>
-
 </style>

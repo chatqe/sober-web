@@ -10,11 +10,13 @@
                   lazy
                   :src="resourcePath.cover"
                   fit="cover">
-          <div slot="error" class="image-slot myCenter" style="background-color: var(--lightGreen)">
-            <div class="error-text">
-              <div>遇事不决，可问春风</div>
+          <template #error>
+            <div class="image-slot myCenter" style="background-color: var(--lightGreen)">
+              <div class="error-text">
+                <div>遇事不决，可问春风</div>
+              </div>
             </div>
-          </div>
+          </template>
         </el-image>
       </div>
       <div class="card-body">
@@ -45,36 +47,26 @@
   </div>
 </template>
 
-<script>
-  export default {
-    props: {
-      resourcePathList: {
-        type: Array
-      }
-    },
+<script setup>
+import { inject } from 'vue';
 
-    data() {
-      return {}
-    },
-
-    computed: {},
-
-    watch: {},
-
-    created() {
-
-    },
-
-    mounted() {
-
-    },
-
-    methods: {
-      clickResourcePath(resourcePath) {
-        this.$emit("clickResourcePath", resourcePath.url);
-      }
-    }
+// 定义props
+const props = defineProps({
+  resourcePathList: {
+    type: Array
   }
+});
+
+// 定义事件
+const emit = defineEmits(['clickResourcePath']);
+
+// 获取公共属性
+const $common = inject('$common');
+
+// 点击资源路径处理函数
+const clickResourcePath = (resourcePath) => {
+  emit("clickResourcePath", resourcePath.url);
+};
 </script>
 
 <style scoped>
@@ -102,11 +94,11 @@
     height: 180px;
   }
 
-  .card-image >>> .el-image__inner {
+  .card-image ::v-deep(.el-image__inner) {
     transition: all 1s;
   }
 
-  .card-image >>> .el-image__inner:hover {
+  .card-image ::v-deep(.el-image__inner):hover {
     transform: scale(1.2);
   }
 

@@ -4,23 +4,22 @@
   </div>
 </template>
 
-<script>
-  export default {
-    props: {
-      info: {
-        type: String,
-        default: "一只小毛驴"
-      },
-      color: {
-        type: String
-      }
-    },
-    data() {
-      return {
-        bg: {"background": this.color}
-      };
-    }
+<script setup>
+import { computed } from 'vue';
+
+const props = defineProps({
+  info: {
+    type: String,
+    default: "一只小毛驴"
+  },
+  color: {
+    type: String
   }
+});
+
+const bg = computed(() => ({
+  "background": props.color
+}));
 </script>
 
 <style scoped>

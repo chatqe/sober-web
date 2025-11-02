@@ -8,7 +8,7 @@
       <div class="web-info">
         <div class="blog-info-box">
           <span>文章</span>
-          <span class="blog-info-num">{{ $store.getters.articleTotal }}</span>
+          <span class="blog-info-num">{{ articleTotal }}</span>
         </div>
         <div class="blog-info-box">
           <span>分类</span>
@@ -59,15 +59,17 @@
       </div>
       <div v-for="(article, index) in recommendArticles"
            :key="index"
-           @click="$router.push({path: '/article', query: {id: article.id}})">
+           @click="router.push({path: '/article', query: {id: article.id}})">
         <div class="aside-post-detail">
           <div class="aside-post-image">
             <el-image lazy class="my-el-image" :src="article.articleCover" fit="cover">
-              <div slot="error" class="image-slot">
-                <div class="error-aside-image">
-                  {{ article.username }}
+              <template #error>
+                <div class="image-slot">
+                  <div class="error-aside-image">
+                    {{ article.username }}
+                  </div>
                 </div>
-              </div>
+              </template>
             </el-image>
           </div>
           <div class="aside-post-title">
@@ -92,164 +94,110 @@
         <div class="sort-name">
           {{ sort.sortName }}
         </div>
-        <div style="font-weight: bold;margin-top: 15px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden">
+        <div style="font-weight: bold;margin-top: 8px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden">
           {{ sort.sortDescription }}
         </div>
       </div>
     </div>
-    <!-- 分类 -->
-    <!--    <div class="shadow-box background-opacity wow"-->
-    <!--         style="margin-top: 30px;padding: 25px 25px 5px;border-radius: 10px;animation: hideToShow 1s ease-in-out">-->
-    <!--      <div class="card-content2-title">-->
-    <!--        <i class="el-icon-folder-opened card-content2-icon"></i>-->
-    <!--        <span>分类</span>-->
-    <!--      </div>-->
-    <!--      <div v-for="(sort, index) in sortInfo"-->
-    <!--           :key="index"-->
-    <!--           class="post-sort"-->
-    <!--           @click="$router.push({path: '/sort', query: {sortId: sort.id}})">-->
-    <!--        <div>-->
-    <!--          <span v-for="(s, i) in sort.sortName.split('')" :key="i">{{ s }}</span>-->
-    <!--        </div>-->
-    <!--      </div>-->
-    <!--    </div>-->
 
-    <!-- 赞赏 -->
-    <!--    <div class="shadow-box-mini background-opacity wow admire-box"-->
-    <!--         v-if="!$common.isEmpty(admires)">-->
-    <!--      <div style="font-weight: bold;margin-bottom: 20px">🧨赞赏名单</div>-->
-    <!--      <div>-->
-    <!--        <vue-seamless-scroll :data="admires" style="height: 200px;overflow: hidden">-->
-    <!--          <div v-for="(item, i) in admires"-->
-    <!--               style="display: flex;justify-content: space-between"-->
-    <!--               :key="i">-->
-    <!--            <div style="display: flex">-->
-    <!--              <el-avatar style="margin-bottom: 10px" :size="36" :src="item.avatar"></el-avatar>-->
-    <!--              <div style="margin-left: 10px;height: 36px;line-height: 36px;overflow: hidden;max-width: 80px">-->
-    <!--                {{ item.username }}-->
-    <!--              </div>-->
-    <!--            </div>-->
-    <!--            <div style="height: 36px;line-height: 36px">-->
-    <!--              {{ item.admire }}元-->
-    <!--            </div>-->
-    <!--          </div>-->
-    <!--        </vue-seamless-scroll>-->
-    <!--      </div>-->
-    <!--      <div class="admire-btn" @click="showAdmire()">-->
-    <!--        赞赏-->
-    <!--      </div>-->
-    <!--    </div>-->
 
     <!--    最新树洞-->
     <newTreeHole></newTreeHole>
 
 
-    <!-- 微信 -->
-    <!--    <el-dialog title="赞赏"-->
-    <!--               :visible.sync="showAdmireDialog"-->
-    <!--               width="25%"-->
-    <!--               :append-to-body="true"-->
-    <!--               destroy-on-close-->
-    <!--               center>-->
-    <!--      <div>-->
-    <!--        <div class="admire-image"></div>-->
-    <!--        <div>-->
-    <!--          <div class="admire-content">1. 感谢老铁送来的666</div>-->
-    <!--          <div class="admire-content">2. 申请通过后会加博客交流群，不需要加群或者退群后会定期清理好友（强迫症福利）</div>-->
-    <!--        </div>-->
-    <!--      </div>-->
-    <!--    </el-dialog>-->
+
   </div>
 </template>
 
-<script>
-// import vueSeamlessScroll from "vue-seamless-scroll";
-import newTreeHole from "./newTreeHole.vue";
+<script setup>
+import { ref, computed, onMounted, inject } from 'vue'
+import router from '@/router'
+import { ElMessage } from 'element-plus'
+import {useWebInfoStore, useSystemStore, useUserStore, useSortInfoStore} from '@/stores'
+import { articleApi } from '@/api'
+import newTreeHole from "./newTreeHole.vue"
+import {getArticleList} from "@/api/modules/articleApi.js";
 
-export default {
-  components: {
-    // vueSeamlessScroll,
-    newTreeHole
-  },
-  data() {
-    return {
-      pagination: {
-        current: 1,
-        size: 5,
-        recommendStatus: true
-      },
-      recommendArticles: [],
-      admires: [],
-      showAdmireDialog: false,
-      articleSearch: ""
-    }
-  },
-  computed: {
-    webInfo() {
-      return this.$store.state.webInfo;
-    },
-    sortInfo() {
-      // return this.$stores.state.sortInfo;
-      // 过滤不显示的sort列表
-    let showSort =  this.$store.state.sortInfo.filter(item => item.status!==0)
-      return showSort;
-    }
-  },
-  created() {
-    this.getRecommendArticles();
-    this.getAdmire();
-  },
-  methods: {
-    selectSort(sort) {
-      this.$emit("selectSort", sort);
-    },
-    selectArticle() {
-      this.$emit("selectArticle", this.articleSearch);
-    },
-    showAdmire() {
-      if (this.$common.isEmpty(this.$store.state.currentUser)) {
-        this.$message({
-          message: "请先登录！",
-          type: "error"
-        });
-        return;
-      }
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-      this.showAdmireDialog = true;
-    },
-    getAdmire() {
-      this.$http.get(this.$constant.baseURL + "/webInfo/getAdmire")
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            this.admires = res.data;
-          }
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    getRecommendArticles() {
-      this.$http.post(this.$constant.baseURL + "/article/listArticle", this.pagination)
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            this.recommendArticles = res.data.records;
-          }
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    showTip() {
-      this.$router.push({path: '/weiYan'});
+// 路由和状态管理
+// ... existing code ...
+const webInfoStore = useWebInfoStore()
+const systemStore = useSystemStore()
+const userStore = useUserStore()
+const sortInfoStore = useSortInfoStore()
+
+
+// 响应式数据
+const pagination = ref({
+  current: 1,
+  size: 5,
+  recommendStatus: true
+})
+const recommendArticles = ref([])
+const admires = ref([])
+const showAdmireDialog = ref(false)
+const articleSearch = ref("")
+
+// 生命周期
+onMounted(() => {
+  getRecommendArticles()
+})
+
+// 计算属性
+const webInfo = computed(() => webInfoStore.webInfo)
+const sortInfo = computed(() => {
+  // 过滤不显示的sort列表
+  return sortInfoStore.sortInfo.filter(item => item.status !== 0)
+})
+const articleTotal = computed(() => sortInfoStore.articleTotal)
+const currentUser = computed(() => userStore.currentUser)
+
+// 定义emit
+const emit = defineEmits(['selectSort', 'selectArticle'])
+
+// 方法
+const selectSort = (sort) => {
+  emit("selectSort", sort)
+}
+
+const selectArticle = () => {
+  emit("selectArticle", articleSearch.value)
+}
+
+const showAdmire = () => {
+  if ($common.isEmpty(currentUser.value)) {
+    ElMessage({
+      message: "请先登录！",
+      type: "error"
+    })
+    return
+  }
+
+  showAdmireDialog.value = true
+}
+
+const getRecommendArticles = async () => {
+  try {
+    const res = await articleApi.getArticleList(pagination.value)
+    if (!$common.isEmpty(res.data)) {
+      recommendArticles.value = res.data.records
     }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '获取推荐文章失败',
+      type: "error"
+    })
   }
 }
+
+const showTip = () => {
+  router.push({path: '/weiYan'})
+}
+
+
 </script>
 
 <style scoped>
@@ -395,14 +343,14 @@ export default {
 .sort-name {
   font-weight: bold;
   font-size: 25px;
-  margin-top: 15px;
+  margin-top: 10px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
 .sort-name:after {
-  top: 74px;
+  top: 84px;
   width: 22px;
   left: 26px;
   height: 2px;
@@ -473,5 +421,4 @@ export default {
   background: var(--white);
   cursor: pointer;
 }
-
 </style>

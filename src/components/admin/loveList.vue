@@ -6,7 +6,7 @@
           <el-option key="1" label="启用" :value="true"></el-option>
           <el-option key="2" label="禁用" :value="false"></el-option>
         </el-select>
-        <el-button type="primary" icon="el-icon-search" @click="search()">搜索</el-button>
+        <el-button type="primary" :icon="Search" @click="search">搜索</el-button>
       </div>
       <el-table :data="loves" border class="table" header-cell-class-name="table-header">
         <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
@@ -16,31 +16,31 @@
         <el-table-column prop="womanName" label="女生昵称" align="center"></el-table-column>
 
         <el-table-column label="背景封面" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-image lazy :preview-src-list="[scope.row.bgCover]" class="table-td-thumb" :src="scope.row.bgCover"
                       fit="cover"></el-image>
           </template>
         </el-table-column>
         <el-table-column label="男生头像" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-image lazy :preview-src-list="[scope.row.manCover]" class="table-td-thumb" :src="scope.row.manCover"
                       fit="cover"></el-image>
           </template>
         </el-table-column>
         <el-table-column label="女生头像" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-image lazy :preview-src-list="[scope.row.womanCover]" class="table-td-thumb" :src="scope.row.womanCover"
                       fit="cover"></el-image>
           </template>
         </el-table-column>
 
         <el-table-column label="状态" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-tag :type="scope.row.status === false ? 'danger' : 'success'"
                     disable-transitions>
-              {{scope.row.status === false ? '禁用' : '启用'}}
+              {{ scope.row.status === false ? '禁用' : '启用' }}
             </el-tag>
-            <el-switch @click.native="changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
+            <el-switch @change="() => changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
           </template>
         </el-table-column>
 
@@ -51,8 +51,8 @@
         <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
         <el-table-column prop="updateTime" label="最终修改时间" align="center"></el-table-column>
         <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-delete" style="color: var(--orangeRed)"
+          <template #default="scope">
+            <el-button type="danger" link :icon="Delete"
                        @click="handleDelete(scope.row)">
               删除
             </el-button>
@@ -61,7 +61,7 @@
       </el-table>
       <div class="pagination">
         <el-pagination background layout="total, prev, pager, next"
-                       :current-page="pagination.current"
+                       v-model:current-page="pagination.current"
                        :page-size="pagination.size"
                        :total="pagination.total"
                        @current-change="handlePageChange">
@@ -71,142 +71,121 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import {ref, onMounted} from 'vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {Search, Delete} from '@element-plus/icons-vue'
+import {familyApi} from '@/api'
+// 响应式数据
+const pagination = ref({
+  current: 1,
+  size: 10,
+  total: 0,
+  status: null
+})
 
-  export default {
-    components: {},
-    data() {
-      return {
-        pagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          status: null
-        },
-        loves: []
-      }
-    },
+const loves = ref([])
+const loading = ref(false)
 
-    computed: {},
+// 方法
+const handleDelete = async (item) => {
+  try {
+    await ElMessageBox.confirm('确认删除资源？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      center: true
+    })
 
-    watch: {},
-
-    created() {
-      this.getLoves();
-    },
-
-    mounted() {
-    },
-
-    methods: {
-      handleDelete(item) {
-        this.$confirm('确认删除资源？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.get(this.$constant.baseURL + "/family/deleteFamily", {id: item.id}, true)
-            .then((res) => {
-              this.pagination.current = 1;
-              this.getLoves();
-              this.$message({
-                message: "删除成功！",
-                type: "success"
-              });
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消删除!'
-          });
-        });
-      },
-      search() {
-        this.pagination.total = 0;
-        this.pagination.current = 1;
-        this.getLoves();
-      },
-      getLoves() {
-        this.$http.post(this.$constant.baseURL + "/family/listFamily", this.pagination, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.loves = res.data.records;
-              this.pagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      changeStatus(item) {
-        this.$http.get(this.$constant.baseURL + "/family/changeLoveStatus", {
-          id: item.id,
-          flag: item.status
-        }, true)
-          .then((res) => {
-            this.$message({
-              message: "修改成功！",
-              type: "success"
-            });
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      handlePageChange(val) {
-        this.pagination.current = val;
-        this.getLoves();
-      }
+    await familyApi.deleteFamily({id: item.id})
+    pagination.value.current = 1
+    await getLoves()
+    ElMessage.success('删除成功！')
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败')
     }
   }
+}
+
+const search = () => {
+  pagination.value.current = 1
+  getLoves()
+}
+
+const getLoves = async () => {
+  try {
+    loading.value = true
+    const res = await familyApi.listFamily(pagination)
+
+    if (res.data?.records) {
+      loves.value = res.data.records
+      pagination.value.total = res.data.total
+    }
+  } catch (error) {
+    ElMessage.error(error.message || '获取数据失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+const changeStatus = async (item) => {
+  try {
+    await familyApi.changeLoveStatus({
+      id: item.id,
+      flag: item.status
+    })
+    ElMessage.success('修改成功！')
+  } catch (error) {
+    ElMessage.error(error.message || '修改失败')
+  }
+}
+
+const handlePageChange = (val) => {
+  pagination.value.current = val
+  getLoves()
+}
+
+// 生命周期
+onMounted(() => {
+  getLoves()
+})
+
 </script>
 
 <style scoped>
 
-  .handle-box {
-    margin-bottom: 20px;
-  }
+.handle-box {
+  margin-bottom: 20px;
+}
 
-  .handle-select {
-    width: 200px;
-  }
+.handle-select {
+  width: 200px;
+}
 
-  .table {
-    width: 100%;
-    font-size: 14px;
-  }
+.table {
+  width: 100%;
+  font-size: 14px;
+}
 
-  .mrb10 {
-    margin-right: 10px;
-    margin-bottom: 10px;
-  }
+.mrb10 {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
 
-  .table-td-thumb {
-    display: block;
-    margin: auto;
-    width: 40px;
-    height: 40px;
-  }
+.table-td-thumb {
+  display: block;
+  margin: auto;
+  width: 40px;
+  height: 40px;
+}
 
-  .pagination {
-    margin: 20px 0;
-    text-align: right;
-  }
+.pagination {
+  margin: 20px 0;
+  text-align: right;
+}
 
-  .el-switch {
-    margin: 5px;
-  }
+.el-switch {
+  margin: 5px;
+}
 </style>

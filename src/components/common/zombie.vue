@@ -1,3 +1,9 @@
+<script setup>
+import { useWebInfoStore } from '@/stores'
+
+const webInfoStore = useWebInfoStore()
+</script>
+
 <template>
   <div class="wrapper">
     <div class="zombie">
@@ -69,7 +75,7 @@
       </div>
       <div class="tomb">
         <div class="tomb__info">
-          <h2 class="headers">{{$store.state.webInfo.webName}}</h2>
+          <h2 class="headers">{{webInfoStore.webInfo.webName}}</h2>
           <h4 class="headers">大爷进来玩啊~~~</h4>
           <h5 class="headers">网页有点慢，等一下就好啦~</h5>
         </div>

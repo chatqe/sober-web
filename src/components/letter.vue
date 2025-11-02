@@ -47,15 +47,8 @@
   </div>
 </template>
 
-<script>
-  export default {
-    data() {
-      return {};
-    },
-    created() {
-    },
-    methods: {}
-  }
+<script setup>
+// Letter component - Vue 3 Composition API
 </script>
 
 <style scoped>

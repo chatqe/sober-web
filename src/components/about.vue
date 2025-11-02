@@ -10,8 +10,34 @@
         <h1 style="font-size: 40px;font-weight: 500;letter-spacing: 5px;">两只毛驴鸣翠柳</h1>
         <!-- 对话框 -->
         <div class="about-box">
-          <h4>与 {{$store.state.webInfo.webName}} 对话中...</h4>
-          <div v-if="sayShow" id="say-container"></div>
+          <h4>与 {{ webName }} 对话中...</h4>
+          <div v-if="sayShow" ref="sayContainerRef" class="say-container">
+            <!-- 消息列表 -->
+            <div
+              v-for="(message, index) in messages"
+              :key="index"
+              :class="[
+                message.type === 'right' ? 'say-right' : 'say-left',
+                'my-animation-slide-bottom'
+              ]"
+            >
+              <span :class="message.type === 'right' ? 'say-item-right' : 'say-item-left'">
+                {{ message.content }}
+              </span>
+            </div>
+            
+            <!-- 选择按钮 -->
+            <div v-if="showSelectButtons" class="say-left my-animation-slide-bottom">
+              <button
+                v-for="(option, index) in selectOptions"
+                :key="index"
+                class="say-select"
+                @click="handleSelect(index, option.value)"
+              >
+                {{ option.label }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -21,115 +47,115 @@
   </div>
 </template>
 
-<script>
-  const twoPoem = () => import( "./common/twoPoem");
-  const myFooter = () => import( "./common/myFooter");
+<script setup>
+import { ref, onMounted, inject } from 'vue'
+import { defineAsyncComponent } from 'vue'
+import { useWebInfoStore } from '@/stores'
 
-  export default {
-    components: {
-      twoPoem,
-      myFooter
-    },
-    data() {
-      return {
-        sayShow: false,
-        sayContent: [
-          {
-            "talk": ["Hi, there👋", "这是一个 Vue2 Vue3 与 SpringBoot 结合的产物~"],
-            "reply": ["然后呢？ 😃", "少废话！ 🙄"]
-          }, {
-            "talk": ["😘",
-              "本站平时仅用于交流和学习新知识",
-              "如涉及侵权请联系站长删除对应资源，谢谢！！！"],
-            "reply": ["这个网站有什么用吗？ 😂"]
-          }, {
-            "talk": ["拥有自己的独立网站难道不酷吗🚀",
-              "那就摸鱼吧👋",
-              "摸鱼大军请在聊天室集合🥝"],
-            "reply": []
-          }
-        ],
-        sayIndex: 0
-      }
-    },
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-    computed: {},
+// 组件动态导入
+const twoPoem = defineAsyncComponent(() => import('./common/twoPoem.vue'))
+const myFooter = defineAsyncComponent(() => import('./common/myFooter.vue'))
 
-    watch: {},
+// 使用store
+const webInfoStore = useWebInfoStore()
+const webName = webInfoStore.webInfo?.webName || ''
 
-    created() {
-      setTimeout(() => {
-        this.sayShow = true;
-        this.say();
-      }, 2000);
-    },
+// 响应式数据
+const sayShow = ref(false)
+const sayIndex = ref(0)
+const messages = ref([])
+const showSelectButtons = ref(false)
+const selectOptions = ref([])
+const sayContainerRef = ref(null)
 
-    mounted() {
-
-    },
-
-    methods: {
-      answer(index, value) {
-        $(".say-select").remove();
-
-        let htmlStr = `<div class="say-right my-animation-slide-bottom"><span class="say-item-right">${value}</span></div>`;
-        let frag = document.createRange().createContextualFragment(htmlStr);
-        document.getElementById("say-container").appendChild(frag);
-        if (index === 0) {
-          setTimeout(() => {
-            this.say();
-          }, 500);
-        } else {
-          let htmlStr = `<div class="say-left my-animation-slide-bottom"><span class="say-item-left">👋 👋 👋</span></div>`;
-          let frag = document.createRange().createContextualFragment(htmlStr);
-          document.getElementById("say-container").appendChild(frag);
-        }
-      },
-      say() {
-        if (!this.$common.isEmpty(this.sayContent[this.sayIndex]) && !this.$common.isEmpty(this.sayContent[this.sayIndex].talk)) {
-          this.sayContent[this.sayIndex].talk.forEach((value, index, talk) => {
-            setTimeout(() => {
-              let htmlStr = `<div class="say-left my-animation-slide-bottom"><span class="say-item-left">${value}</span></div>`;
-              let frag = document.createRange().createContextualFragment(htmlStr);
-              document.getElementById("say-container").appendChild(frag);
-              if (talk.length === index + 1) {
-                if (!this.$common.isEmpty(this.sayContent[this.sayIndex].reply)) {
-                  setTimeout(() => {
-                    if (this.sayContent[this.sayIndex].reply.length === 2) {
-                      let reply0 = this.sayContent[this.sayIndex].reply[0];
-                      let reply1 = this.sayContent[this.sayIndex].reply[1];
-                      let htmlStr = `<div class="say-left my-animation-slide-bottom"><span class="say-select">${reply0}</span><span class="say-select">${reply1}</span></div>`;
-                      let frag = document.createRange().createContextualFragment(htmlStr);
-                      document.getElementById("say-container").appendChild(frag);
-                      document.getElementsByClassName("say-select")[0].onclick = () => {
-                        this.answer(0, reply0);
-                      }
-                      document.getElementsByClassName("say-select")[1].onclick = () => {
-                        this.answer(1, reply1);
-                      }
-                    } else if (this.sayContent[this.sayIndex].reply.length === 1) {
-                      let reply0 = this.sayContent[this.sayIndex].reply[0];
-                      let htmlStr = `<div class="say-left my-animation-slide-bottom"><span class="say-select">${reply0}</span></div>`;
-                      let frag = document.createRange().createContextualFragment(htmlStr);
-                      document.getElementById("say-container").appendChild(frag);
-                      document.getElementsByClassName("say-select")[0].onclick = () => {
-                        this.answer(0, reply0);
-                      }
-                    }
-                    this.sayIndex += 1;
-                  }, 500);
-                }
-              }
-            }, index * 500);
-          });
-        }
-      }
-    }
+const sayContent = ref([
+  {
+    "talk": ["Hi, there👋", "这是一个 Vue2 Vue3 与 SpringBoot 结合的产物~"],
+    "reply": ["然后呢？ 😃", "少废话！ 🙄"]
+  }, {
+    "talk": ["😘",
+      "本站平时仅用于交流和学习新知识",
+      "如涉及侵权请联系站长删除对应资源，谢谢！！！"],
+    "reply": ["这个网站有什么用吗？ 😂"]
+  }, {
+    "talk": ["拥有自己的独立网站难道不酷吗🚀",
+      "那就摸鱼吧👋",
+      "摸鱼大军请在聊天室集合🥝"],
+    "reply": []
   }
+])
+
+// 处理选择选项
+const handleSelect = async (index, value) => {
+  // 添加用户回复消息
+  messages.value.push({
+    type: 'right',
+    content: value
+  })
+  
+  // 隐藏选择按钮
+  showSelectButtons.value = false
+  selectOptions.value = []
+  
+  if (index === 0) {
+    setTimeout(() => {
+      say()
+    }, 500)
+  } else {
+    // 添加机器人回复
+    setTimeout(() => {
+      messages.value.push({
+        type: 'left',
+        content: '👋 👋 👋'
+      })
+    }, 500)
+  }
+}
+
+// 对话函数
+const say = () => {
+  if (!$common.isEmpty(sayContent.value[sayIndex.value]) && !$common.isEmpty(sayContent.value[sayIndex.value].talk)) {
+    sayContent.value[sayIndex.value].talk.forEach((value, index, talk) => {
+      setTimeout(() => {
+        // 添加左侧对话消息
+        messages.value.push({
+          type: 'left',
+          content: value
+        })
+        
+        if (talk.length === index + 1) {
+          if (!$common.isEmpty(sayContent.value[sayIndex.value].reply)) {
+            setTimeout(() => {
+              // 显示回复选项
+              const replies = sayContent.value[sayIndex.value].reply
+              selectOptions.value = replies.map((reply, idx) => ({
+                label: reply,
+                value: reply
+              }))
+              showSelectButtons.value = true
+              sayIndex.value += 1
+            }, 500)
+          }
+        }
+      }, index * 500)
+    })
+  }
+}
+
+// 组件挂载后执行
+onMounted(() => {
+  setTimeout(() => {
+    sayShow.value = true
+    say()
+  }, 2000)
+})
 </script>
 
-<style>
-
+<style scoped>
   .about-wrap {
     text-align: center;
     width: 95%;
@@ -145,46 +171,50 @@
     border-radius: 10px;
   }
 
-  .say-item-left {
-    padding: 5px 12px;
-    border-radius: 1rem;
-    color: var(--maxGreyFont);
-    background-color: var(--lightGray);
-  }
-
-  .say-item-right {
-    padding: 5px 12px;
-    border-radius: 1rem;
-    color: var(--white);
-    background-color: var(--translucent);
+  .say-container {
+    text-align: left;
+    padding: 10px;
+    height: 400px;
+    overflow-y: auto;
   }
 
   .say-left {
     display: flex;
-    justify-content: left;
-    margin: 15px;
+    margin: 10px 0;
   }
 
   .say-right {
     display: flex;
-    justify-content: right;
-    margin: 15px;
+    justify-content: flex-end;
+    margin: 10px 0;
+  }
+
+  .say-item-left {
+    background-color: #f0f0f0;
+    padding: 10px 15px;
+    border-radius: 10px;
+    max-width: 60%;
+  }
+
+  .say-item-right {
+    background-color: #52c41a;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    max-width: 60%;
   }
 
   .say-select {
-    cursor: pointer;
-    background: var(--black);
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
     border-radius: 5px;
-    padding: 5px 10px;
-    margin-right: 12px;
-    margin-top: 20px;
-    color: var(--white);
-    border: 1px solid var(--black);
+    margin: 5px;
+    cursor: pointer;
   }
 
   .say-select:hover {
-    border: 1px solid var(--themeBackground);
-    color: var(--themeBackground);
-    box-shadow: 0 0 5px var(--themeBackground);
+    background-color: #0050b3;
   }
 </style>

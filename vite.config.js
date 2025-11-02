@@ -8,7 +8,13 @@ import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [vue(),
+    plugins: [vue({
+        template: {
+            compilerOptions: {
+                isCustomElement: (tag) => ['meting-js', 'vue-baberrage'].includes(tag)
+            }
+        }
+    }),
         AutoImport({
             resolvers: [ElementPlusResolver()]
         }),

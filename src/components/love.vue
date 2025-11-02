@@ -60,8 +60,7 @@
             </div>
           </div>
           <!-- 倒计时 -->
-          <div class="love-time-title2"
-               v-if="!$common.isEmpty(love.countdownTitle) || !$common.isEmpty(love.countdownTime)">
+          <div v-if="!$common.isEmpty(love.countdownTitle) || !$common.isEmpty(love.countdownTime)">
             {{love.countdownTitle}}: {{countdownChange}}
           </div>
         </div>
@@ -112,9 +111,9 @@
         <div class="card-wrap" v-show="card !== 4">
           <div class="card-content shadow-box-mini" @click="changeCard(1)">
             <div>
-              <el-avatar :size="100"
-                         :src="$constant.loveWeiYan">
-              </el-avatar>
+          <el-avatar :size="100"
+                     :src="$constant.loveWeiYan">
+          </el-avatar>
             </div>
             <div class="card-right">
               <div class="card-title">
@@ -195,7 +194,7 @@
             </div>
           </div>
           <div v-show="card === 3" class="comment-content">
-            <comment :source="$constant.userId" :type="'love'" :userId="$constant.userId"></comment>
+          <comment :source="$constant.userId" :type="'love'" :userId="$constant.userId"></comment>
           </div>
         </div>
 
@@ -418,409 +417,354 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, computed, onMounted, onUnmounted, inject, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { useUserStore, useWebInfoStore } from '@/stores'
+import { defineAsyncComponent } from 'vue'
+import router from '@/router'
+import { webApi, familyApi } from '@/api'
 
-  // const treeHole = () => import( "./common/treeHole");
-  const comment = () => import( "./comment/comment");
-  const myFooter = () => import( "./common/myFooter");
-  const photo = () => import( "./common/photo");
-  const proTag = () => import( "./common/proTag");
-  const proButton = () => import( "./common/proButton");
-  const uploadPicture = () => import( "./common/uploadPicture");
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-  export default {
-    components: {
-      comment,
-      photo,
-      // treeHole,
-      myFooter,
-      proTag,
-      proButton,
-      uploadPicture
-    },
+// 状态管理
+const userStore = useUserStore()
+const webInfoStore = useWebInfoStore()
 
-    data() {
-      return {
-        userLove: {
-          bgCover: "",
-          manCover: "",
-          womanCover: "",
-          manName: "",
-          womanName: "",
-          countdownTitle: "",
-          countdownTime: "",
-          timing: "",
-          familyInfo: ""
-        },
-        loveDialogVisible: false,
-        addPictureDialog: false,
-        pictureType: "",
-        adminLove: {},
-        love: {
-          bgCover: "",
-          manCover: "",
-          womanCover: "",
-          manName: "",
-          womanName: "",
-          countdownTitle: "",
-          countdownTime: "",
-          timing: ""
-        },
-        weiYanPagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          userId: this.$constant.userId
-        },
-        photoPagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          resourceType: "lovePhoto",
-          classify: ""
-        },
-        treeHoleList: [],
-        photoTitleList: [],
-        photoList: [],
-        randomFamily: [],
-        card: null,
-        countdownChange: "",
-        timing: {
-          year: 0,
-          month: 0,
-          day: 0,
-          hour: 0,
-          minute: 0,
-          second: 0
-        }
-      }
-    },
+// 异步导入组件
+const treeHole = defineAsyncComponent(() => import("@/components/common/treeHole.vue"))
+const photo = defineAsyncComponent(() => import("@/components/common/photo.vue"))
+const proTag = defineAsyncComponent(() => import("@/components/common/proTag.vue"))
+const comment = defineAsyncComponent(() => import("@/components/comment/comment.vue"))
+const uploadPicture = defineAsyncComponent(() => import("@/components/common/uploadPicture.vue"))
+const myFooter = defineAsyncComponent(() => import("@/components/common/myFooter.vue"))
 
-    computed: {},
+// 响应式数据
+const card = ref(1)
+const loveDialogVisible = ref(false)
+const addPictureDialog = ref(false)
+const pictureType = ref("")
 
-    watch: {},
+const userLove = reactive({
+  bgCover: "",
+  manCover: "",
+  womanCover: "",
+  manName: "",
+  womanName: "",
+  countdownTitle: "",
+  countdownTime: "",
+  timing: ""
+})
 
-    created() {
-      this.getAdminFamily();
-      this.card = 1;
-      this.getWeiYan();
-    },
+const love = reactive({
+  bgCover: "",
+  manCover: "",
+  womanCover: "",
+  manName: "",
+  womanName: "",
+  countdownTitle: "",
+  countdownTime: "",
+  timing: ""
+})
 
-    mounted() {
+const weiYanPagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0,
+  userId: $constant.userId
+})
 
-    },
+const photoPagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0,
+  resourceType: "lovePhoto",
+  classify: ""
+})
 
-    methods: {
-      openPicture(type) {
-        this.pictureType = type;
-        this.addPictureDialog = true;
-      },
-      addPicture(res) {
-        if (this.pictureType === "bgCover") {
-          this.userLove.bgCover = res;
-        } else if (this.pictureType === "manCover") {
-          this.userLove.manCover = res;
-        } else if (this.pictureType === "womanCover") {
-          this.userLove.womanCover = res;
-        }
+const timing = reactive({
+  year: 0,
+  month: 0,
+  day: 0,
+  hour: 0,
+  minute: 0,
+  second: 0
+})
 
-        this.pictureType = "";
-        this.addPictureDialog = false;
-      },
-      submitLove() {
-        if (this.userLove.bgCover.trim() === "") {
-          this.$message({
-            message: "你还没设置背景封面呢~",
-            type: "warning"
-          });
-          return;
-        }
+const treeHoleList = ref([])
+const photoTitleList = ref([])
+const photoList = ref([])
+const randomFamily = ref([])
+const countdownChange = ref("")
+const adminLove = ref({})
 
-        if (this.userLove.manCover.trim() === "") {
-          this.$message({
-            message: "你还没设置男生头像呢~",
-            type: "warning"
-          });
-          return;
-        }
+let countdownInterval = null
+let timingInterval = null
 
-        if (this.userLove.womanCover.trim() === "") {
-          this.$message({
-            message: "你还没设置女生头像呢~",
-            type: "warning"
-          });
-          return;
-        }
+// 方法
+const openPicture = (type) => {
+  pictureType.value = type
+  addPictureDialog.value = true
+}
 
-        if (this.userLove.manName.trim() === "") {
-          this.$message({
-            message: "你还没写男生昵称呢~",
-            type: "warning"
-          });
-          return;
-        }
-
-        if (this.userLove.womanName.trim() === "") {
-          this.$message({
-            message: "你还没写女生昵称呢~",
-            type: "warning"
-          });
-          return;
-        }
-
-        if (this.userLove.timing.trim() === "") {
-          this.$message({
-            message: "你还没设置计时时间呢~",
-            type: "warning"
-          });
-          return;
-        }
-
-        this.$http.post(this.$constant.baseURL + "/family/saveFamily", this.userLove)
-          .then((res) => {
-            this.$message({
-              type: 'success',
-              message: '提交成功，待管理员审核！'
-            });
-            this.userLove = {};
-            this.loveDialogVisible = false;
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      addFamily() {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
-
-        this.$http.get(this.$constant.baseURL + "/family/getFamily")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.userLove = res.data;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-
-        this.loveDialogVisible = true;
-      },
-      changeFamily(family) {
-        this.love = family;
-      },
-      getPhotoTitles() {
-        this.$http.get(this.$constant.baseURL + "/webInfo/listAdminLovePhoto")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.photoTitleList = res.data;
-              this.photoPagination = {
-                current: 1,
-                size: 10,
-                total: 0,
-                resourceType: "lovePhoto",
-                classify: this.photoTitleList[0].classify
-              };
-              this.changePhoto();
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      getAdminFamily() {
-        this.$http.get(this.$constant.baseURL + "/family/getAdminFamily")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.love = res.data;
-              this.adminLove = res.data;
-              this.getLove();
-              this.countdown();
-              setInterval(() => {
-                this.getLove();
-                this.countdown();
-              }, 1000);
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      getRandomFamily() {
-        this.$http.get(this.$constant.baseURL + "/family/listRandomFamily")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.randomFamily = res.data;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      changePhotoTitle(classify) {
-        if (classify !== this.photoPagination.classify) {
-          this.photoPagination = {
-            current: 1,
-            size: 10,
-            total: 0,
-            resourceType: "lovePhoto",
-            classify: classify
-          };
-          this.photoList = [];
-          this.changePhoto();
-        }
-      },
-      pagePhotos() {
-        this.photoPagination.current = this.photoPagination.current + 1;
-        this.changePhoto();
-      },
-      changePhoto() {
-        this.$http.post(this.$constant.baseURL + "/webInfo/listResourcePath", this.photoPagination)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.photoList = this.photoList.concat(res.data.records);
-              this.photoPagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      changeCard(card) {
-        if (card !== 4 || this.card !== card) {
-          this.card = card;
-        } else {
-          card = 1;
-          this.card = 1;
-          this.love = this.adminLove;
-        }
-
-        if (card === 1) {
-          if (this.$common.isEmpty(this.treeHoleList)) {
-            this.getWeiYan();
-          }
-        } else if (card === 2) {
-          if (this.$common.isEmpty(this.photoTitleList)) {
-            this.getPhotoTitles();
-          }
-        } else if (card === 4) {
-          if (this.$common.isEmpty(this.randomFamily)) {
-            this.getRandomFamily();
-          }
-        }
-      },
-      getLove() {
-        if (this.$common.isEmpty(this.love.timing)) {
-          return;
-        }
-        let diff = this.$common.timeDiff(this.love.timing);
-        this.timing.year = diff.diffYear;
-        this.timing.month = diff.diffMonth;
-        this.timing.day = diff.diffDay;
-        this.timing.hour = diff.diffHour;
-        this.timing.minute = diff.diffMinute;
-        this.timing.second = diff.diffSecond;
-      },
-      countdown() {
-        if (this.$common.isEmpty(this.love.countdownTime)) {
-          return;
-        }
-        let countdown = this.$common.countdown(this.love.countdownTime);
-        this.countdownChange = countdown.d + "天" + countdown.h + "时" + countdown.m + "分" + countdown.s + "秒";
-      },
-      launch() {
-        if (this.weiYanPagination.total !== this.treeHoleList.length) {
-          this.weiYanPagination.current = this.weiYanPagination.current + 1;
-          this.getWeiYan();
-        } else {
-          this.$message({
-            message: "~~到底啦~~",
-            type: "warning"
-          });
-        }
-      },
-      getWeiYan() {
-        this.$http.post(this.$constant.baseURL + "/weiYan/listWeiYan", this.weiYanPagination)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              res.data.records.forEach(c => {
-                c.content = c.content.replace(/\n{2,}/g, '<div style="height: 12px"></div>');
-                c.content = c.content.replace(/\n/g, '<br/>');
-                c.content = this.$common.faceReg(c.content);
-                c.content = this.$common.pictureReg(c.content);
-              });
-              this.treeHoleList = this.treeHoleList.concat(res.data.records);
-              this.weiYanPagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      deleteTreeHole(id) {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
-
-        this.$confirm('确认删除？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.get(this.$constant.baseURL + "/weiYan/deleteWeiYan", {id: id})
-            .then((res) => {
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              });
-              this.weiYanPagination.current = 1;
-              this.getWeiYan();
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消删除!'
-          });
-        });
-      }
-    }
+const addPicture = (res) => {
+  if (pictureType.value === "bgCover") {
+    userLove.bgCover = res
+  } else if (pictureType.value === "manCover") {
+    userLove.manCover = res
+  } else if (pictureType.value === "womanCover") {
+    userLove.womanCover = res
   }
+
+  pictureType.value = ""
+  addPictureDialog.value = false
+}
+
+const submitLove = async () => {
+  if (userLove.bgCover.trim() === "") {
+    ElMessage({
+      message: "你还没设置背景封面呢~",
+      type: "warning"
+    })
+    return
+  }
+
+  if (userLove.manCover.trim() === "") {
+    ElMessage({
+      message: "你还没设置男生头像呢~",
+      type: "warning"
+    })
+    return
+  }
+
+  if (userLove.womanCover.trim() === "") {
+    ElMessage({
+      message: "你还没设置女生头像呢~",
+      type: "warning"
+    })
+    return
+  }
+
+  if (userLove.manName.trim() === "") {
+    ElMessage({
+      message: "你还没写男生昵称呢~",
+      type: "warning"
+    })
+    return
+  }
+
+  if (userLove.womanName.trim() === "") {
+    ElMessage({
+      message: "你还没写女生昵称呢~",
+      type: "warning"
+    })
+    return
+  }
+
+  if (userLove.timing.trim() === "") {
+    ElMessage({
+      message: "你还没设置计时时间呢~",
+      type: "warning"
+    })
+    return
+  }
+
+  try {
+    await familyApi.saveFamily(userLove)
+    ElMessage({
+      type: 'success',
+      message: '提交成功，待管理员审核！'
+    })
+    Object.assign(userLove, {
+      bgCover: "",
+      manCover: "",
+      womanCover: "",
+      manName: "",
+      womanName: "",
+      countdownTitle: "",
+      countdownTime: "",
+      timing: ""
+    })
+    loveDialogVisible.value = false
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+const addFamily = async () => {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage({
+      message: "请先登录！",
+      type: "error"
+    })
+    return
+  }
+
+  try {
+    const res = await familyApi.getFamily()
+    if (!$common.isEmpty(res.data)) {
+      Object.assign(userLove, res.data)
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+
+  loveDialogVisible.value = true
+}
+
+const changeFamily = (family) => {
+  Object.assign(love, family)
+}
+
+const getPhotoTitles = async () => {
+  try {
+    const res = await webApi.listAdminLovePhoto()
+    if (!$common.isEmpty(res.data)) {
+      photoTitleList.value = res.data
+      Object.assign(photoPagination, {
+        current: 1,
+        size: 10,
+        total: 0,
+        resourceType: "lovePhoto",
+        classify: photoTitleList.value[0].classify
+      })
+      changePhoto()
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+const getAdminFamily = async () => {
+  try {
+    const res = await familyApi.getAdminFamily()
+    if (!$common.isEmpty(res.data)) {
+      Object.assign(love, res.data)
+      adminLove.value = res.data
+      getLove()
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+const getLove = () => {
+  if (!$common.isEmpty(love.timing)) {
+    startTiming()
+  }
+  if (!$common.isEmpty(love.countdownTime)) {
+    startCountdown()
+  }
+}
+
+const startTiming = () => {
+  if (timingInterval) clearInterval(timingInterval)
+  
+  timingInterval = setInterval(() => {
+    const start = new Date(love.timing).getTime()
+    const now = new Date().getTime()
+    const diff = now - start
+
+    timing.second = Math.floor((diff / 1000) % 60)
+    timing.minute = Math.floor((diff / (1000 * 60)) % 60)
+    timing.hour = Math.floor((diff / (1000 * 60 * 60)) % 24)
+    timing.day = Math.floor(diff / (1000 * 60 * 60 * 24)) % 30
+    timing.month = Math.floor(diff / (1000 * 60 * 60 * 24 * 30)) % 12
+    timing.year = Math.floor(diff / (1000 * 60 * 60 * 24 * 365))
+  }, 1000)
+}
+
+const startCountdown = () => {
+  if (countdownInterval) clearInterval(countdownInterval)
+  
+  countdownInterval = setInterval(() => {
+    const end = new Date(love.countdownTime).getTime()
+    const now = new Date().getTime()
+    const diff = end - now
+
+    if (diff <= 0) {
+      countdownChange.value = "时间已到！"
+      clearInterval(countdownInterval)
+      return
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+    countdownChange.value = `${days}天${hours}小时${minutes}分${seconds}秒`
+  }, 1000)
+}
+
+const changeCard = (newCard) => {
+  card.value = newCard
+}
+
+const getRandomFamily = async () => {
+  try {
+    const res = await familyApi.listAdminFamily()
+    if (!$common.isEmpty(res.data)) {
+      randomFamily.value = res.data
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+const changePhotoTitle = (classify) => {
+  if (classify !== photoPagination.classify) {
+    Object.assign(photoPagination, {
+      current: 1,
+      size: 10,
+      total: 0,
+      resourceType: "lovePhoto",
+      classify: classify
+    })
+    photoList.value = []
+    changePhoto()
+  }
+}
+
+const pagePhotos = () => {
+  photoPagination.current += 1
+  changePhoto()
+}
+
+const changePhoto = async () => {
+  // 获取照片实现
+}
+
+// 生命周期
+onMounted(() => {
+  card.value = 1
+  getAdminFamily()
+  getPhotoTitles()
+  getRandomFamily()
+})
+
+onUnmounted(() => {
+  if (timingInterval) clearInterval(timingInterval)
+  if (countdownInterval) clearInterval(countdownInterval)
+})
 </script>
 
 <style scoped>

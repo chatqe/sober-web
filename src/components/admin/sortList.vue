@@ -8,7 +8,7 @@
       <el-table-column prop="sortName" label="分类名称" align="center"></el-table-column>
       <el-table-column prop="sortDescription" label="分类描述" align="center"></el-table-column>
       <el-table-column label="分类类型" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span v-if="scope.row.sortType === 0">导航栏分类</span>
           <span v-else-if="scope.row.sortType === 1">普通分类</span>
         </template>
@@ -17,12 +17,12 @@
       <el-table-column prop="countOfSort" label="文章总数" align="center"></el-table-column>
 
       <el-table-column prop="status" label="是否展示" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-tag :type="scope.row.status === 0 ? 'danger' : 'success'"
                   disable-transitions>
             {{ scope.row.status === 0 ? '禁用' : '启用' }}
           </el-tag>
-          <el-switch @click.native="changeSortStatus(scope.row)" v-model="scope.row.status "
+          <el-switch @click="changeSortStatus(scope.row)" v-model="scope.row.status"
                      :active-value="1"
                      :inactive-value="0"
                      style="margin-left: 10px;"></el-switch>
@@ -30,7 +30,7 @@
       </el-table-column>
 
       <el-table-column label="操作" width="380" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button type="text" icon="el-icon-edit" @click="editSort(scope.row)">
             编辑分类
           </el-button>
@@ -60,7 +60,7 @@
       <el-table-column prop="countOfLabel" label="文章总数" align="center"></el-table-column>
 
       <el-table-column label="操作" width="320" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button type="text" icon="el-icon-edit" @click="editLabel(scope.row)">
             编辑标签
           </el-button>
@@ -73,7 +73,7 @@
     </el-table>
 
     <el-dialog title="分类"
-               :visible.sync="sortDialog"
+               v-model="sortDialog"
                width="30%"
                :before-close="handleClose"
                :append-to-body="true"
@@ -87,25 +87,27 @@
           </el-radio-group>
         </div>
         <el-input placeholder="请输入分类名称" v-model="sortForHttp.sortName">
-          <template slot="prepend">分类名称</template>
+          <template #prepend>分类名称</template>
         </el-input>
         <el-input placeholder="请输入分类描述" v-model="sortForHttp.sortDescription">
-          <template slot="prepend">分类描述</template>
+          <template #prepend>分类描述</template>
         </el-input>
         <el-input type="number" placeholder="请输入整数，数字小的在前面"
                   v-model="sortForHttp.priority">
-          <template slot="prepend">分类优先级</template>
+          <template #prepend>分类优先级</template>
         </el-input>
       </div>
 
-      <span slot="footer" class="dialog-footer">
+      <template #footer>
+        <span class="dialog-footer">
           <el-button @click="handleClose()">取 消</el-button>
           <el-button type="primary" @click="saveSortEdit()">确 定</el-button>
-      </span>
+        </span>
+      </template>
     </el-dialog>
 
     <el-dialog title="标签"
-               :visible.sync="labelDialog"
+               v-model="labelDialog"
                width="30%"
                :before-close="handleClose"
                :append-to-body="true"
@@ -113,241 +115,248 @@
                center>
       <div class="my-dialog">
         <el-input placeholder="请输入标签名称" v-model="labelForHttp.labelName">
-          <template slot="prepend">标签名称</template>
+          <template #prepend>标签名称</template>
         </el-input>
         <el-input placeholder="请输入标签描述" v-model="labelForHttp.labelDescription">
-          <template slot="prepend">标签描述</template>
+          <template #prepend>标签描述</template>
         </el-input>
       </div>
 
-      <span slot="footer" class="dialog-footer">
+      <template #footer>
+        <span class="dialog-footer">
           <el-button @click="handleClose()">取 消</el-button>
           <el-button type="primary" @click="saveLabelEdit()">确 定</el-button>
-      </span>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      sortDialog: false,
-      labelDialog: false,
-      sortInfo: [],
-      sort: {},
-      sortForHttp: {
-        id: null,
-        sortName: "",
-        status: null,
-        sortDescription: "",
-        sortType: null,
-        priority: null
-      },
-      labelForHttp: {
-        id: null,
-        sortId: null,
-        labelName: "",
-        labelDescription: ""
-      }
+<script setup>
+import { ref, reactive, onMounted, inject } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { webInfoApi } from '@/api'
+
+// 注入全局属性
+const $common = inject('$common')
+
+// 响应式数据
+const sortDialog = ref(false)
+const labelDialog = ref(false)
+const sortInfo = ref([])
+const sort = reactive({})
+const sortForHttp = reactive({
+  id: null,
+  sortName: "",
+  status: null,
+  sortDescription: "",
+  sortType: null,
+  priority: null
+})
+const labelForHttp = reactive({
+  id: null,
+  sortId: null,
+  labelName: "",
+  labelDescription: ""
+})
+
+// 删除处理
+const deleteHandle = async (id, flag) => {
+  try {
+    await ElMessageBox.confirm('确认删除？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success',
+      center: true
+    })
+    
+    if (flag === 1) {
+      await webInfoApi.deleteSort({id})
+    } else if (flag === 2) {
+      await webInfoApi.deleteLabel({id})
     }
-  },
-
-  computed: {},
-
-  watch: {},
-
-  created() {
-    this.getSortInfo();
-  },
-
-  mounted() {
-
-  },
-
-  methods: {
-    deleteHandle(id, flag) {
-      let url;
-      if (flag === 1) {
-        url = "/webInfo/deleteSort";
-      } else if (flag === 2) {
-        url = "/webInfo/deleteLabel";
-      } else {
-        return;
-      }
-      this.$confirm('确认删除？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+    
+    ElMessage({
+      message: "删除成功！",
+      type: "success"
+    })
+    getSortInfo()
+    Object.assign(sort, {})
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage({
+        message: error.message,
+        type: "error"
+      })
+    } else {
+      ElMessage({
         type: 'success',
-        center: true
-      }).then(() => {
-        this.$http.get(this.$constant.baseURL + url, {id: id}, true)
-          .then((res) => {
-            this.$message({
-              message: "删除成功！",
-              type: "success"
-            });
-            this.getSortInfo();
-            this.sort = {};
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }).catch(() => {
-        this.$message({
-          type: 'success',
-          message: '已取消删除!'
-        });
-      });
-    },
-    saveSortEdit() {
-      if (this.$common.isEmpty(this.sortForHttp.sortType) ||
-        this.$common.isEmpty(this.sortForHttp.priority) ||
-        this.$common.isEmpty(this.sortForHttp.sortName) ||
-        this.$common.isEmpty(this.sortForHttp.sortDescription)) {
-        this.$message({
-          message: "请完善所有分类信息！",
-          type: "error"
-        });
-        return;
-      }
-
-      let url;
-      if (this.$common.isEmpty(this.sortForHttp.id)) {
-        url = "/webInfo/saveSort";
-      } else {
-        url = "/webInfo/updateSort";
-      }
-      this.$http.post(this.$constant.baseURL + url, this.sortForHttp, true)
-        .then((res) => {
-          this.$message({
-            message: "保存成功！",
-            type: "success"
-          });
-          this.getSortInfo();
-          this.handleClose();
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    saveLabelEdit() {
-      if (this.$common.isEmpty(this.labelForHttp.labelName) ||
-        this.$common.isEmpty(this.labelForHttp.labelDescription)) {
-        this.$message({
-          message: "请完善所有标签信息！",
-          type: "error"
-        });
-        return;
-      }
-
-      let url;
-      if (this.$common.isEmpty(this.labelForHttp.id)) {
-        url = "/webInfo/saveLabel";
-      } else {
-        url = "/webInfo/updateLabel";
-      }
-      this.$http.post(this.$constant.baseURL + url, this.labelForHttp, true)
-        .then((res) => {
-          this.$message({
-            message: "保存成功！",
-            type: "success"
-          });
-          this.getSortInfo();
-          this.handleClose();
-          this.sort = {};
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    editSort(sort) {
-      this.sortDialog = true;
-      this.sortForHttp.id = sort.id;
-      this.sortForHttp.sortName = sort.sortName;
-      this.sortForHttp.sortDescription = sort.sortDescription;
-      this.sortForHttp.sortType = sort.sortType;
-      this.sortForHttp.priority = sort.priority;
-      this.sortForHttp.status = sort.status;
-    },
-    editLabel(label) {
-      this.labelDialog = true;
-      this.labelForHttp.id = label.id;
-      this.labelForHttp.sortId = label.sortId;
-      this.labelForHttp.labelName = label.labelName;
-      this.labelForHttp.labelDescription = label.labelDescription;
-    },
-    insertLabel(sort) {
-      this.labelForHttp.sortId = sort.id;
-      this.labelDialog = true;
-    },
-    handleClose() {
-      this.labelForHttp = {
-        id: null,
-        sortId: null,
-        labelName: "",
-        labelDescription: ""
-      };
-      this.sortForHttp = {
-        id: null,
-        sortName: "",
-        sortDescription: "",
-        sortType: null,
-        priority: null,
-        status: null,
-      };
-      this.sortDialog = false;
-      this.labelDialog = false;
-    },
-    sayLabel(sort) {
-      this.sort = sort;
-    },
-    getSortInfo() {
-      this.$http.get(this.$constant.baseURL + "/webInfo/getSortInfo")
-        .then((res) => {
-          if (!this.$common.isEmpty(res.data)) {
-            this.sortInfo = res.data;
-            console.log(res.data)
-          }
-        })
-        .catch((error) => {
-          this.$message({
-            message: error.message,
-            type: "error"
-          });
-        });
-    },
-    changeSortStatus(sort) {
-      if (sort.status !== null&& sort.id !== null){
-        this.$http.post(this.$constant.baseURL + "/webInfo/updateSort", sort, true)
-          .then((res) => {
-            this.$message({
-              message: "修改成功！",
-              type: "success"
-            });
-            this.getSortInfo();
-            this.handleClose();
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-        }
+        message: '已取消删除!'
+      })
     }
-
   }
 }
+
+// 保存分类编辑
+const saveSortEdit = async () => {
+  if ($common.isEmpty(sortForHttp.sortType) ||
+    $common.isEmpty(sortForHttp.priority) ||
+    $common.isEmpty(sortForHttp.sortName) ||
+    $common.isEmpty(sortForHttp.sortDescription)) {
+    ElMessage({
+      message: "请完善所有分类信息！",
+      type: "error"
+    })
+    return
+  }
+
+  try {
+    if ($common.isEmpty(sortForHttp.id)) {
+      await webInfoApi.saveSort(sortForHttp)
+    } else {
+      await webInfoApi.updateSort(sortForHttp)
+    }
+    
+    ElMessage({
+      message: "保存成功！",
+      type: "success"
+    })
+    getSortInfo()
+    handleClose()
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+// 保存标签编辑
+const saveLabelEdit = async () => {
+  if ($common.isEmpty(labelForHttp.labelName) ||
+    $common.isEmpty(labelForHttp.labelDescription)) {
+    ElMessage({
+      message: "请完善所有标签信息！",
+      type: "error"
+    })
+    return
+  }
+
+  try {
+    if ($common.isEmpty(labelForHttp.id)) {
+      await webInfoApi.saveLabel(labelForHttp)
+    } else {
+      await webInfoApi.updateLabel(labelForHttp)
+    }
+    
+    ElMessage({
+      message: "保存成功！",
+      type: "success"
+    })
+    getSortInfo()
+    handleClose()
+    Object.assign(sort, {})
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+// 编辑分类
+const editSort = (item) => {
+  sortDialog.value = true
+  sortForHttp.id = item.id
+  sortForHttp.sortName = item.sortName
+  sortForHttp.sortDescription = item.sortDescription
+  sortForHttp.sortType = item.sortType
+  sortForHttp.priority = item.priority
+  sortForHttp.status = item.status
+}
+
+// 编辑标签
+const editLabel = (item) => {
+  labelDialog.value = true
+  labelForHttp.id = item.id
+  labelForHttp.sortId = item.sortId
+  labelForHttp.labelName = item.labelName
+  labelForHttp.labelDescription = item.labelDescription
+}
+
+// 插入标签
+const insertLabel = (item) => {
+  labelForHttp.sortId = item.id
+  labelDialog.value = true
+}
+
+// 关闭对话框
+const handleClose = () => {
+  Object.assign(labelForHttp, {
+    id: null,
+    sortId: null,
+    labelName: "",
+    labelDescription: ""
+  })
+  Object.assign(sortForHttp, {
+    id: null,
+    sortName: "",
+    sortDescription: "",
+    sortType: null,
+    priority: null,
+    status: null,
+  })
+  sortDialog.value = false
+  labelDialog.value = false
+}
+
+// 查看标签
+const sayLabel = (item) => {
+  Object.assign(sort, item)
+}
+
+// 获取分类信息
+const getSortInfo = async () => {
+  try {
+    const res = await webInfoApi.getSortInfo()
+    if (!res.data) return
+    
+    if (!($common.isEmpty(res.data))) {
+      sortInfo.value = res.data
+      console.log(res.data)
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
+  }
+}
+
+// 改变分类状态
+const changeSortStatus = async (item) => {
+  if (item.status !== null && item.id !== null) {
+    try {
+      await webInfoApi.updateSort(item)
+      ElMessage({
+        message: "修改成功！",
+        type: "success"
+      })
+      getSortInfo()
+      handleClose()
+    } catch (error) {
+      ElMessage({
+        message: error.message,
+        type: "error"
+      })
+    }
+  }
+}
+
+// 组件挂载时获取数据
+onMounted(() => {
+  getSortInfo()
+})
 </script>
 
 <style scoped>

@@ -2,60 +2,7 @@
   <div>
     <div class="friend-wrap">
       <div class="friend-main">
-        <!-- 添加友链 -->
-<!--        <div @click="clickLetter()" class="form-wrap">-->
-<!--          &lt;!&ndash; 信封上面 &ndash;&gt;-->
-<!--&lt;!&ndash;          <img class="before-img" :src="$stores.state.sysConfig['webStaticResourcePrefix'] + 'assets/friendLetterTop.png'" style="width: 100%"/>&ndash;&gt;-->
-<!--          <img class="before-img" :src="$constant.friendLetterTop" style="width: 100%"/>-->
-<!--          &lt;!&ndash; 信 &ndash;&gt;-->
-<!--          <div class="envelope" style="animation: hideToShow 2s">-->
-<!--            <div class="form-main">-->
-<!--&lt;!&ndash;              <img :src="$stores.state.sysConfig['webStaticResourcePrefix'] + 'assets/friendLetterMiddle.jpg'" style="width: 100%"/>&ndash;&gt;-->
-<!--              <img :src="$constant.friendLetterMiddle" style="width: 100%"/>-->
-<!--              <div>-->
-<!--                <h3 style="text-align: center">有朋自远方来</h3>-->
-<!--                <div>-->
-<!--                  <div class="myCenter form-friend">-->
-<!--                    <div class="user-title">-->
-<!--                      <div>名称：</div>-->
-<!--                      <div>简介：</div>-->
-<!--                      <div>封面：</div>-->
-<!--                      <div>网址：</div>-->
-<!--                    </div>-->
-<!--                    <div class="user-content">-->
-<!--                      <div>-->
-<!--                        <el-input maxlength="30" v-model="friend.title"></el-input>-->
-<!--                      </div>-->
-<!--                      <div>-->
-<!--                        <el-input maxlength="120" v-model="friend.introduction"></el-input>-->
-<!--                      </div>-->
-<!--                      <div>-->
-<!--                        <el-input maxlength="200" v-model="friend.cover"></el-input>-->
-<!--                      </div>-->
-<!--                      <div>-->
-<!--                        <el-input maxlength="200" v-model="friend.url"></el-input>-->
-<!--                      </div>-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                  <div class="myCenter" style="margin-top: 20px">-->
-<!--                    <proButton :info="'提交'"-->
-<!--                               @click.native.stop="submitFriend()"-->
-<!--                               :before="$constant.before_color_2"-->
-<!--                               :after="$constant.after_color_2">-->
-<!--                    </proButton>-->
-<!--                  </div>-->
-<!--                </div>-->
-<!--                <div>-->
-<!--                  <img :src="$stores.state.sysConfig['webStaticResourcePrefix'] + 'assets/friendLetterBiLi.png'" style="width: 100%;margin: 5px auto"/>-->
-<!--                </div>-->
-<!--                <p style="font-size: 12px;text-align: center;color: #999">欢迎交换友链</p>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <img class="after-img" :src="$stores.state.sysConfig['webStaticResourcePrefix'] + 'assets/friendLetterBottom.png'" style="width: 100%"/>-->
-<!--        </div>-->
-
-        <div @click="clickLetter()" class="form-wrap">
+        <div @click="clickLetter()" class="form-wrap" ref="formWrapRef" :style="{height: formHeight, top: formTop}">
           <!-- 信封上面 -->
           <img class="before-img" :src="$constant.friendLetterTop" style="width: 100%"/>
           <!-- 信 -->
@@ -89,7 +36,7 @@
                   </div>
                   <div class="myCenter" style="margin-top: 20px">
                     <proButton :info="'提交'"
-                               @click.native.stop="submitFriend()"
+                               @click.stop="submitFriend()"
                                :before="$constant.before_color_2"
                                :after="$constant.after_color_2">
                     </proButton>
@@ -138,125 +85,117 @@
   </div>
 </template>
 
-<script>
-  const card = () => import( "./common/card");
-  const proButton = () => import( "./common/proButton");
+<script setup>
+import { ref, onMounted, inject } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores'
+import { webApi } from '@/api'
+import card from './common/card.vue'
+import proButton from './common/proButton.vue'
 
-  export default {
-    components: {
-      card,
-      proButton
-    },
+// 获取注入的全局属性
+const $common = inject('$common')
+const $constant = inject('$constant')
 
-    data() {
-      return {
-        friendList: {},
-        friend: {
-          title: "",
-          introduction: "",
-          cover: "",
-          url: ""
-        }
-      }
-    },
+// 状态管理
+const userStore = useUserStore()
 
-    computed: {},
+// 组件
+const components = {
+  card,
+  proButton
+}
 
-    watch: {},
+// 响应式数据
+const friendList = ref({})
+const friend = ref({
+  title: "",
+  introduction: "",
+  cover: "",
+  url: ""
+})
+const formWrapRef = ref(null)
 
 
+// 方法
+defineExpose({
+  clickLetter,
+  submitFriend,
+  clickFriend,
+  getFriends
+})
 
-    created() {
-      this.getFriends();
-    },
+// 响应式数据
+const formHeight = ref('447px')
+const formTop = ref('0')
+const isMobile = ref(window.innerWidth < 700)
 
-    mounted() {
-
-    },
-
-    methods: {
-      clickLetter() {
-        if (document.body.clientWidth < 700) {
-          $(".form-wrap").css({"height": "1000px", "top": "-200px"});
-        } else {
-          $(".form-wrap").css({"height": "1150px", "top": "-200px"});
-        }
-      },
-      submitFriend() {
-        if (this.$common.isEmpty(this.$store.state.currentUser)) {
-          this.$message({
-            message: "请先登录！",
-            type: "error"
-          });
-          return;
-        }
-
-        if (this.friend.title.trim() === "") {
-          this.$message({
-            message: "你还没写名称呢~",
-            type: "warning"
-          });
-          return;
-        }
-
-        if (this.friend.introduction.trim() === "") {
-          this.$message({
-            message: "你还没写简介呢~",
-            type: "warning"
-          });
-          return;
-        }
-
-        if (this.friend.cover.trim() === "") {
-          this.$message({
-            message: "你还没设置封面呢~",
-            type: "warning"
-          });
-          return;
-        }
-
-        if (this.friend.url.trim() === "") {
-          this.$message({
-            message: "你还没写网址呢~",
-            type: "warning"
-          });
-          return;
-        }
-
-        this.$http.post(this.$constant.baseURL + "/webInfo/saveFriend", this.friend)
-          .then((res) => {
-            $(".form-wrap").css({"height": "447px", "top": "0"});
-            this.$message({
-              type: 'success',
-              message: '提交成功，待管理员审核！'
-            });
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      clickFriend(path) {
-        window.open(path);
-      },
-      getFriends() {
-        this.$http.get(this.$constant.baseURL + "/webInfo/listFriend")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.friendList = res.data;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      }
-    }
+const clickLetter = () => {
+  if (isMobile.value) {
+    formHeight.value = '1000px'
+  } else {
+    formHeight.value = '1150px'
   }
+  formTop.value = '-200px'
+}
+
+async function submitFriend() {
+  if ($common.isEmpty(userStore.currentUser)) {
+    ElMessage.error("请先登录！")
+    return
+  }
+
+  if (friend.value.title.trim() === "") {
+    ElMessage.warning("你还没写名称呢~")
+    return
+  }
+
+  if (friend.value.introduction.trim() === "") {
+    ElMessage.warning("你还没写简介呢~")
+    return
+  }
+
+  if (friend.value.cover.trim() === "") {
+    ElMessage.warning("你还没设置封面呢~")
+    return
+  }
+
+  if (friend.value.url.trim() === "") {
+    ElMessage.warning("你还没写网址呢~")
+    return
+  }
+
+  try {
+    await webApi.saveFriend(friend.value)
+    // 恢复默认样式
+    formHeight.value = '447px'
+    formTop.value = '0'
+    ElMessage.success('提交成功，待管理员审核！')
+  } catch (error) {
+    ElMessage.error(error.message)
+  }
+}
+
+function clickFriend(path) {
+  window.open(path)
+}
+
+async function getFriends() {
+  try {
+    const res = await webApi.listFriend()
+    if (!res.data) return
+    if (!res.data.length) return
+    if (!res.data.length) return
+    friendList.value = res.data
+  } catch (error) {
+    ElMessage.error(error.message)
+  }
+}
+
+// 生命周期
+onMounted(() => {
+  getFriends()
+})
 </script>
 
 <style scoped>
@@ -368,7 +307,7 @@
     align-items: center;
   }
 
-  .user-content >>> .el-input__inner {
+  .user-content ::v-deep(.el-input__inner) {
     border: none;
     height: 35px;
     background: var(--whiteMask);

@@ -20,7 +20,7 @@
       <el-table-column prop="message" label="留言内容" align="center"></el-table-column>
       <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
       <el-table-column label="操作" width="180" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button type="text" icon="el-icon-delete" style="color: var(--orangeRed)" @click="handleDelete(scope.row)">
             删除
           </el-button>
@@ -29,7 +29,7 @@
     </el-table>
     <div class="pagination">
       <el-pagination background layout="total, prev, pager, next"
-                     :current-page="pagination.current"
+                     v-model:current-page="pagination.current"
                      :page-size="pagination.size"
                      :total="pagination.total"
                      @current-change="handlePageChange">
@@ -38,82 +38,82 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { webInfoApi } from '@/api'
 
-  export default {
-    data() {
-      return {
-        pagination: {
-          current: 1,
-          size: 10,
-          total: 0
-        },
-        treeHoles: []
-      }
-    },
+// 辅助函数
+const isEmpty = (obj) => {
+  return obj === null || obj === undefined || (typeof obj === 'object' && Object.keys(obj).length === 0);
+}
 
-    computed: {},
+// 响应式数据
+const treeHoles = ref([])
+const pagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0
+})
 
-    watch: {},
+// 获取树洞列表
+const getTreeHoles = async () => {
+  try {
+    const res = await webInfoApi.getTreeHoleList(pagination)
+    if (!isEmpty(res.data)) {
+      treeHoles.value = res.data.records;
+      pagination.total = res.data.total;
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '获取树洞列表失败',
+      type: "error"
+    });
+  }
+}
 
-    created() {
-      this.getTreeHoles()
-    },
+// 分页切换
+const handlePageChange = (val) => {
+  pagination.current = val;
+  getTreeHoles();
+}
 
-    mounted() {
-    },
-
-    methods: {
-      getTreeHoles() {
-        this.$http.post(this.$constant.baseURL + "/admin/treeHole/boss/list", this.pagination, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.treeHoles = res.data.records;
-              this.pagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      handlePageChange(val) {
-        this.pagination.current = val;
-        this.getTreeHoles();
-      },
-      handleDelete(item) {
-        this.$confirm('确认删除？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.get(this.$constant.baseURL + "/webInfo/deleteTreeHole", {id: item.id}, true)
-            .then((res) => {
-              this.pagination.current = 1;
-              this.getTreeHoles();
-              this.$message({
-                message: "删除成功！",
-                type: "success"
-              });
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消删除!'
-          });
-        });
-      }
+// 删除操作
+const handleDelete = async (item) => {
+  try {
+    await ElMessageBox.confirm('确认删除？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      center: true
+    })
+    
+    await webInfoApi.deleteTreeHole({id: item.id})
+    pagination.current = 1;
+    getTreeHoles();
+    ElMessage({
+      message: "删除成功！",
+      type: "success"
+    });
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage({
+        message: error.message || '删除失败',
+        type: "error"
+      });
+    } else {
+      ElMessage({
+        type: 'warning',
+        message: '已取消删除!'
+      });
     }
   }
+}
+
+// 组件挂载时获取数据
+onMounted(() => {
+  getTreeHoles()
+})
 </script>
 
 <style scoped>

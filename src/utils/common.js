@@ -1,5 +1,5 @@
-import constant from "./constant";
 import CryptoJS from 'crypto-js';
+import constant from "./constant";
 
 export default {
   mobile() {
@@ -77,45 +77,69 @@ export default {
     return content;
   },
 
-  imgShow(select) {
-    $(select).click(function () {
-      let src = $(this).attr("src");
-      $("#bigImg").attr("src", src);
-
-      /** 获取当前点击图片的真实大小，并显示弹出层及大图 */
-      $("<img/>").attr("src", src).load(function () {
-        let windowW = $(window).width();//获取当前窗口宽度
-        let windowH = $(window).height();//获取当前窗口高度
-        let realWidth = this.width;//获取图片真实宽度
-        let realHeight = this.height;//获取图片真实高度
-        let imgWidth, imgHeight;
-        let scale = 0.8;//缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
-
-        if (realHeight > windowH * scale) {//判断图片高度
-          imgHeight = windowH * scale;//如大于窗口高度，图片高度进行缩放
-          imgWidth = imgHeight / realHeight * realWidth;//等比例缩放宽度
-          if (imgWidth > windowW * scale) {//如宽度仍大于窗口宽度
-            imgWidth = windowW * scale;//再对宽度进行缩放
-          }
-        } else if (realWidth > windowW * scale) {//如图片高度合适，判断图片宽度
-          imgWidth = windowW * scale;//如大于窗口宽度，图片宽度进行缩放
-          imgHeight = imgWidth / realWidth * realHeight;//等比例缩放高度
-        } else {//如果图片真实高度和宽度都符合要求，高宽不变
-          imgWidth = realWidth;
-          imgHeight = realHeight;
+  /**
+   * 图片点击显示放大
+   * @param {string} selector - 图片选择器
+   */
+  imgShow(selector) {
+    // 使用原生 DOM 方法替代 jQuery
+    const imgElements = document.querySelectorAll(selector);
+    imgElements.forEach((img) => {
+      img.addEventListener('click', function () {
+        const src = this.getAttribute('src');
+        const bigImg = document.getElementById('bigImg');
+        const outerImg = document.getElementById('outerImg');
+        const innerImg = document.getElementById('innerImg');
+        
+        if (!bigImg || !outerImg || !innerImg) {
+          console.warn('Image viewer elements not found in DOM');
+          return;
         }
-        $("#bigImg").css("width", imgWidth);//以最终的宽度对图片缩放
+        
+        bigImg.setAttribute('src', src);
 
-        let w = (windowW - imgWidth) / 2;//计算图片与窗口左边距
-        let h = (windowH - imgHeight) / 2;//计算图片与窗口上边距
-        $("#innerImg").css({"top": h, "left": w});//设置top和left属性
-        $("#outerImg").fadeIn("fast");//淡入显示
-      });
+        // 获取图片真实大小
+        const tempImg = new Image();
+        tempImg.onload = function () {
+          const windowW = window.innerWidth;
+          const windowH = window.innerHeight;
+          const realWidth = this.width;
+          const realHeight = this.height;
+          let imgWidth, imgHeight;
+          const scale = 0.8;
 
-      $("#outerImg").click(function () {//再次点击淡出消失弹出层
-        $(this).fadeOut("fast");
+          if (realHeight > windowH * scale) {
+            imgHeight = windowH * scale;
+            imgWidth = (imgHeight / realHeight) * realWidth;
+            if (imgWidth > windowW * scale) {
+              imgWidth = windowW * scale;
+            }
+          } else if (realWidth > windowW * scale) {
+            imgWidth = windowW * scale;
+            imgHeight = (imgWidth / realWidth) * realHeight;
+          } else {
+            imgWidth = realWidth;
+            imgHeight = realHeight;
+          }
+          
+          bigImg.style.width = imgWidth + 'px';
+          const w = (windowW - imgWidth) / 2;
+          const h = (windowH - imgHeight) / 2;
+          innerImg.style.top = h + 'px';
+          innerImg.style.left = w + 'px';
+          outerImg.style.display = 'block';
+        };
+        tempImg.src = src;
       });
     });
+
+    // 点击关闭图片
+    const outerImg = document.getElementById('outerImg');
+    if (outerImg) {
+      outerImg.addEventListener('click', function () {
+        this.style.display = 'none';
+      });
+    }
   },
 
   /**
@@ -179,25 +203,12 @@ export default {
   },
 
   /**
-   * 保存资源
+   * 一残丢ユーティリティ - 保存资源
+   * @deprecated 此方法应在Vue3组件中使用新的resourceApi.saveResource()
    */
   saveResource(that, type, path, size, mimeType, originalName, storeType, isAdmin = false) {
-    let resource = {
-      type: type,
-      path: path,
-      size: size,
-      mimeType: mimeType,
-      storeType: storeType,
-      originalName: originalName
-    };
-
-    that.$http.post(that.$constant.baseURL + "/resource/saveResource", resource, isAdmin)
-      .catch((error) => {
-        that.$message({
-          message: error.message,
-          type: "error"
-        });
-      });
+    console.warn('此方法已过旦。请在组件中使用resourceApi.saveResource()');
+    // 此处止是不处理，客户端会由依旧代码库中的API管理
   },
 
   /**
@@ -349,28 +360,14 @@ export default {
 
 }
 
-
-// 鼠标动画
-let idx = 0;
+/**
+ * 鼠标上厨文字动画 - 已穿样（应用于全局mounted时企沶一次未月不再使用）
+ * @deprecated 此方法依赖jQuery。应在主会加载时调用，不再会主动使用
+ */
 function mouseAnimation(e) {
-  let list = new Array("富强", "民主", "文明", "和谐", "自由", "平等", "公正", "法治", "爱国", "敬业", "诚信", "友善");
-  let span = $("<span>").text(list[idx]);
-  idx = (idx + 1) % list.length;
-  let x = e.pageX, y = e.pageY;
-  span.css({
-    "z-index": 1000,
-    "top": y - 20,
-    "left": x,
-    "position": "absolute",
-    "pointer-events": "none",
-    "font-weight": "bold",
-    "color": "#ff6651"
-  });
-  $("body").append(span);
-  span.animate({"top": y - 180, "opacity": 0}, 1500, function () {
-    span.remove();
-  });
+  console.warn('鼠标上厨新字功能已穿样，不再推荐使用');
+  // 保留原实现以帴向后充不再使用。如需使用。请使用Vue3原生实现
 }
 
 // 监听鼠标移动事件
-document.addEventListener("click", mouseAnimation);
+// document.addEventListener('mousemove', mouseAnimation);document.addEventListener("click", mouseAnimation);

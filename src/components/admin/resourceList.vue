@@ -34,17 +34,17 @@
         <el-table-column prop="userId" label="用户ID" align="center"></el-table-column>
         <el-table-column prop="type" label="资源类型" align="center"></el-table-column>
         <el-table-column label="状态" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-tag :type="scope.row.status === false ? 'danger' : 'success'"
                     disable-transitions>
               {{scope.row.status === false ? '禁用' : '启用'}}
             </el-tag>
-            <el-switch @click.native="changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
+            <el-switch @click="changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
           </template>
         </el-table-column>
         <el-table-column label="路径" align="center">
-          <template slot-scope="scope">
-            <template v-if="!$common.isEmpty(scope.row.mimeType) && scope.row.mimeType.includes('image')">
+          <template #default="scope">
+            <template v-if="!isEmpty(scope.row.mimeType) && scope.row.mimeType.includes('image')">
               <el-image lazy :preview-src-list="[scope.row.path]" class="table-td-thumb" :src="scope.row.path"
                         fit="cover"></el-image>
             </template>
@@ -55,7 +55,7 @@
         </el-table-column>
 
         <el-table-column label="大小(KB)" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             {{Math.round(scope.row.size / 1024)}}
           </template>
         </el-table-column>
@@ -63,7 +63,7 @@
         <el-table-column prop="storeType" label="存储平台" align="center"></el-table-column>
         <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
         <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-button type="text" icon="el-icon-delete" style="color: var(--orangeRed)"
                        @click="handleDelete(scope.row)">
               删除
@@ -73,7 +73,7 @@
       </el-table>
       <div class="pagination">
         <el-pagination background layout="total, prev, pager, next"
-                       :current-page="pagination.current"
+                       v-model:current-page="pagination.current"
                        :page-size="pagination.size"
                        :total="pagination.total"
                        @current-change="handlePageChange">
@@ -82,7 +82,7 @@
     </div>
 
     <el-dialog title="文件"
-               :visible.sync="resourceDialog"
+               v-model="resourceDialog"
                width="25%"
                :append-to-body="true"
                :close-on-click-modal="false"
@@ -109,131 +109,138 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import uploadPicture from '../common/uploadPicture.vue';
+import { resourceApi } from '@/api';
 
-  const uploadPicture = () => import( "../common/uploadPicture");
+// 辅助函数
+const isEmpty = (obj) => {
+  return obj === null || obj === undefined || (typeof obj === 'object' && Object.keys(obj).length === 0);
+};
 
-  export default {
-    components: {
-      uploadPicture
-    },
-    data() {
-      return {
-        pagination: {
-          current: 1,
-          size: 10,
-          total: 0,
-          resourceType: ""
-        },
-        resources: [],
-        resourceDialog: false,
-        storeTypes: [
-          {label: "服务器", value: "local"},
-          {label: "七牛云", value: "qiniu"}
-        ],
-        storeType: localStorage.getItem("defaultStoreType")
-      }
-    },
+// 响应式数据
+const resources = ref([]);
+const resourceDialog = ref(false);
+const storeType = ref(localStorage.getItem("defaultStoreType"));
+const pagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0,
+  resourceType: ""
+});
 
-    computed: {},
+const storeTypes = [
+  {label: "服务器", value: "local"},
+  {label: "七牛云", value: "qiniu"}
+];
 
-    watch: {},
+// 获取资源列表
+const getResources = async () => {
+  try {
+    const res = await resourceApi.listResource(pagination);
+    if (!res.data) {
+      ElMessage({
+        message: '获取数据失败',
+        type: "error"
+      });
+      return;
+    }
+    if (!isEmpty(res.data)) {
+      resources.value = res.data.records;
+      pagination.total = res.data.total;
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '请求失败',
+      type: "error"
+    });
+  }
+};
 
-    created() {
-      this.getResources();
-    },
-
-    mounted() {
-    },
-
-    methods: {
-      handleDelete(item) {
-        this.$confirm('确认删除资源？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.post(this.$constant.baseURL + "/resource/deleteResource", {path: item.path}, true, false)
-            .then((res) => {
-              this.pagination.current = 1;
-              this.getResources();
-              this.$message({
-                message: "删除成功！",
-                type: "success"
-              });
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消删除!'
-          });
-        });
-      },
-
-      addFile(res) {
-      },
-
-      addResources() {
-        if (this.$common.isEmpty(this.pagination.resourceType)) {
-          this.$message({
-            message: "请选择资源类型！",
-            type: "error"
-          });
-          return;
-        }
-        this.resourceDialog = true;
-      },
-      search() {
-        this.pagination.total = 0;
-        this.pagination.current = 1;
-        this.getResources();
-      },
-      getResources() {
-        this.$http.post(this.$constant.baseURL + "/resource/listResource", this.pagination, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.resources = res.data.records;
-              this.pagination.total = res.data.total;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      changeStatus(item) {
-        this.$http.get(this.$constant.baseURL + "/resource/changeResourceStatus", {
-          id: item.id,
-          flag: item.status
-        }, true)
-          .then((res) => {
-            this.$message({
-              message: "修改成功！",
-              type: "success"
-            });
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      handlePageChange(val) {
-        this.pagination.current = val;
-        this.getResources();
-      }
+// 删除资源
+const handleDelete = async (item) => {
+  try {
+    await ElMessageBox.confirm('确认删除资源？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success',
+      center: true
+    });
+    
+    await resourceApi.deleteResource({path: item.path});
+    pagination.current = 1;
+    await getResources();
+    ElMessage({
+      message: "删除成功！",
+      type: "success"
+    });
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage({
+        type: 'info',
+        message: '已取消删除!'
+      });
+    } else {
+      ElMessage({
+        message: error.message || '请求失败',
+        type: "error"
+      });
     }
   }
+};
+
+// 更改资源状态
+const changeStatus = async (item) => {
+  try {
+    await resourceApi.changeResourceStatus({id: item.id, flag: item.status});
+    ElMessage({
+      message: "修改成功！",
+      type: "success"
+    });
+  } catch (error) {
+    ElMessage({
+      message: error.message || '请求失败',
+      type: "error"
+    });
+  }
+};
+
+// 添加文件
+const addFile = (res) => {
+  // 保持空实现，与原代码一致
+};
+
+// 新增资源
+const addResources = () => {
+  if (isEmpty(pagination.resourceType)) {
+    ElMessage({
+      message: "请选择资源类型！",
+      type: "error"
+    });
+    return;
+  }
+  resourceDialog.value = true;
+};
+
+// 搜索
+const search = () => {
+  pagination.total = 0;
+  pagination.current = 1;
+  getResources();
+};
+
+// 分页变化
+const handlePageChange = (val) => {
+  pagination.current = val;
+  getResources();
+};
+
+// 组件挂载时获取数据
+onMounted(() => {
+  getResources();
+});
 </script>
 
 <style scoped>

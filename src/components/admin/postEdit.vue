@@ -103,246 +103,298 @@
   </div>
 </template>
 
-<script>
-  const uploadPicture = () => import( "../common/uploadPicture");
+<script setup>
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRoute } from 'vue-router'
+import router from '@/router'
+import * as articleApi from '../../api/modules/articleApi'
+import { useUserStore } from '@/stores'
+import { commonApi } from '@/api/index'
 
-  export default {
-    components: {
-      uploadPicture
-    },
-    data() {
-      return {
-        id: this.$route.query.id,
-        article: {
-          articleTitle: "",
-          articleContent: "",
-          commentStatus: true,
-          recommendStatus: false,
-          viewStatus: true,
-          password: "",
-          tips: "",
-          articleCover: "",
-          videoUrl: "",
-          sortId: null,
-          labelId: null
-        },
-        sorts: [],
-        labels: [],
-        labelsTemp: [],
-        rules: {
-          articleTitle: [
-            {required: true, message: '请输入标题', trigger: 'change'}
-          ],
-          articleContent: [
-            {required: true, message: '请输入内容', trigger: 'change'}
-          ],
-          commentStatus: [
-            {required: true, message: '是否启用评论', trigger: 'change'}
-          ],
-          recommendStatus: [
-            {required: true, message: '是否推荐', trigger: 'change'}
-          ],
-          viewStatus: [
-            {required: true, message: '是否可见', trigger: 'change'}
-          ],
-          articleCover: [
-            {required: true, message: '封面', trigger: 'change'}
-          ],
-          sortId: [
-            {required: true, message: '分类', trigger: 'change'}
-          ],
-          labelId: [
-            {required: true, message: '标签', trigger: 'blur'}
-          ]
-        }
-      }
-    },
+// 组件导入
+import uploadPicture from '../common/uploadPicture.vue'
 
-    computed: {},
+// 使用store
+const userStore = useUserStore()
 
-    watch: {
-      'article.sortId'(newVal, oldVal) {
-        if (oldVal !== null) {
-          this.article.labelId = null;
-        }
-        if (!this.$common.isEmpty(newVal) && !this.$common.isEmpty(this.labels)) {
-          this.labelsTemp = this.labels.filter(l => l.sortId === newVal);
-        }
-      }
-    },
+// 路由相关
+const route = useRoute()
 
-    created() {
-      this.getSortAndLabel();
-    },
+// 获取路由参数
+const id = computed(() => route.query.id)
 
-    mounted() {
+// 响应式数据
+const md = ref(null)
+const ruleForm = ref(null)
+const article = reactive({
+  articleTitle: "",
+  articleContent: "",
+  commentStatus: true,
+  recommendStatus: false,
+  viewStatus: true,
+  password: "",
+  tips: "",
+  articleCover: "",
+  videoUrl: "",
+  sortId: null,
+  labelId: null
+})
+const sorts = ref([])
+const labels = ref([])
+const labelsTemp = ref([])
+const rules = {
+  articleTitle: [
+    {required: true, message: '请输入标题', trigger: 'change'}
+  ],
+  articleContent: [
+    {required: true, message: '请输入内容', trigger: 'change'}
+  ],
+  commentStatus: [
+    {required: true, message: '是否启用评论', trigger: 'change'}
+  ],
+  recommendStatus: [
+    {required: true, message: '是否推荐', trigger: 'change'}
+  ],
+  viewStatus: [
+    {required: true, message: '是否可见', trigger: 'change'}
+  ],
+  articleCover: [
+    {required: true, message: '封面', trigger: 'change'}
+  ],
+  sortId: [
+    {required: true, message: '分类', trigger: 'change'}
+  ],
+  labelId: [
+    {required: true, message: '标签', trigger: 'blur'}
+  ]
+}
 
-    },
+// 监听分类ID变化
+watch(() => article.sortId, (newVal, oldVal) => {
+  if (oldVal !== null) {
+    article.labelId = null;
+  }
+  if (newVal && labels.value.length > 0) {
+    labelsTemp.value = labels.value.filter(l => l.sortId === newVal);
+  }
+}, { immediate: false })
 
-    methods: {
-      imgAdd(pos, file) {
-        let suffix = "";
-        if (file.name.lastIndexOf('.') !== -1) {
-          suffix = file.name.substring(file.name.lastIndexOf('.'));
-        }
-        let key = "articlePicture" + "/" + this.$store.state.currentAdmin.username.replace(/[^a-zA-Z]/g, '') + this.$store.state.currentAdmin.id + new Date().getTime() + Math.floor(Math.random() * 1000) + suffix;
+// 图片添加处理
+const imgAdd = (pos, file) => {
+  let suffix = "";
+  if (file.name.lastIndexOf('.') !== -1) {
+    suffix = file.name.substring(file.name.lastIndexOf('.'));
+  }
+  
+  // 获取用户信息
+  const currentAdmin = userStore.currentAdmin
+  let key = "articlePicture" + "/" + currentAdmin.username.replace(/[^a-zA-Z]/g, '') + currentAdmin.id + new Date().getTime() + Math.floor(Math.random() * 1000) + suffix;
 
-        let storeType = localStorage.getItem("defaultStoreType");
+  let storeType = localStorage.getItem("defaultStoreType");
 
-        let fd = new FormData();
-        fd.append("file", file);
-        fd.append("originalName", file.name);
-        fd.append("key", key);
-        fd.append("relativePath", key);
-        fd.append("type", "articlePicture");
-        fd.append("storeType", storeType);
+  let fd = new FormData();
+  fd.append("file", file);
+  fd.append("originalName", file.name);
+  fd.append("key", key);
+  fd.append("relativePath", key);
+  fd.append("type", "articlePicture");
+  fd.append("storeType", storeType);
 
-        if (storeType === "local") {
-          this.saveLocal(pos, fd);
-        } else if (storeType === "qiniu") {
-          this.saveQiniu(pos, fd);
-        }
-      },
-      saveLocal(pos, fd) {
-        this.$http.upload(this.$constant.baseURL + "/resource/upload", fd, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              let url = res.data;
-              this.$refs.md.$img2Url(pos, url);
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      saveQiniu(pos, fd) {
-        this.$http.get(this.$constant.baseURL + "/qiniu/getUpToken", {key: fd.get("key")}, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              fd.append("token", res.data);
+  if (storeType === "local") {
+    saveLocal(pos, fd);
+  } else if (storeType === "qiniu") {
+    saveQiniu(pos, fd);
+  }
+}
 
-              this.$http.uploadQiniu(this.$constant.qiniuUrl, fd)
-                .then((res) => {
-                  if (!this.$common.isEmpty(res.key)) {
-                    let url = this.$constant.qiniuDownload + res.key;
-                    let file = fd.get("file");
-                    this.$common.saveResource(this, "articlePicture", url, file.size, file.type, file.name, "qiniu", true);
-                    this.$refs.md.$img2Url(pos, url);
-                  }
-                })
-                .catch((error) => {
-                  this.$message({
-                    message: error.message,
-                    type: "error"
-                  });
-                });
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      addArticleCover(res) {
-        this.article.articleCover = res;
-      },
-      getSortAndLabel() {
-        this.$http.get(this.$constant.baseURL + "/webInfo/listSortAndLabel")
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.sorts = res.data.sorts;
-              this.labels = res.data.labels;
-              if (!this.$common.isEmpty(this.id)) {
-                this.getArticle();
-              }
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      getArticle() {
-        this.$http.get(this.$constant.baseURL + "/admin/article/getArticleById", {id: this.id}, true)
-          .then((res) => {
-            if (!this.$common.isEmpty(res.data)) {
-              this.article = res.data;
-            }
-          })
-          .catch((error) => {
-            this.$message({
-              message: error.message,
-              type: "error"
-            });
-          });
-      },
-      submitForm(formName) {
-        if (this.article.viewStatus === false && this.$common.isEmpty(this.article.password)) {
-          this.$message({
-            message: "文章不可见时必须输入密码！",
-            type: "error"
-          });
-          return;
-        }
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            if (this.$common.isEmpty(this.id)) {
-              this.saveArticle(this.article, "/article/saveArticle")
-            } else {
-              this.article.id = this.id;
-              this.saveArticle(this.article, "/article/updateArticle")
-            }
-          } else {
-            this.$message({
-              message: "请完善必填项！",
-              type: "error"
-            });
-          }
+// 保存到本地存储
+const saveLocal = async (pos, fd) => {
+  try {
+    const res = await articleApi.uploadFile(fd)
+    if (res.data) {
+      let url = res.data;
+      md.value.$img2Url(pos, url);
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '上传失败',
+      type: "error"
+    });
+  }
+}
+
+// 保存到七牛云
+const saveQiniu = async (pos, fd) => {
+  try {
+    const res = await articleApi.getUpToken(fd.get("key"))
+    if (res.data) {
+      fd.append("token", res.data);
+      
+      // 使用通用API模块进行七牛云上传
+      const uploadRes = await commonApi.uploadQiniu({ qiniuUrl: import.meta.env.VITE_QINIU_URL, formData: fd })
+      if (uploadRes.key) {
+        let url = `${import.meta.env.VITE_QINIU_DOWNLOAD}${uploadRes.key}`;
+        let file = fd.get("file");
+        await articleApi.saveResource({
+          type: "articlePicture",
+          url: url,
+          size: file.size,
+          fileType: file.type,
+          fileName: file.name,
+          storeType: "qiniu"
         });
-      },
-      resetForm(formName) {
-        this.$refs[formName].resetFields();
-        if (!this.$common.isEmpty(this.id)) {
-          this.getArticle();
-        }
-      },
-      saveArticle(value, url) {
-        this.$confirm('确认保存？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'success',
-          center: true
-        }).then(() => {
-          this.$http.post(this.$constant.baseURL + url, value, true)
-            .then((res) => {
-              this.$message({
-                message: "保存成功！",
-                type: "success"
-              });
-              this.$router.push({path: '/postList'});
-            })
-            .catch((error) => {
-              this.$message({
-                message: error.message,
-                type: "error"
-              });
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消保存!'
-          });
-        });
+        md.value.$img2Url(pos, url);
       }
     }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '上传失败',
+      type: "error"
+    });
   }
+}
+
+// 添加文章封面
+const addArticleCover = (res) => {
+  article.articleCover = res;
+}
+
+// 获取分类和标签
+const getSortAndLabel = async () => {
+  try {
+    const res = await articleApi.getSortAndLabel()
+    if (res.data && Object.keys(res.data).length > 0) {
+      sorts.value = res.data.sorts;
+      labels.value = res.data.labels;
+      if (id.value) {
+        getArticle();
+      }
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '获取分类标签失败',
+      type: "error"
+    });
+  }
+}
+
+// 获取文章详情
+const getArticle = async () => {
+  try {
+    const res = await articleApi.getArticleById(id.value)
+    if (res.data) {
+      Object.assign(article, res.data);
+    }
+  } catch (error) {
+    ElMessage({
+      message: error.message || '获取文章失败',
+      type: "error"
+    });
+  }
+}
+
+// 提交表单
+const submitForm = (formName) => {
+  if (article.viewStatus === false && !article.password) {
+    ElMessage({
+      message: "文章不可见时必须输入密码！",
+      type: "error"
+    });
+    return;
+  }
+  
+  ruleForm.value.validate((valid) => {
+    if (valid) {
+      if (!id.value) {
+        saveArticle(article)
+      } else {
+        article.id = id.value;
+        updateArticle(article)
+      }
+    } else {
+      ElMessage({
+        message: "请完善必填项！",
+        type: "error"
+      });
+    }
+  });
+}
+
+// 重置表单
+const resetForm = (formName) => {
+  ruleForm.value.resetFields();
+  if (id.value) {
+    getArticle();
+  }
+}
+
+// 保存文章
+const saveArticle = async (value) => {
+  try {
+    await ElMessageBox.confirm('确认保存？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      center: true
+    })
+    
+    await articleApi.saveArticle(value)
+    ElMessage({
+      message: "保存成功！",
+      type: "success"
+    });
+    router.push({path: '/postList'});
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage({
+        message: error.message || '保存失败',
+        type: "error"
+      });
+    } else {
+      ElMessage({
+        type: 'warning',
+        message: '已取消保存!'
+      });
+    }
+  }
+}
+
+// 更新文章
+const updateArticle = async (value) => {
+  try {
+    await ElMessageBox.confirm('确认保存？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      center: true
+    })
+    
+    await articleApi.updateArticle(value)
+    ElMessage({
+      message: "保存成功！",
+      type: "success"
+    });
+    router.push({path: '/postList'});
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage({
+        message: error.message || '保存失败',
+        type: "error"
+      });
+    } else {
+      ElMessage({
+        type: 'warning',
+        message: '已取消保存!'
+      });
+    }
+  }
+}
+
+// 组件挂载时获取数据
+onMounted(() => {
+  getSortAndLabel();
+})
 </script>
 
 <style scoped>
