@@ -39,12 +39,9 @@
                      :speeds="100"
                      :randomChannel="true">
           <template #danmu="{  danmu }">
-            <!--<span class="bullet-item" :style="{ color: getRandomColor() }">-->
-            <!--<img :src="danmu.avatar" alt=""> {{ danmu.msg }}-->
-            <!--</span>-->
             <div class="danmu-item" :style="{ color: getRandomColor() }">
               <img class="img" :src="danmu.avatar" alt=""/>
-              <span style="margin-right: 5px;" >{{ danmu.msg }}</span>
+              <span style="margin-right: 5px;">{{ danmu.msg }}</span>
             </div>
           </template>
         </vue-danmaku>
@@ -173,9 +170,9 @@ const submitMessage = async () => {
 
 
 // 生命周期
-onMounted(() => {
-  // getTreeHole();
-});
+// onMounted(() => {
+//   // getTreeHole();
+// });
 </script>
 
 <style scoped>
@@ -190,6 +187,7 @@ onMounted(() => {
   width: 360px;
   z-index: 10;
 }
+
 .message-title {
   user-select: none;
   text-align: center;
@@ -217,7 +215,6 @@ onMounted(() => {
   width: 100%;
   user-select: none;
   overflow: hidden;
-  z-index: 5
 }
 
 .danmaku {
@@ -227,10 +224,10 @@ onMounted(() => {
 
 .danmu-item {
   display: inline-flex;
-  padding: 6px;
+  padding: 5px 6px;
   white-space: nowrap;
   background-color: rgba(0, 0, 0, 0.8);
-  border-radius: 40px;
+  border-radius: 50px;
   font-size: 16px;
   line-height: 1; /* 让字体天然高度生效 */
   align-items: center;
@@ -240,7 +237,7 @@ onMounted(() => {
 .danmu-item .img {
   width: 30px;
   height: 30px;
-  border-radius: 30px;
+  border-radius: 50px;
   margin-right: 9px;
 }
 

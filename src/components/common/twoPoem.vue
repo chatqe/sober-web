@@ -13,7 +13,7 @@
       </template>
     </el-image>
     <div class="poem-wrap">
-      <div v-if="isShehui"><span>鬼畜全明星</span></div>
+      <div v-if="isShehui"><span>须知少日拏云志，曾许人间第一流</span></div>
       <div v-else><span>{{isHitokoto?hitokoto.from:guShi.origin}}</span></div>
       <p class="poem">{{isHitokoto?hitokoto.hitokoto:guShi.content}}</p>
       <p class="info" v-if="!isShehui && (!isHitokoto || (isHitokoto && !$common.isEmpty(hitokoto.from_who)))">

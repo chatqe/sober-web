@@ -29,13 +29,12 @@
 
 
 <script setup>
-import {ref, computed, onMounted, onUnmounted, inject} from 'vue'
+import {computed, inject, onMounted, ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
-import {useUserStore, useWebInfoStore, useSystemStore} from '@/stores'
-import {webInfoApi, articleApi} from '@/api'
+import {useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
+import {articleApi, webInfoApi} from '@/api'
 import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
-import {listTreeHole} from "@/api/modules/webInfo.js";
 
 // 获取公共属性
 const $common = inject('$common')

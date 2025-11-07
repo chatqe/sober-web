@@ -32,7 +32,8 @@ body {
 
 /* 图片 */
 .background-image {
-    width: 100vw;
+    /*width: 100vw;*/
+    width: 100%; /* 改成%后 message页面底部不在出现滚动条了*/
     height: 100vh;
     /* 固定位置，不随滚动条滚动 */
     position: fixed;
