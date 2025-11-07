@@ -127,6 +127,7 @@ import { Edit } from '@element-plus/icons-vue'
 import { commentApi } from '@/api'
 import commentBox from './commentBox.vue'
 import proPage from '../common/proPage.vue'
+import {getCommentTotal} from "@/api/modules/comment.js";
 
 // 注入全局属性
 const $common = inject('$common')
@@ -185,7 +186,7 @@ function toPage(page) {
 }
 
 function getTotal() {
-  commentApi.getCommentCount({ source: props.source, type: props.type })
+  commentApi.getCommentTotal({ source: props.source, type: props.type })
     .then((res) => {
       if (!res.data) return
       total.value = res.data

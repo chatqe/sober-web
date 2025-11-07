@@ -1,3 +1,5 @@
+import { animate, createTimeline } from 'animejs'
+
 export default function () {
   // 动画效果
   var canvasEl = document.querySelector("#mousedown");
@@ -14,15 +16,19 @@ export default function () {
         canvasEl.style.width = window.innerWidth + "px",
         canvasEl.style.height = window.innerHeight + "px",
         canvasEl.getContext("2d", {willReadFrequently: true}).scale(2, 2)
-    }, 500)
-      , render = anime({
+    }, 500);
+    
+    // v4 创建持续清空动画
+    animate({
+      targets: { val: 0 },
       duration: 1 / 0,
       update: function () {
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height)
       }
     });
+    
     document.addEventListener(tap, function (e) {
-      "sidebar" !== e.target.id && "toggle-sidebar" !== e.target.id && "A" !== e.target.nodeName && "IMG" !== e.target.nodeName && (render.play(),
+      "sidebar" !== e.target.id && "toggle-sidebar" !== e.target.id && "A" !== e.target.nodeName && "IMG" !== e.target.nodeName && (
         updateCoords(e),
         animateParticules(pointerX, pointerY))
     }, !1),
@@ -36,9 +42,9 @@ export default function () {
   }
 
   function setParticuleDirection(e) {
-    var t = anime.random(0, 360) * Math.PI / 180
-      , a = anime.random(50, 180)
-      , n = [-1, 1][anime.random(0, 1)] * a;
+    var t = Math.random() * 360 * Math.PI / 180
+      , a = Math.random() * 130 + 50
+      , n = [-1, 1][Math.floor(Math.random() * 2)] * a;
     return {
       x: e.x + n * Math.cos(t),
       y: e.y + n * Math.sin(t)
@@ -49,8 +55,8 @@ export default function () {
     var a = {};
     return a.x = e,
       a.y = t,
-      a.color = colors[anime.random(0, colors.length - 1)],
-      a.radius = anime.random(16, 32),
+      a.color = colors[Math.floor(Math.random() * colors.length)],
+      a.radius = Math.random() * 16 + 16,
       a.endPos = setParticuleDirection(a),
       a.draw = function () {
         ctx.beginPath(),
@@ -84,14 +90,16 @@ export default function () {
   }
 
   function renderParticule(e) {
-    for (var t = 0; t < e.animatables.length; t++)
-      e.animatables[t].target.draw()
+    for (var t = 0; t < e.length; t++)
+      if (e[t].target && e[t].target.draw) {
+        e[t].target.draw()
+      }
   }
 
   function animateParticules(e, t) {
     for (var a = createCircle(e, t), n = [], i = 0; i < numberOfParticules; i++)
       n.push(createParticule(e, t));
-    anime.timeline().add({
+    createTimeline().add({
       targets: n,
       x: function (e) {
         return e.endPos.x
@@ -100,21 +108,26 @@ export default function () {
         return e.endPos.y
       },
       radius: .1,
-      duration: anime.random(1200, 1800),
+      duration: Math.random() * 600 + 1200,
       easing: "easeOutExpo",
-      update: renderParticule
+      update: function (anim) {
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        for (var j = 0; j < n.length; j++) {
+          n[j].draw();
+        }
+        a.draw();
+      }
     }).add({
       targets: a,
-      radius: anime.random(80, 160),
+      radius: Math.random() * 80 + 80,
       lineWidth: 0,
       alpha: {
         value: 0,
         easing: "linear",
-        duration: anime.random(600, 800)
+        duration: Math.random() * 200 + 600
       },
-      duration: anime.random(1200, 1800),
+      duration: Math.random() * 600 + 1200,
       easing: "easeOutExpo",
-      update: renderParticule,
       offset: 0
     })
   }

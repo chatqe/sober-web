@@ -30,8 +30,24 @@
         </div>
       </div>
       <!-- 弹幕 -->
-      <div class="barrage-container">
-        <vue-baberrage :barrageList="barrageList" :loop="true"></vue-baberrage>
+      <div class="danmaku-container">
+        <vue-danmaku class="danmaku"
+                     ref="danmaku"
+                     v-model:danmus="barrageList"
+                     :isSuspend="true"
+                     :top="20" useSlot loop
+                     :speeds="100"
+                     :randomChannel="true">
+          <template #danmu="{  danmu }">
+            <!--<span class="bullet-item" :style="{ color: getRandomColor() }">-->
+            <!--<img :src="danmu.avatar" alt=""> {{ danmu.msg }}-->
+            <!--</span>-->
+            <div class="danmu-item" :style="{ color: getRandomColor() }">
+              <img class="img" :src="danmu.avatar" alt=""/>
+              <span style="margin-right: 5px;" >{{ danmu.msg }}</span>
+            </div>
+          </template>
+        </vue-danmaku>
       </div>
     </div>
     <div class="comment-wrap">
@@ -44,11 +60,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue';
-import { useUserStore, useWebInfoStore } from '@/stores';
-import { ElMessage } from 'element-plus';
-import { webInfoApi } from '@/api';
-import { defineAsyncComponent } from 'vue';
+import {computed, defineAsyncComponent, inject, onMounted, ref} from 'vue';
+import {useUserStore, useWebInfoStore} from '@/stores';
+import {ElMessage} from 'element-plus';
+import vueDanmaku from 'vue-danmaku'
+import {webInfoApi} from '@/api';
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -68,6 +84,13 @@ const userId = ref(0);
 const userStore = useUserStore();
 const webInfoStore = useWebInfoStore();
 
+const colorList = ref(['rgb(204,255,255)', 'white', 'rgb(204,255,204)', 'white', 'rgb(0,255,255)', 'white', 'rgb(255,204,255)', 'pink'],)
+
+// 生成随机颜色的函数
+function getRandomColor() {
+  return colorList.value[Math.floor(Math.random() * 8)]
+}
+
 // 计算属性
 const randomCover = computed(() => {
   const covers = webInfoStore.webInfo?.randomCover || [];
@@ -82,14 +105,21 @@ const getTreeHole = async () => {
   try {
     const res = await webInfoApi.listTreeHole();
     if (!$common.isEmpty(res.data)) {
-      res.data.forEach(m => {
-        barrageList.value.push({
-          id: m.id,
-          avatar: m.avatar,
-          msg: m.message,
-          time: Math.floor(Math.random() * 5 + 10)
-        });
-      });
+      // res.data.forEach(m => {
+      //   barrageList.value.push({
+      //     id: m.id,
+      //     avatar: m.avatar,
+      //     msg: m.message,
+      //     time: Math.floor(Math.random() * 5 + 10)
+      //   });
+      // });
+      barrageList.value = res.data.map(m => ({
+        id: m.id,
+        avatar: m.avatar,
+        msg: m.message,
+        time: ~~(Math.random() * 5 + 10)   // 位运算取整，比 floor 快一点
+      }))
+      console.log('barrageList:', barrageList.value)
     }
   } catch (error) {
     ElMessage({
@@ -98,6 +128,8 @@ const getTreeHole = async () => {
     });
   }
 };
+
+getTreeHole();
 
 // 提交消息
 const submitMessage = async () => {
@@ -139,64 +171,89 @@ const submitMessage = async () => {
   show.value = false;
 };
 
+
 // 生命周期
 onMounted(() => {
-  getTreeHole();
+  // getTreeHole();
 });
 </script>
 
 <style scoped>
 
-  .message-in {
-    position: absolute;
-    left: 50%;
-    top: 40%;
-    transform: translate(-50%, -50%);
-    color: var(--white);
-    animation: hideToShow 2.5s;
-    width: 360px;
-    z-index: 10;
-  }
+.message-in {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  color: var(--white);
+  animation: hideToShow 2.5s;
+  width: 360px;
+  z-index: 10;
+}
+.message-title {
+  user-select: none;
+  text-align: center;
+}
 
-  .message-title {
-    user-select: none;
-    text-align: center;
-  }
+.message-input {
+  border-radius: 1.2rem;
+  border: var(--white) 1px solid;
+  color: var(--white);
+  background: var(--transparent);
+  padding: 10px 10px;
+}
 
-  .message-input {
-    border-radius: 1.2rem;
-    border: var(--white) 1px solid;
-    color: var(--white);
-    background: var(--transparent);
-    padding: 10px 10px;
-  }
+.message-input::-webkit-input-placeholder {
+  color: var(--white);
+}
 
-  .message-input::-webkit-input-placeholder {
-    color: var(--white);
-  }
+.danmaku-container {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100% - 50px);
+  width: 100%;
+  user-select: none;
+  overflow: hidden;
+  z-index: 5
+}
 
-  .barrage-container {
-    position: absolute;
-    top: 50px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: calc(100% - 50px);
-    width: 100%;
-    user-select: none;
-    overflow: hidden;
-  }
+.danmaku {
+  width: 100%;
+  height: 100%;
+}
 
-  .comment-wrap {
-    background: var(--background);
-    position: absolute;
-    top: 100vh;
-    width: 100%;
-  }
+.danmu-item {
+  display: inline-flex;
+  padding: 6px;
+  white-space: nowrap;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 40px;
+  font-size: 16px;
+  line-height: 1; /* 让字体天然高度生效 */
+  align-items: center;
+  z-index: 10;
+}
 
-  .comment-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
-  }
+.danmu-item .img {
+  width: 30px;
+  height: 30px;
+  border-radius: 30px;
+  margin-right: 9px;
+}
+
+.comment-wrap {
+  background: var(--background);
+  position: absolute;
+  top: 100vh;
+  width: 100%;
+}
+
+.comment-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
 </style>

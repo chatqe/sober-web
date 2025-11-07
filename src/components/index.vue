@@ -479,10 +479,12 @@ onMounted(() => {
 
 .page-container {
   display: flex;
+
   justify-content: center;
   width: 90%;
   /* 限制最大宽度 页面会往中间靠*/
-  max-width: 1500px;
+  /*max-width: 1500px;*/
+  max-width: 1400px;
   padding: 0 10px 40px 10px;
   margin: 0 auto;
   flex-direction: row;

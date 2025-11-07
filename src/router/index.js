@@ -1,5 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router'
-
+import {useAuthStore} from "@/stores/index.js";
 
 const routes = [
     {
@@ -124,9 +124,8 @@ const routes = [
 ]
 
 const router = createRouter({
-
     history: createWebHistory(), // 替代 mode: 'history'
-    routes: routes, // 属性简写可写为 routes
+    routes,
     scrollBehavior(to, from, savedPosition) {
         // 返回的位置对象形态略有不同，Vue Router 4 中通常返回 { top: 0, left: 0 }
         return {top: 0, left: 0} // 或者 return { top: 0 }
@@ -138,7 +137,8 @@ const router = createRouter({
 // 全局前置守卫 注意：Vue Router 4 中，通过 return 来控制导航
 router.beforeEach((to, from) => { // next 参数目前保留，但未来可能废弃，建议使用返回方式
     if (to.matched.some(record => record.meta.requiresAuth)) {
-        if (!Boolean(localStorage.getItem("adminToken"))) {
+        const authStore = useAuthStore();
+        if (!Boolean(authStore.adminToken)) {
             return {
                 path: '/verify',
                 query: {redirect: to.fullPath}

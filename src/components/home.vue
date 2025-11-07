@@ -171,7 +171,7 @@
       </div>
 
       <!-- 首页 -->
-      <div class="goHome" >
+      <div class="goHome">
         <el-icon style="color: var(--black);">
           <HomeFilled/>
         </el-icon>
@@ -347,17 +347,17 @@
 </template>
 
 <script setup>
-import {ref, reactive, computed, onMounted, onUnmounted, nextTick, inject, watch} from 'vue'
+import {computed, inject, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import router from '@/router'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {useUserStore, useWebInfoStore, useSystemStore, useSortInfoStore, useAuthStore} from '@/stores'
-import {HomeFilled, Tools, Sunny, Moon, MagicStick, User, SwitchButton, Menu} from '@element-plus/icons-vue'
+import {useAuthStore, useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
+import {HomeFilled, MagicStick, Menu, Moon, Sunny, SwitchButton, Tools, User} from '@element-plus/icons-vue'
 import aPlayer from './common/aPlayer.vue'
 import mousedown from '../utils/mousedown'
 
 // API模块导入
-import {userApi, webApi, systemApi} from '@/api'
+import {systemApi, userApi, webApi} from '@/api'
 
 const route = useRoute()
 const $common = inject('$common')
@@ -395,12 +395,6 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
   window.addEventListener('scroll', onScrollPage)
 
-  // 初始化暗黑模式
-  if (isDaylight()) {
-    isDark.value = true
-    setupDarkMode()
-  }
-
   // 初始化鼠标动画
   if (mouseAnimation.value) {
     mousedown()
@@ -433,18 +427,6 @@ const onScrollPage = () => {
   scrollTop.value = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
 }
 
-// 设置暗黑模式
-const setupDarkMode = () => {
-  let root = document.querySelector(':root')
-  root.style.setProperty('--background', '#272727')
-  root.style.setProperty('--fontColor', 'white')
-  root.style.setProperty('--borderColor', '#4F4F4F')
-  root.style.setProperty('--borderHoverColor', 'black')
-  root.style.setProperty('--articleFontColor', '#E4E4E4')
-  root.style.setProperty('--articleGreyFontColor', '#D4D4D4')
-  root.style.setProperty('--commentContent', '#D4D4D4')
-  root.style.setProperty('--favoriteBg', '#1e1e1e')
-}
 
 // 监听滚动条变化
 let unwatchScrollTop = null
@@ -455,8 +437,7 @@ const toolbar = computed(() => {
 })
 
 const sortInfo = computed(() => {
-  let showSort = sortInfoStore.sortInfo.filter(item => item.status !== 0)
-  return showSort
+  return sortInfoStore.sortInfo.filter(item => item.status !== 0)
 })
 
 // 清理
@@ -503,7 +484,7 @@ const logout = async () => {
     userStore.loadCurrentUser({})
     localStorage.removeItem('userToken')
     ElMessage.success('退出成功')
-    router.push({path: '/'})
+    await router.push({path: '/'})
   } catch (error) {
     console.error('[logout error]', error)
     ElMessage.error(error?.message || '退出失败')
@@ -568,28 +549,31 @@ const buildCssPicture = () => {
     }
   }
 }
+// 设置暗黑模式
 const changeColor = () => {
-  if ($common.isEmpty(userStore.currentUser)) {
-    ElMessage.error('请先登录！')
-    return
+  isDark.value = !isDark.value;
+  let root = document.querySelector(":root");
+
+  if (isDark.value) {
+    root.style.setProperty("--background", "#272727");
+    root.style.setProperty("--fontColor", "white");
+    root.style.setProperty("--borderColor", "#4F4F4F");
+    root.style.setProperty("--borderHoverColor", "black");
+    root.style.setProperty("--articleFontColor", "#E4E4E4");
+    root.style.setProperty("--articleGreyFontColor", "#D4D4D4");
+    root.style.setProperty("--commentContent", "#D4D4D4");
+    root.style.setProperty("--favoriteBg", "#1e1e1e");
+  } else {
+    root.style.setProperty("--background", "white");
+    root.style.setProperty("--fontColor", "black");
+    root.style.setProperty("--borderColor", "rgba(0, 0, 0, 0.5)");
+    root.style.setProperty("--borderHoverColor", "rgba(110, 110, 110, 0.4)");
+    root.style.setProperty("--articleFontColor", "#1F1F1F");
+    root.style.setProperty("--articleGreyFontColor", "#616161");
+    root.style.setProperty("--commentContent", "#F7F9FE");
+    root.style.setProperty("--favoriteBg", "#f7f9fe");
   }
-  ElMessageBox.prompt('请输入颜色代码，如：#333333', '自定义背景色', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    inputPattern: /^#[0-9A-Fa-f]{6}$/,
-    inputErrorMessage: '请输入正确的颜色代码！'
-  }).then(async ({value}) => {
-    try {
-      await systemApi.setSysConfig({type: 'styleBgColor', value})
-      ElMessage.success('设置成功！')
-      getSysConfig()
-    } catch (error) {
-      console.error('[changeColor error]', error)
-      ElMessage.error(error?.message || '设置颜色失败')
-    }
-  }).catch(() => {
-    // 取消操作
-  })
+
 }
 
 const toTop = () => {
@@ -610,12 +594,13 @@ const isDaylight = () => {
 }
 
 const changeMouseAnimation = () => {
+  console.log("changeMouseAnimation")
   mouseAnimation.value = !mouseAnimation.value;
-  if (mouseAnimation.value) {
-    nextTick(() => {
-      mousedown();
-    });
-  }
+  // if (mouseAnimation.value) {
+  //   nextTick(() => {
+  //     mousedown();
+  //   });
+  // }
 }
 </script>
 
@@ -793,8 +778,8 @@ const changeMouseAnimation = () => {
   top: -10px;
 }
 
-.goHome{
- margin-bottom: 2px;
+.goHome {
+  margin-bottom: 2px;
 }
 
 #outerImg {

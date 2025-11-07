@@ -42,15 +42,17 @@ import { useRoute } from 'vue-router'
 import router from '@/router'
 import { ElMessage } from 'element-plus'
 import { defineAsyncComponent } from 'vue'
-import { useSystemStore } from '@/stores'
+import {useSortInfoStore, useSystemStore} from '@/stores'
 import { articleApi } from '@/api'
+import {getArticleList} from "@/api/modules/articleApi.js";
 
 // 获取注入的全局属性
 const $common = inject('$common')
 const $constant = inject('$constant')
 
 const route = useRoute()
-const systemStore = useSystemStore()
+// const sortInfoStore = useSystemStore()
+const sortInfoStore = useSortInfoStore()
 
 const twoPoem = defineAsyncComponent(() => import("./common/twoPoem.vue"))
 const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
@@ -72,7 +74,7 @@ const pagination = ref({
 const articles = ref([])
 
 // 计算属性
-const sortInfo = computed(() => systemStore.sortInfo)
+const sortInfo = computed(() => sortInfoStore.sortInfo)
 
 // 监听路由变化
 watch(() => route.query, () => {
@@ -126,7 +128,7 @@ const listArticle = (label) => {
 
 const getArticles = async () => {
   try {
-    const res = await articleApi.listArticle(pagination.value)
+    const res = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(res.data)) {
       articles.value = articles.value.concat(res.data.records)
       pagination.value.total = res.data.total

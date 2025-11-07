@@ -12,7 +12,7 @@ import request from "@/utils/request.js";
  * @returns {Promise} - 返回一个Promise，包含请求的结果
  */
 export async function deleteFamily(param) {
-    return request.get('/admin/family/delete', param, true);
+    return request.get('/family/delete', param, true);
 }
 
 /**
@@ -28,15 +28,15 @@ export function getFamily() {
  * @returns {Promise}
  */
 export function getAdminFamily() {
-    return request.get('/admin/family/getFamily', {}, true);
+    return request.get('/family/getAdminFamily', {}, false);
 }
 
 /**
  * 列表获取所有家庭信息
  * @returns {Promise}
  */
-export function listAdminFamily() {
-    return request.get('/admin/family/list', {}, true);
+export function listRandomFamily() {
+    return request.get('/family/listRandomFamily', {}, true);
 }
 
 /**

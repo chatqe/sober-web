@@ -33,6 +33,6 @@ export const getHistoryInfo = () => {
 };
 
 // 获取最新树洞
-export const latestTreeHole = () => {
-    return request.get('/webInfo/latestTreeHole');
+export const listTreeHole = () => {
+    return request.get('/webInfo/listTreeHole');
 };

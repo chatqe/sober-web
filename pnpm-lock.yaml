@@ -20,6 +20,9 @@ importers:
       '@tinymce/tinymce-vue':
         specifier: ^4.0.0
         version: 4.0.7(vue@3.5.22)
+      animejs:
+        specifier: ^4.2.2
+        version: 4.2.2
       axios:
         specifier: ^1.12.2
         version: 1.13.1
@@ -62,6 +65,9 @@ importers:
       vue-awesome-swiper:
         specifier: ^5.0.1
         version: 5.0.1(swiper@8.4.7)(vue@3.5.22)
+      vue-danmaku:
+        specifier: ^2.0.5
+        version: 2.0.5(vue@3.5.22)
       vue-i18n:
         specifier: ^9.13.1
         version: 9.14.5(vue@3.5.22)
@@ -756,6 +762,9 @@ packages:
     resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  animejs@4.2.2:
+    resolution: {integrity: sha512-Ys3RuvLdAeI14fsdKCQy7ytu4057QX6Bb7m4jwmfd6iKmUmLquTwk1ut0e4NtRQgCeq/s2Lv5+oMBjz6c7ZuIg==}
 
   async-validator@4.2.5:
     resolution: {integrity: sha512-7HhHjtERjqlNbZtqNqy2rckN/SpOOlmDliet+lP7k+eKZEjPk3DgyeU9lIXLdeLz0uBbbVp+9Qdow9wJWgwwfg==}
@@ -1514,6 +1523,11 @@ packages:
       swiper: ^7.0.0  || ^8.0.0
       vue: 3.x
 
+  vue-danmaku@2.0.5:
+    resolution: {integrity: sha512-crLTHXmkB+1/Fix7ciJnCo/KAhlUPoR4F/2DVpAi9PdN5XJcs7hS4nsm1xrSahBIOdWm+QltiUWSwSkWmqXN2A==}
+    peerDependencies:
+      vue: ^3.0.0
+
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
     engines: {node: '>=12'}
@@ -2251,6 +2265,8 @@ snapshots:
 
   acorn@8.15.0: {}
 
+  animejs@4.2.2: {}
+
   async-validator@4.2.5: {}
 
   asynckit@0.4.0: {}
@@ -2986,6 +3002,10 @@ snapshots:
   vue-awesome-swiper@5.0.1(swiper@8.4.7)(vue@3.5.22):
     dependencies:
       swiper: 8.4.7
+      vue: 3.5.22
+
+  vue-danmaku@2.0.5(vue@3.5.22):
+    dependencies:
       vue: 3.5.22
 
   vue-demi@0.14.10(vue@3.5.22):

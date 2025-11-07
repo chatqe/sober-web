@@ -35,6 +35,7 @@ import {ElMessage} from 'element-plus'
 import {useUserStore, useWebInfoStore, useSystemStore} from '@/stores'
 import {webInfoApi, articleApi} from '@/api'
 import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
+import {listTreeHole} from "@/api/modules/webInfo.js";
 
 // 获取公共属性
 const $common = inject('$common')
@@ -112,7 +113,7 @@ const showTip = () => {
 
 const getLatestTreeHole = async () => {
   try {
-    const res = await webInfoApi.latestTreeHole()
+    const res = await webInfoApi.listTreeHole()
     if (!$common.isEmpty(res.data)) {
       try {
         newTreeHoleList.value = res.data
