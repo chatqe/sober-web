@@ -162,10 +162,11 @@ body {
     box-shadow: 0 5px 10px 5px var(--borderHoverColor);
 }
 
-/* el弹出框样式 */
+/*el弹出框样式 */
 .el-message {
     top: 80px !important;
     border: 0;
+    /*position: fixed;*/
 }
 
 .el-message * {

@@ -10,16 +10,21 @@ import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 export default defineConfig({
     plugins: [vue({
         template: {
+            // 忽略 <meting-js>、<vue-baberrage> 两个自定义标签；
             compilerOptions: {
-                isCustomElement: (tag) => ['meting-js', 'vue-baberrage'].includes(tag)
+                isCustomElement: (tag) => ['meting-js'].includes(tag)
             }
         }
     }),
         AutoImport({
-            resolvers: [ElementPlusResolver()]
+            resolvers: [ElementPlusResolver({
+                importStyle: 'sass'
+            })]
         }),
         Components({
-            resolvers: [ElementPlusResolver()]
+            resolvers: [ElementPlusResolver({
+                importStyle: 'sass'
+            })]
         })
     ],
     resolve: {

@@ -34,5 +34,10 @@ export const getHistoryInfo = () => {
 
 // 获取最新树洞
 export const listTreeHole = () => {
-    return request.get('/webInfo/listTreeHole');
+    return request.get('/webInfo/listTreeHole')
+};
+
+// 添加树洞
+export const saveTreeHole = (params) => {
+    return request.post('/webInfo/saveTreeHole', params);
 };

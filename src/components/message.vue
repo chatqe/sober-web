@@ -35,8 +35,8 @@
                      ref="danmaku"
                      v-model:danmus="barrageList"
                      :isSuspend="true"
-                     :top="20" useSlot loop
-                     :speeds="100"
+                     :top="6" useSlot loop
+                     :speeds="110"
                      :randomChannel="true">
           <template #danmu="{  danmu }">
             <div class="danmu-item" :style="{ color: getRandomColor() }">
@@ -155,6 +155,10 @@ const submitMessage = async () => {
         avatar: res.data.avatar,
         msg: res.data.message,
         time: Math.floor(Math.random() * 5 + 10)
+      });
+      ElMessage({
+        message: "发布成功！",
+        type: "success"
       });
     }
   } catch (error) {
