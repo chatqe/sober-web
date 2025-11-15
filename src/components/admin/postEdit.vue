@@ -26,7 +26,7 @@
       </el-form-item>
 
       <el-form-item label="内容" prop="articleContent">
-        <mavon-editor ref="md" @imgAdd="imgAdd" v-model="article.articleContent"/>
+        <MdEditor ref="md" @upload-image="imgAdd" v-model="article.articleContent" />
       </el-form-item>
 
       <el-form-item label="是否启用评论" prop="commentStatus">
@@ -106,20 +106,21 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRoute } from 'vue-router'
-import router from '@/router'
-import * as articleApi from '../../api/modules/articleApi'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-import { commonApi } from '@/api/index'
+import { commonApi, articleApi } from '@/api/index'
 
 // 组件导入
 import uploadPicture from '../common/uploadPicture.vue'
+import MdEditor from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
 
 // 使用store
 const userStore = useUserStore()
 
 // 路由相关
 const route = useRoute()
+const router = useRouter()
 
 // 获取路由参数
 const id = computed(() => route.query.id)
@@ -181,7 +182,7 @@ watch(() => article.sortId, (newVal, oldVal) => {
 }, { immediate: false })
 
 // 图片添加处理
-const imgAdd = (pos, file) => {
+const imgAdd = async (file, insertImage) => {
   let suffix = "";
   if (file.name.lastIndexOf('.') !== -1) {
     suffix = file.name.substring(file.name.lastIndexOf('.'));
@@ -201,50 +202,32 @@ const imgAdd = (pos, file) => {
   fd.append("type", "articlePicture");
   fd.append("storeType", storeType);
 
-  if (storeType === "local") {
-    saveLocal(pos, fd);
-  } else if (storeType === "qiniu") {
-    saveQiniu(pos, fd);
-  }
-}
-
-// 保存到本地存储
-const saveLocal = async (pos, fd) => {
   try {
-    const res = await articleApi.uploadFile(fd)
-    if (res.data) {
-      let url = res.data;
-      md.value.$img2Url(pos, url);
-    }
-  } catch (error) {
-    ElMessage({
-      message: error.message || '上传失败',
-      type: "error"
-    });
-  }
-}
-
-// 保存到七牛云
-const saveQiniu = async (pos, fd) => {
-  try {
-    const res = await articleApi.getUpToken(fd.get("key"))
-    if (res.data) {
-      fd.append("token", res.data);
-      
-      // 使用通用API模块进行七牛云上传
-      const uploadRes = await commonApi.uploadQiniu({ qiniuUrl: import.meta.env.VITE_QINIU_URL, formData: fd })
-      if (uploadRes.key) {
-        let url = `${import.meta.env.VITE_QINIU_DOWNLOAD}${uploadRes.key}`;
-        let file = fd.get("file");
-        await articleApi.saveResource({
-          type: "articlePicture",
-          url: url,
-          size: file.size,
-          fileType: file.type,
-          fileName: file.name,
-          storeType: "qiniu"
-        });
-        md.value.$img2Url(pos, url);
+    if (storeType === "local") {
+      const res = await articleApi.uploadFile(fd);
+      if (res.data) {
+        // 使用md-editor-v3的insertImage回调函数插入图片
+        insertImage(res.data);
+      }
+    } else if (storeType === "qiniu") {
+      const res = await articleApi.getUpToken(fd.get("key"));
+      if (res.data) {
+        fd.append("token", res.data);
+        const uploadRes = await commonApi.uploadQiniu({ qiniuUrl: import.meta.env.VITE_QINIU_URL, formData: fd });
+        if (uploadRes.key) {
+          let url = `${import.meta.env.VITE_QINIU_DOWNLOAD}${uploadRes.key}`;
+          let fileObj = fd.get("file");
+          await articleApi.saveResource({
+            type: "articlePicture",
+            url: url,
+            size: fileObj.size,
+            fileType: fileObj.type,
+            fileName: fileObj.name,
+            storeType: "qiniu"
+          });
+          // 使用md-editor-v3的insertImage回调函数插入图片
+          insertImage(url);
+        }
       }
     }
   } catch (error) {
@@ -252,6 +235,8 @@ const saveQiniu = async (pos, fd) => {
       message: error.message || '上传失败',
       type: "error"
     });
+    // 上传失败时返回false
+    return false;
   }
 }
 

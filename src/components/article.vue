@@ -136,7 +136,17 @@
           </div>
 
           <!-- 文章内容 -->
-          <div v-html="articleContentHtml" class="entry-content" ref="entryContentRef"></div>
+          <MdEditor
+            v-model="articleContentHtml"
+            class="entry-content"
+            :modelValue="articleContentHtml"
+            :previewOnly="true"
+            :toolbars="{}"
+            :editorId="'article-editor-' + article.id"
+            ref="entryContentRef"
+          />
+          <!-- 为了向后兼容，保留原有的引用方式 -->
+          <div style="display: none;" ref="entryContentRefOld"></div>
           <!-- 最后更新时间 -->
           <div class="article-update-time">
             <span>文章最后更新于 {{ article.updateTime }}</span>
@@ -304,7 +314,7 @@ import { ElMessage, ElMessageBox, ElNotification, ElIcon } from 'element-plus'
 import { Thumb } from '@element-plus/icons-vue'
 // 导入状态管理
 import { useUserStore, useWebInfoStore } from '@/stores'
-import MarkdownIt from 'markdown-it'
+import MdEditor from 'md-editor-v3'
 
 // 导入API模块
 import { articleApi, userApi, weiYanApi } from '@/api'
@@ -350,12 +360,7 @@ const tocElementRef = ref(null)
 const articleContentRef = ref(null)
 const entryContentRef = ref(null)
 
-// 初始化Markdown解析器
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true
-})
+// 由于我们使用md-editor-v3进行渲染，移除MarkdownIt初始化
 
 // 生命周期钩子：组件挂载后
 onMounted(async () => {
@@ -567,7 +572,8 @@ const getTocbot = () => {
     if (typeof tocbot !== 'undefined') {
       tocbot.init({
         tocSelector: '.toc',
-        contentSelector: '.entry-content',
+        // 使用预览区域作为内容选择器
+        contentSelector: `.md-editor-preview`,
         headingSelector: 'h1, h2, h3, h4, h5',
         scrollSmooth: true,
         fixedSidebarOffset: 'auto',
@@ -606,14 +612,21 @@ const getArticle = async (passwordVal) => {
       // 获取动态消息
       getNews();
       
-      // 解析文章内容
-      articleContentHtml.value = md.render(article.value.articleContent);
+      // 使用md-editor-v3渲染文章内容（仅预览模式）
+      articleContentHtml.value = article.value.articleContent;
       
       nextTick(() => {
-        $common.imgShow(".entry-content img");
-        highlight();
-        addId();
-        getTocbot();
+        // 使用MdEditor时，imgShow直接针对整个预览区域
+        $common.imgShow(".md-editor-preview img");
+        // 对于MdEditor，我们需要获取预览区域的DOM元素
+        const previewElement = document.querySelector(`#article-editor-${article.value.id}-preview`);
+        if (previewElement) {
+          // 将ref设置为预览元素，以便后续函数使用
+          entryContentRef.value = previewElement;
+          highlight();
+          addId();
+          getTocbot();
+        }
       });
       
       if (!password.value) {

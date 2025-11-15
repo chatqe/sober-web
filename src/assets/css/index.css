@@ -166,12 +166,12 @@ body {
 .el-message {
     top: 80px !important;
     border: 0;
-    /*position: fixed;*/
+
 }
 
 .el-message * {
     color: var(--white) !important;
-    font-weight: 600;
+    font-weight: 600 !important;
 }
 
 .el-message--success {

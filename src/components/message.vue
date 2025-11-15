@@ -116,7 +116,7 @@ const getTreeHole = async () => {
         msg: m.message,
         time: ~~(Math.random() * 5 + 10)   // 位运算取整，比 floor 快一点
       }))
-      console.log('barrageList:', barrageList.value)
+      // console.log('barrageList:', barrageList.value)
     }
   } catch (error) {
     ElMessage({

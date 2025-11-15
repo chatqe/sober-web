@@ -90,7 +90,7 @@ const picture = reactive({
 // 方法
 function openPicture() {
   if ($common.isEmpty(userStore.currentUser)) {
-    console.log('请先登录！')
+    // console.log('请先登录！')
     ElMessage.error('请先登录！')
     return
   }

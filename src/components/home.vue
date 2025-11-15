@@ -46,8 +46,8 @@
                 </div>
               </li>
               <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item v-for="(sort, index) in sortInfo" :key="index">
+                <el-dropdown-menu class="new-menu">
+                  <el-dropdown-item class="new-menu-item" v-for="(sort, index) in sortInfo" :key="index">
                     <div @click="router.push({path: '/sort', query: {sortId: sort.id}})">
                       {{ sort.sortName }}
                     </div>
