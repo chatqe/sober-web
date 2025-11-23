@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="index-container">
     <!-- el过渡动画 -->
     <transition name="el-fade-in-linear">
       <!-- 导航栏 -->
       <div v-show="toolbar.visible|| ($common.mobile() || mobile)"
            @mouseenter="hoverEnter = true"
            @mouseleave="hoverEnter = false"
-           :class="[{ enter: toolbar.enter }, { hoverEnter: (hoverEnter || route.path === '/favorite' || route.path === '/travel') && !toolbar.enter }]"
+           :class="[{ enter: toolbar.enter }, { hoverEnter: (hoverEnter || route.path.includes( '/favorite') || route.path === '/travel') && !toolbar.enter }]"
            class="toolbar-content myBetween">
         <!-- 网站名称 -->
         <div class="toolbar-title">
@@ -38,6 +38,12 @@
               </div>
             </li>
 
+            <!-- 旅拍 -->
+            <li @click="router.push({path: '/travel'})">
+              <div class="my-menu">
+                🌏 <span>旅拍</span>
+              </div>
+            </li>
 
             <el-dropdown popper-class="new-el-dropdown" :hide-timeout="500" placement="bottom">
               <li>
@@ -46,8 +52,8 @@
                 </div>
               </li>
               <template #dropdown>
-                <el-dropdown-menu class="new-menu">
-                  <el-dropdown-item class="new-menu-item" v-for="(sort, index) in sortInfo" :key="index">
+                <el-dropdown-menu>
+                  <el-dropdown-item v-for="(sort, index) in sortInfo" :key="index">
                     <div @click="router.push({path: '/sort', query: {sortId: sort.id}})">
                       {{ sort.sortName }}
                     </div>
@@ -65,19 +71,34 @@
               </div>
             </li>
 
-            <!-- 旅拍 -->
-            <!--            <li @click="router.push({path: '/travel'})">-->
-            <!--              <div class="my-menu">-->
-            <!--                🌏 <span>旅拍</span>-->
-            <!--              </div>-->
-            <!--            </li>-->
 
             <!-- 百宝箱 -->
-            <li @click="router.push({path: '/favorite'})">
-              <div class="my-menu">
-                🧰 <span>百宝箱</span>
-              </div>
-            </li>
+            <el-dropdown popper-class="new-el-dropdown" :hide-timeout="500" placement="bottom">
+              <li>
+                <div class="my-menu">
+                  🧰 <span>百宝箱</span>
+                </div>
+              </li>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item>
+                    <div @click="router.push({name: 'favMusic'})">
+                      音乐
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item>
+                    <div @click="router.push({name: 'favCollect'})">
+                      收藏夹
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item>
+                    <div @click="router.push({name: 'favFriend'})">
+                      友链
+                    </div>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
 
             <!-- 聊天室 -->
             <!--                        <li @click="goIm()">-->
@@ -152,7 +173,7 @@
     </transition>
 
 
-    <div id="main-container">
+    <div id="main-container" >
       <router-view></router-view>
     </div>
 

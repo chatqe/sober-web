@@ -22,9 +22,18 @@
       <div class="article-wrap">
         <articleList :articleList="articles"></articleList>
         <div class="pagination-wrap">
-          <div @click="pageArticles()" class="pagination" v-if="pagination.total !== articles.length">
-            下一页
-          </div>
+          <!--<div @click="pageArticles()" class="pagination" v-if="pagination.total !== articles.length">-->
+          <!--  下一页-->
+          <!--</div>-->
+          <el-pagination
+              v-if="pagination.total>10"
+              v-model:current-page="pagination.pageNum"
+              v-model:page-size="pagination.pageSize"
+              background
+              layout=" prev, pager, next"
+              :total="pagination.total"
+              @current-change="handleCurrentChange"
+          />
           <div v-else style="user-select: none">
             ~~到底啦~~
           </div>
@@ -37,13 +46,13 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, onMounted, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import {ref, computed, inject, onMounted, watch, nextTick} from 'vue'
+import {useRoute} from 'vue-router'
 import router from '@/router'
-import { ElMessage } from 'element-plus'
-import { defineAsyncComponent } from 'vue'
+import {ElMessage} from 'element-plus'
+import {defineAsyncComponent} from 'vue'
 import {useSortInfoStore, useSystemStore} from '@/stores'
-import { articleApi } from '@/api'
+import {articleApi} from '@/api'
 import {getArticleList} from "@/api/modules/articleApi.js";
 
 // 获取注入的全局属性
@@ -64,8 +73,8 @@ const sortId = ref(route.query.sortId)
 const labelId = ref(route.query.labelId)
 const sort = ref(null)
 const pagination = ref({
-  current: 1,
-  size: 10,
+  pageNum: 1,
+  pageSize: 10,
   total: 0,
   searchKey: "",
   sortId: route.query.sortId,
@@ -75,6 +84,12 @@ const articles = ref([])
 
 // 计算属性
 const sortInfo = computed(() => sortInfoStore.sortInfo)
+
+
+const handleCurrentChange = () => {
+  console.log('pageNum change:',pagination.value.pageNum)
+  getArticles()
+}
 
 // 监听路由变化
 watch(() => route.query, () => {
@@ -95,7 +110,7 @@ watch(() => route.query, () => {
 
 // 方法
 const pageArticles = () => {
-  pagination.value.current += 1
+  pagination.value.pageNum += 1
   getArticles()
 }
 
@@ -130,7 +145,9 @@ const getArticles = async () => {
   try {
     const res = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(res.data)) {
-      articles.value = articles.value.concat(res.data.records)
+      // console.log(res.data)
+      // articles.value = articles.value.concat(res.data.list)
+      articles.value = res.data.list
       pagination.value.total = res.data.total
     }
   } catch (error) {
@@ -150,57 +167,57 @@ onMounted(() => {
 
 <style scoped>
 
+.sort-warp {
+  width: 70%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.article-wrap {
+  width: 70%;
+  margin: 40px auto;
+  min-height: 600px;
+}
+
+.isActive {
+  animation: scale 1.5s ease-in-out infinite;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.pagination {
+  padding: 13px 15px;
+  border: 1px solid var(--lightGray);
+  border-radius: 3rem;
+  color: var(--greyFont);
+  width: 100px;
+  user-select: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.pagination:hover {
+  border: 1px solid var(--themeBackground);
+  color: var(--themeBackground);
+  box-shadow: 0 0 5px var(--themeBackground);
+}
+
+
+@media screen and (max-width: 900px) {
   .sort-warp {
-    width: 70%;
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 20px;
-    border-radius: 10px;
-    display: flex;
-    flex-wrap: wrap;
+    width: 90%;
   }
 
   .article-wrap {
-    width: 70%;
-    margin: 40px auto;
-    min-height: 600px;
+    width: 90%;
   }
-
-  .isActive {
-    animation: scale 1.5s ease-in-out infinite;
-  }
-
-  .pagination-wrap {
-    display: flex;
-    justify-content: center;
-    margin-top: 40px;
-  }
-
-  .pagination {
-    padding: 13px 15px;
-    border: 1px solid var(--lightGray);
-    border-radius: 3rem;
-    color: var(--greyFont);
-    width: 100px;
-    user-select: none;
-    cursor: pointer;
-    text-align: center;
-  }
-
-  .pagination:hover {
-    border: 1px solid var(--themeBackground);
-    color: var(--themeBackground);
-    box-shadow: 0 0 5px var(--themeBackground);
-  }
-
-
-  @media screen and (max-width: 900px) {
-    .sort-warp {
-      width: 90%;
-    }
-
-    .article-wrap {
-      width: 90%;
-    }
-  }
+}
 </style>

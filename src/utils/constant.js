@@ -1,11 +1,11 @@
 export default {
-  // baseURL: "http://localhost:18081",
-  // imBaseURL: "http://localhost:81",
-  // webURL: "http://localhost",
+  baseURL: "http://localhost:18081",
+  imBaseURL: "http://localhost:81",
+  webURL: "http://localhost",
 
-  baseURL: "https://youngwanton.top/api",
-  imBaseURL: "http://121.36.82.27/im",
-  webURL: "https://youngwanton.top",
+  // baseURL: "https://youngwanton.top/api",
+  // imBaseURL: "http://121.36.82.27/im",
+  // webURL: "https://youngwanton.top",
 
   live2d_path: "https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/",
   cdnPath: "https://cdn.jsdelivr.net/gh/fghrsh/live2d_api/",

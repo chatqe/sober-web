@@ -422,7 +422,7 @@
 import {defineAsyncComponent, inject, onMounted, onUnmounted, reactive, ref} from 'vue'
 import {ElMessage} from 'element-plus'
 import {useUserStore, useWebInfoStore} from '@/stores'
-import {familyApi, webApi} from '@/api'
+import {familyApi, webApi, webInfoApi} from '@/api'
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -625,7 +625,7 @@ const changeFamily = (family) => {
 
 const getPhotoTitles = async () => {
   try {
-    const res = await webApi.listAdminLovePhoto()
+    const res = await webInfoApi.listAdminLovePhoto()
     if (!$common.isEmpty(res.data)) {
       photoTitleList.value = res.data
       Object.assign(photoPagination, {
@@ -635,7 +635,7 @@ const getPhotoTitles = async () => {
         resourceType: "lovePhoto",
         classify: photoTitleList.value[0].classify
       })
-      changePhoto()
+      await changePhoto()
     }
   } catch (error) {
     ElMessage({

@@ -7,9 +7,11 @@
     /* 字体 */
     --fontColor: black;
     /* 边框 */
-    --borderColor: rgba(0, 0, 0, 0.5);
+    /*--borderColor: rgba(0, 0, 0, 0.5);*/
+    --borderColor: rgba(0, 0, 0, 0.1);/* 新文章卡片边框样式*/
     /* 边框 */
-    --borderHoverColor: rgba(110, 110, 110, 0.4);
+    /*--borderHoverColor: rgba(110, 110, 110, 0.4);*/
+    --borderHoverColor: hsla(0, 0%, 43%, .2);
     /* 文章字体 */
     --articleFontColor: #1f1f1f;
     /* 文章灰色字体 */

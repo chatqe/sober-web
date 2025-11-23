@@ -85,7 +85,7 @@ const playerOptions = reactive({
     'play-large',
     'play',
     'progress',
-    'current-time',
+    'pageNum-time',
     'mute',
     'volume',
     'captions',

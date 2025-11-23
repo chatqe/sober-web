@@ -19,6 +19,27 @@ body {
 #app {
     min-height: 100vh;
     width: 100%;
+    /*display: flex; !* 新增父容器传递下级 好占用视口剩余高度空间 *!*/
+}
+
+/*.index-container {*/
+/*    display: flex;!* 新增父容器传递下级 好占用视口剩余高度空间 *!*/
+/*    flex: 1; !* 关键：占据父容器剩余空间 *!*/
+/*    box-sizing: border-box; !* 避免 padding 撑开容器 *!*/
+/*}*/
+/*#main-container {*/
+/*    flex: 1; !* 关键：占据父容器剩余空间 *!*/
+/*    box-sizing: border-box; !* 避免 padding 撑开容器 *!*/
+/*}*/
+
+#main-container:not(:has(.love-container), :has([class*="message-input"]),:has(.baberrage-stage),:has(.background-image-index))::before {
+    background-image: url(@/assets/file/emptyBg.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    content: '';
+    position: fixed;
+    inset: 0;
 }
 
 /* 字体 */
@@ -47,6 +68,7 @@ body {
     background-color: rgba(0, 0, 0, .2);
     content: '';
 }
+
 
 .background-image-error {
     background-color: var(--lightGreen);
@@ -154,7 +176,8 @@ body {
 }
 
 .shadow-box {
-    box-shadow: 0 1px 20px -6px var(--borderColor);
+   /* box-shadow: 0 1px 20px -6px var(--borderColor);*/
+    box-shadow:  2px 2px 5px var(--borderColor);/*新卡片边框样式*/
     transition: all 0.3s ease;
 }
 
@@ -203,6 +226,12 @@ body {
 .new-el-dropdown .el-dropdown-menu__item:hover {
     background-color: var(--white) !important;
     color: var(--themeBackground) !important;
+}
+
+/*百宝箱*/
+.favorite-content {
+    margin: 0 auto;
+    max-width: 1200px;
 }
 
 
@@ -333,3 +362,18 @@ body {
         width: 90% !important;
     }
 }
+
+.custom-empty-img {
+    /* 默认图片大小（中等屏幕） */
+    width: 62vw !important;
+    height: auto !important; /* 保持宽高比 */
+    object-fit: contain;
+}
+
+.custom-desc {
+    /* 默认字体（中等屏幕） */
+    font-size: 16px;
+    color: #666;
+    margin-top: 20px;
+}
+

@@ -1,5 +1,5 @@
 <template>
-  <div class="myFooter-wrap" v-show="showFooter">
+  <div class="myFooter-wrap" v-show="showFooter" >
     <div class="myFooter">
 <!--    云想衣裳花想容， 春风拂槛露华浓。  -->
 <!--        罗带同心结未成，江边潮已平。-->
@@ -30,6 +30,8 @@ const webInfo = computed(() => webInfoStore.webInfo);
   .myFooter-wrap {
     user-select: none;
     animation: hideToShow 2s;
+    position: relative;
+    z-index: 5; /* 设置比背景图更高的z-index，确保footer始终显示在背景图之上 */
   }
 
   .myFooter {

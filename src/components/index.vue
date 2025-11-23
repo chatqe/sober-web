@@ -190,8 +190,8 @@ const sortInfo = computed(() => sortInfoStore.sortInfo || [])
 // 方法
 const selectSort = async (sort) => {
   pagination.value = {
-    current: 1,
-    size: 10,
+    pageNum: 1,
+    pageSize: 10,
     total: 0,
     searchKey: "",
     sortId: sort.id,
@@ -215,8 +215,8 @@ const selectSort = async (sort) => {
 
 const selectArticle = async (articleSearch) => {
   pagination.value = {
-    current: 1,
-    size: 10,
+    pageNum: 1,
+    pageSize: 10,
     total: 0,
     searchKey: "",
     sortId: null,
@@ -505,7 +505,7 @@ onMounted(() => {
 
 /*.announcement i {
   color: var(--themeBackground);
-  font-size: 22px;
+  font-pageSize: 22px;
   margin: auto 0;
   animation: scale 0.8s ease-in-out infinite;
 }*/

@@ -102,8 +102,8 @@ onMounted(() => {
 // 方法
 const clearSearch = () => {
   pagination.value = {
-    current: 1,
-    size: 10,
+    pageNum: 1,
+    pageSize: 10,
     total: 0,
     source: null,
     commentType: ""

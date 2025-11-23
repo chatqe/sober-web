@@ -17,11 +17,10 @@
     <div class="recent-post-item shadow-box background-opacity"
          v-for="(article, index) in articleList"
          :key="index"
-         @click="$router.push({path: '/article', query: {id: article.id}})">
+         @click="router.push({path: '/article', query: {id: article.id}})">
       <!-- 封面 -->
       <div class="recent-post-item-image" :class="{ leftImage: index % 2 !== 0, rightImage: index % 2 === 0 }">
         <el-image class="my-el-image"
-                  v-once
                   lazy
                   :src="!$common.isEmpty(article.articleCover)?article.articleCover:$constant.random_image+new Date()+Math.floor(Math.random()*10)"
                   fit="cover">

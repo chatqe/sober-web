@@ -1,36 +1,44 @@
-@use 'element-plus/theme-chalk/src/index.scss' as *; /* 引入Element Plus主样式 */
+@use 'element-plus/theme-chalk/src/index.scss' as *;
+/* 引入Element Plus主样式 */
 /* 2. 再引入 message 的样式，它会使用上面被覆盖过的变量 */
-@use 'element-plus/theme-chalk/src/message.scss'; /* 引入消息组件样式 */
+@use 'element-plus/theme-chalk/src/message.scss';
+/* 引入消息组件样式 */
 /* 1  先把官方变量文件拿进来，再重新赋值 */
-@use 'element-plus/theme-chalk/src/common/var.scss' as *; /* 引入Element Plus变量定义 */
+@use 'element-plus/theme-chalk/src/common/var.scss' as *;
+/* 引入Element Plus变量定义 */
 /* 1  引入官方 dropdown 样式（会使用上面被覆盖过的变量） */
-@use 'element-plus/theme-chalk/src/dropdown.scss'; /* 引入下拉菜单样式 */
+@use 'element-plus/theme-chalk/src/dropdown.scss';
+/* 引入下拉菜单样式 */
+// 3  引入分页样式，它会使用我们刚改过的变量
+@use 'element-plus/theme-chalk/src/pagination.scss';
+
 /* 2  追加我们自定义的视觉效果（backdrop-filter、user-select 等） */
 @use 'sass:color'; /* 引入Sass颜色处理模块 */
 
+
 :root {
-  --el-color-primary: #27ba9b;  /* 自定义主题主色 - 绿色系，用于主要按钮、链接等 */
-  --el-color-success: var(--themeBackground);  /* 成功状态颜色 - 使用主题背景色 */
-  --el-color-warning: var(--gradientBG);  /* 警告状态颜色 - 使用渐变背景色 */
-  --el-color-danger: var(--gradualRed);  /* 危险/错误状态颜色 - 使用渐变红 */
+  --el-color-primary: #27ba9b; /* 自定义主题主色 - 绿色系，用于主要按钮、链接等 */
+  --el-color-success: var(--themeBackground); /* 成功状态颜色 - 使用主题背景色 */
+  --el-color-warning: var(--gradientBG); /* 警告状态颜色 - 使用渐变背景色 */
+  --el-color-danger: var(--gradualRed); /* 危险/错误状态颜色 - 使用渐变红 */
 }
 
 /* 2. 让边框颜色 = 当前类型的主色 */
 .el-message--success {
-  border-color: var(--el-color-success);  /* 成功消息边框颜色 - 与成功状态颜色保持一致 */
+  border-color: var(--el-color-success); /* 成功消息边框颜色 - 与成功状态颜色保持一致 */
 }
 
 .el-message--warning {
-  border-color: var(--el-color-warning);  /* 警告消息边框颜色 - 与警告状态颜色保持一致 */
+  border-color: var(--el-color-warning); /* 警告消息边框颜色 - 与警告状态颜色保持一致 */
 }
 
 .el-message--error {
-  border-color: var(--el-color-danger);  /* 错误消息边框颜色 - 与危险状态颜色保持一致 */
+  border-color: var(--el-color-danger); /* 错误消息边框颜色 - 与危险状态颜色保持一致 */
 }
 
 /* 注意是 danger */
 .el-message--info {
-  border-color: var(--el-color-info);  /* 信息消息边框颜色 - 使用信息状态颜色 */
+  border-color: var(--el-color-info); /* 信息消息边框颜色 - 使用信息状态颜色 */
 }
 
 
@@ -41,7 +49,7 @@
 // 2-1  下拉面板本身 - 完全透明效果实现
 .el-dropdown__popper {
   /* 降低透明度以获得更明显的透明效果 */
-  background-color: rgba(255, 255, 255, 0.15) !important; /* 半透明白色背景，透明度为15%，!important确保覆盖默认样式 */
+  background-color: rgba(255, 255, 255, .25) !important; /* 半透明白色背景，透明度为25%，!important确保覆盖默认样式 */
   /* 深度模糊效果 */
   backdrop-filter: blur(15px) !important; /* 应用15px的背景模糊效果，创造毛玻璃效果 */
   -webkit-backdrop-filter: blur(15px) !important; /* Safari浏览器兼容，添加前缀 */
@@ -58,16 +66,18 @@
   overflow: hidden; /* 隐藏溢出内容 */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important; /* 柔和的阴影效果，增强层次感 */
   z-index: 2000 !important; /* 确保下拉面板在较高层级，避免被遮挡 */
-  
+
   /* 重置Element Plus变量，确保没有默认背景干扰 */
   --el-dropdown-menu-bg-color: transparent !important; /* 重置Element Plus内部变量，确保背景透明 */
-  
+
   /* 解决嵌套元素背景不透明的问题 */
   .el-dropdown-menu {
     background: transparent !important; /* 确保下拉菜单本身也透明 */
     border: none !important; /* 移除下拉菜单的默认边框 */
     box-shadow: none !important; /* 移除下拉菜单的默认阴影 */
   }
+
+  margin-top: -12px !important;
 }
 
 // 2-2  子项默认状态
@@ -77,19 +87,74 @@
   white-space: nowrap; /* 强制文本在一行显示 */
   justify-content: center; /* 水平居中内容（flex布局） */
   width: 160px; /* 固定宽度160px */
-  color: rgba(0, 0, 0, .56); /* 文本颜色，带透明度 */
+  color: rgba(0, 0, 0, .56) !important; /* 文本颜色，带透明度 */
   font-weight: 700; /* 字体粗细设为粗体 */
-  padding: 2px 8px; /* 内边距：上下2px，左右8px */
-  line-height: 29px !important; /* 行高设为29px */
+  font-size: 16px !important;
+  //font-pageSize: unset !important;
+  //padding: 2px 8px; /* 内边距：上下2px，左右8px */
+  line-height: 30px !important; /* 行高设为29px */
   text-align: center; /* 文本水平居中 */
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, .125); /* 添加轻微阴影效果 */
   border-radius: 8px; /* 8px的圆角半径 */
-  margin: 8px !important; /* 外边距设为8px */
+  margin: 5px 8px !important; /* 外边距设为垂直5水平8 */
   background-color: hsla(0, 0%, 100%, .37) !important; /* 使用HSLA颜色格式，透明度为37% */
-  transition: background-color .3s; /* 背景色变化时添加0.3秒的过渡动画 */
+  transition: background-color .3s !important; /* 背景色变化时添加0.3秒的过渡动画 */
 
   // hover / active 微调
   &:not(.is-disabled):hover {
-    background-color: hsla(0, 0%, 100%, .55) !important; /* 鼠标悬停时，背景透明度提高到55% */
+    background-color: hsla(0, 0%, 100%, .96) !important; /* 鼠标悬停时，背景透明度提高到96% */
+  }
+}
+
+/* 统一全站 Pagination 按钮样式：8px 圆角 + 14px 字号 + 自定义配色 */
+.el-pagination {
+  /* 左右箭头按钮 */
+  .btn-prev,
+  .btn-next {
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important; /* 加粗 */
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    margin: 0 4px !important;
+    background-color: #f4f4f4 !important;
+    transition: all .3s !important;
+  }
+
+  /* 数字页码按钮 */
+  .el-pager li {
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important; /* 加粗 */
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    margin: 0 4px !important;
+    background-color: #f4f4f4 !important;
+    transition: all .3s !important;
+  }
+
+  /* 当前激活页 */
+  .el-pager li.number.is-active {
+    background-color: #e1f9f1 !important;
+    color: #000 !important;
+  }
+
+  /* hover 高亮 */
+  .el-pager li:not(.active):hover,
+  button.btn-prev:not([disabled]):hover,
+  button.btn-next:not([disabled]):hover {
+    background-color: #e1f9f1 !important;
+    color: #27ba9b !important;
+  }
+
+  /* 左右箭头图标大小 */
+ .el-icon svg{
+    font-size: 12px !important;
+   /* 给 SVG 形状加 0.5px 描边 → 视觉变粗 */
+   stroke: currentColor !important;
+   stroke-width: 60px !important;
+   paint-order: stroke !important;
   }
 }

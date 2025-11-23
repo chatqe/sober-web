@@ -82,6 +82,7 @@
         <card :resourcePathList="friendList['🥇友情链接']" @clickResourcePath="clickFriend"></card>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -92,6 +93,8 @@ import { useUserStore } from '@/stores'
 import { webApi } from '@/api'
 import card from './common/card.vue'
 import proButton from './common/proButton.vue'
+import Favorite from "@/components/favorite.vue";
+import MyFooter from "@/components/common/myFooter.vue";
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -116,6 +119,14 @@ const friend = ref({
 })
 const formWrapRef = ref(null)
 
+const clickLetter = () => {
+  if (isMobile.value) {
+    formHeight.value = '1000px'
+  } else {
+    formHeight.value = '1150px'
+  }
+  formTop.value = '-200px'
+}
 
 // 方法
 defineExpose({
@@ -130,14 +141,7 @@ const formHeight = ref('447px')
 const formTop = ref('0')
 const isMobile = ref(window.innerWidth < 700)
 
-const clickLetter = () => {
-  if (isMobile.value) {
-    formHeight.value = '1000px'
-  } else {
-    formHeight.value = '1150px'
-  }
-  formTop.value = '-200px'
-}
+
 
 async function submitFriend() {
   if ($common.isEmpty(userStore.currentUser)) {

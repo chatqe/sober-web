@@ -103,7 +103,7 @@ const funny = ref({
 
 // 生命周期钩子
 onMounted(() => {
-  getFunny()
+  listFunny()
 })
 
 onBeforeUnmount(() => {
@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
 })
 
 // 方法
-function getFunny() {
+function listFunny() {
   webInfoApi.listFunny()
     .then((res) => {
       if (!res.data) return
@@ -128,7 +128,7 @@ function getFunny() {
     })
 }
 
-function listFunny() {
+function listResourcePath() {
   webInfoApi.listResourcePath(pagination.value)
     .then((res) => {
       if (!res.data) return
@@ -149,7 +149,7 @@ function changeFunny(classify) {
   funnys.value.forEach(funny => {
     if (funny.classify === classify && $common.isEmpty(funny.data)) {
       pagination.value.classify = classify
-      listFunny()
+      listResourcePath()
     }
   })
 }

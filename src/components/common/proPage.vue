@@ -19,7 +19,7 @@
             v-for="index of realButtonSize"
             :key="index"
             @click="toPage(current - (realButtonSize - index))">
-          {{current - (realButtonSize - index)}}
+          {{pageNum - (realButtonSize - index)}}
         </li>
       </template>
       <template v-else>
@@ -28,7 +28,7 @@
             v-for="index of realButtonSize"
             :key="index"
             @click="toPage(current - (Math.ceil(realButtonSize/2) - index))">
-          {{current - (Math.ceil(realButtonSize/2) - index)}}
+          {{pageNum - (Math.ceil(realButtonSize/2) - index)}}
         </li>
       </template>
       <li class="page-item" v-if="current !== totalSize" @click="toPage(-2)">

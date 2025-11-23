@@ -16,6 +16,9 @@ export const getAdminWebInfo = () => {
 export const updateWebInfo = (webInfoData) => {
     return request.post('/webInfo/updateWebInfo', webInfoData, true);
 };
+export const listAdminLovePhoto = (webInfoData) => {
+    return request.get('/webInfo/listAdminLovePhoto', webInfoData, true);
+};
 
 // 获取网站信息（前台）
 export const getWebInfo = () => {
@@ -40,4 +43,10 @@ export const listTreeHole = () => {
 // 添加树洞
 export const saveTreeHole = (params) => {
     return request.post('/webInfo/saveTreeHole', params);
+};
+
+export const listFunny = (params) => {
+    return request.get('/webInfo/listFunny');
+};export const listCollect = (params) => {
+    return request.get('/webInfo/listCollect');
 };

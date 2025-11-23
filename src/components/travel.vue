@@ -7,48 +7,52 @@
         <video class="index-video" autoplay="autoplay" muted="muted" loop="loop"
                :src="$constant.favoriteVideo">
         </video>
-        <div style="position: absolute;left: 20px;top: 20px">
+        <div style="position: absolute;left: 0;top: 0;padding: 5px 20px">
           <!-- 标题 -->
-          <div style="margin: 10px">
-            <div>
-              旅拍集
+          <div style="color: var(--white);margin: 0 10px">
+            <div style="line-height: 2 ;margin-top: 20px">
+              时光相册
             </div>
-            <div style="font-size: 36px;font-weight: bold;line-height: 1.5;margin-top: 20px">
-              这里是我的旅拍哦
+            <div style="font-size: 22px;font-weight: bold;line-height: 2;margin-top: 15px">
+              每一张照片都是一次美好的记忆
             </div>
           </div>
-        </div>
-        <div style="position: absolute;left: 20px;bottom: 40px;margin: 10px">
-          每一张照片都是一次美好的记忆。
         </div>
       </div>
 
       <div class="travel-content my-animation-slide-bottom">
-        <!-- 标签 -->
-        <div class="photo-title-warp" v-if="!$common.isEmpty(photoTitleList)">
-          <div v-for="(item, index) in photoTitleList" :key="index"
-               :class="{isActive: photoPagination.classify === item.classify}"
-               @click="changePhotoTitle(item.classify)">
-            <proTag :info="item.classify+' '+item.count"
-                    :color="$constant.before_color_list[Math.floor(Math.random() * 6)]"
-                    style="margin: 12px">
-            </proTag>
+        <div v-if="false">
+          <!-- 标签 -->
+          <div class="photo-title-warp" v-if="!$common.isEmpty(photoTitleList)">
+            <div v-for="(item, index) in photoTitleList" :key="index"
+                 :class="{isActive: photoPagination.classify === item.classify}"
+                 @click="changePhotoTitle(item.classify)">
+              <proTag :info="item.classify+' '+item.count"
+                      :color="$constant.before_color_list[Math.floor(Math.random() * 6)]"
+                      style="margin: 12px">
+              </proTag>
+            </div>
+          </div>
+
+          <div class="photo-title">
+            {{photoPagination.classify}}
+          </div>
+
+          <photo :resourcePathList="photoList"></photo>
+          <div class="pagination-wrap">
+            <div @click="pagePhotos()" class="pagination" v-if="photoPagination.total !== photoList.length">
+              下一页
+            </div>
+            <!--新增margin-top顶住-->
+            <!--<div v-else style="user-select: none; margin-top: 40.4vh;">-->
+            <div v-else style="user-select: none;">
+              ~~到底啦~~
+            </div>
           </div>
         </div>
 
-        <div class="photo-title">
-          {{photoPagination.classify}}
-        </div>
+        <emptyState v-else></emptyState>
 
-        <photo :resourcePathList="photoList"></photo>
-        <div class="pagination-wrap">
-          <div @click="pagePhotos()" class="pagination" v-if="photoPagination.total !== photoList.length">
-            下一页
-          </div>
-          <div v-else style="user-select: none">
-            ~~到底啦~~
-          </div>
-        </div>
       </div>
     </div>
 
@@ -72,6 +76,7 @@ const $constant = inject('$constant')
 const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 const photo = defineAsyncComponent(() => import("./common/photo.vue"))
 const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
+const emptyState = defineAsyncComponent(() => import("./common/emptyState.vue"))
 
 // 响应式数据
 const photoPagination = ref({
@@ -91,8 +96,8 @@ const getPhotoTitles = async () => {
     if (!$common.isEmpty(res.data)) {
       photoTitleList.value = res.data
       photoPagination.value = {
-        current: 1,
-        size: 10,
+        pageNum: 1,
+        pageSize: 10,
         total: 0,
         resourceType: "lovePhoto",
         classify: photoTitleList.value[0].classify
@@ -110,8 +115,8 @@ const getPhotoTitles = async () => {
 const changePhotoTitle = (classify) => {
   if (classify !== photoPagination.value.classify) {
     photoPagination.value = {
-      current: 1,
-      size: 10,
+      pageNum: 1,
+      pageSize: 10,
       total: 0,
       resourceType: "lovePhoto",
       classify: classify
@@ -156,7 +161,7 @@ onMounted(() => {
 
   .travel-header {
     margin: 60px auto 30px;
-    height: 300px;
+    height: 150px;
     position: relative;
     overflow: hidden;
     border-radius: 20px;

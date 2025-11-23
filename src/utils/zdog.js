@@ -891,7 +891,7 @@
     this.isCanvas = true;
     // update related properties
     this.ctx = this.element.getContext('2d');
-    // set initial size
+    // set initial pageSize
     this.setSizeCanvas(element.width, element.height);
   };
 
@@ -942,7 +942,7 @@
     this.element = element;
     this.isSvg = true;
     this.pixelRatio = 1;
-    // set initial size from width & height attributes
+    // set initial pageSize from width & height attributes
     var width = element.getAttribute('width');
     var height = element.getAttribute('height');
     this.setSizeSvg(width, height);
@@ -958,7 +958,7 @@
     this.element.setAttribute('viewBox', viewX + ' ' + viewY + ' ' +
       viewWidth + ' ' + viewHeight);
     if (this.resize) {
-      // remove size attributes, let size be determined by viewbox
+      // remove pageSize attributes, let pageSize be determined by viewbox
       this.element.removeAttribute('width');
       this.element.removeAttribute('height');
     } else {
@@ -1260,7 +1260,7 @@
   };
 
   var TAU = utils.TAU;
-// Safari does not render lines with no size, have to render circle instead
+// Safari does not render lines with no pageSize, have to render circle instead
   Shape.prototype.renderCanvasDot = function (ctx) {
     var lineWidth = this.getLineWidth();
     if (!lineWidth) {

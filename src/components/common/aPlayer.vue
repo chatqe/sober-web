@@ -53,7 +53,7 @@ onUnmounted(() => {
   float: left;
   height: 66px;
   width: 66px;
-  background-size: cover;
+  background-pageSize: cover;
   background-position: 50%;
   -webkit-transition: all .3s ease;
   transition: all .3s ease;
@@ -111,7 +111,7 @@ onUnmounted(() => {
   float: left;
   height: 66px;
   width: 66px;
-  background-size: cover;
+  background-pageSize: cover;
   background-position: 50%;
   -webkit-transition: all .3s ease;
   transition: all .3s ease;

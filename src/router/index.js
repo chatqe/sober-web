@@ -30,7 +30,22 @@ const routes = [
             }, {
                 path: "/favorite",
                 name: "favorite",
-                component: () => import('../components/favorite.vue')
+                component: () => import('../components/favorite.vue'),
+                children: [
+                    {
+                        path: "music",
+                        name: "favMusic",
+                        component: () => import('../components/music.vue')
+                    }, {
+                        path: "friend",
+                        name: "favFriend",
+                        component: () => import('../components/friend.vue')
+                    }, {
+                        path: "collect",
+                        name: "favCollect",
+                        component: () => import('../components/collect.vue')
+                    },
+                ]
             }, {
                 path: "/travel",
                 name: "travel",
@@ -39,11 +54,13 @@ const routes = [
                 path: "/message",
                 name: "message",
                 component: () => import('../components/message.vue')
-            }, {
-                path: "/friend",
-                name: "friend",
-                component: () => import('../components/friend.vue')
-            }, {
+            },
+            // {
+            //     path: "/friend",
+            //     name: "friend",
+            //     component: () => import('../components/friend.vue')
+            // },
+            {
                 path: "/about",
                 name: "about",
                 component: () => import('../components/about.vue')

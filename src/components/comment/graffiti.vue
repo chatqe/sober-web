@@ -228,7 +228,7 @@
       }
       
       // 设置笔刷大小
-      function setBrush(size) {
+      function setBrush(pageSize) {
         config.lineWidth = size
       }
       

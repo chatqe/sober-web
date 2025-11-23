@@ -5,7 +5,8 @@
       <twoPoem :isHitokoto="false"></twoPoem>
     </div>
 
-    <div style="background: var(--background);animation: hideToShow 2.5s" >
+    <!--<div style="background: var(&#45;&#45;background);animation: hideToShow 2.5s" >-->
+    <div  class="my-animation-slide-bottom">
       <div>
         <treeHole :treeHoleList="treeHoleList"
                   :avatar="!$common.isEmpty(userStore.currentUser)?userStore.currentUser.avatar:webInfoStore.webInfo?.avatar"
@@ -49,12 +50,12 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted, nextTick, inject } from 'vue'
-import { defineAsyncComponent } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { useUserStore, useWebInfoStore } from '@/stores'
+import {reactive, ref, onMounted, nextTick, inject} from 'vue'
+import {defineAsyncComponent} from 'vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
-import { weiYanApi } from '@/api'
+import {weiYanApi} from '@/api'
 
 // 组件动态导入
 const twoPoem = defineAsyncComponent(() => import("./common/twoPoem.vue"))
