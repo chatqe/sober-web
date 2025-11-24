@@ -1,8 +1,8 @@
 <template>
   <div>
     <!-- 网站信息 -->
-<!--    <div v-if="!$common.mobile()" class="card-content1 shadow-box background-opacity">-->
-    <div  class="card-content1 shadow-box background-opacity">
+    <!--    <div v-if="!$common.mobile()" class="card-content1 shadow-box background-opacity">-->
+    <div class="card-content1 shadow-box background-opacity">
       <el-avatar style="margin-top: 20px" class="user-avatar" :size="120" :src="webInfo.avatar"></el-avatar>
       <div class="web-name">{{ webInfo.webName }}</div>
       <div class="web-info">
@@ -20,30 +20,33 @@
         </div>
       </div>
       <a class="collection-btn" @click="showTip()">
-        <el-icon style="margin-right: 2px; vertical-align: -2px;"><StarFilled /></el-icon>朋友圈
+        <el-icon style="margin-right: 2px; vertical-align: -2px;">
+          <StarFilled/>
+        </el-icon>
+        朋友圈
       </a>
     </div>
 
     <!-- 搜索 -->
-    <div style="padding: 15px;border-radius: 10px;margin-top: 30px;animation: hideToShow 1s ease-in-out"
-         class="shadow-box background-opacity wow">
-      <div style="color: var(--lightGreen);font-size: 20px;font-weight: bold;margin-bottom: 10px">
-        搜索
+    <div class="shadow-box background-opacity wow aside-card">
+      <div class="aside-card-top">
+        🔍搜索
+        <div class="mac-tab-style"></div>
       </div>
 
-      <div style="display: flex">
+      <div class="aside-card-info" style="display: flex;">
         <input class="ais-SearchBox-input" type="text"
                v-model="articleSearch"
-               placeholder="搜索文章" maxlength="32"
+               placeholder="看看吧" maxlength="32"
                @keyup.enter="selectArticle()">
         <div class="ais-SearchBox-submit" @click="selectArticle()">
           <svg style="margin-top: 3.5px;margin-left: 18px" viewBox="0 0 1024 1024" width="20" height="20">
             <path
-              d="M51.2 508.8c0 256.8 208 464.8 464.8 464.8s464.8-208 464.8-464.8-208-464.8-464.8-464.8-464.8 208-464.8 464.8z"
-              fill="#51C492"></path>
+                d="M51.2 508.8c0 256.8 208 464.8 464.8 464.8s464.8-208 464.8-464.8-208-464.8-464.8-464.8-464.8 208-464.8 464.8z"
+                fill="#51C492"></path>
             <path
-              d="M772.8 718.4c48-58.4 76.8-132.8 76.8-213.6 0-186.4-151.2-337.6-337.6-337.6-186.4 0-337.6 151.2-337.6 337.6 0 186.4 151.2 337.6 337.6 337.6 81.6 0 156-28.8 213.6-76.8L856 896l47.2-47.2-130.4-130.4zM512 776c-149.6 0-270.4-121.6-270.4-271.2S363.2 233.6 512 233.6c149.6 0 271.2 121.6 271.2 271.2C782.4 654.4 660.8 776 512 776z"
-              fill="#FFFFFF"></path>
+                d="M772.8 718.4c48-58.4 76.8-132.8 76.8-213.6 0-186.4-151.2-337.6-337.6-337.6-186.4 0-337.6 151.2-337.6 337.6 0 186.4 151.2 337.6 337.6 337.6 81.6 0 156-28.8 213.6-76.8L856 896l47.2-47.2-130.4-130.4zM512 776c-149.6 0-270.4-121.6-270.4-271.2S363.2 233.6 512 233.6c149.6 0 271.2 121.6 271.2 271.2C782.4 654.4 660.8 776 512 776z"
+                fill="#FFFFFF"></path>
           </svg>
         </div>
       </div>
@@ -51,71 +54,78 @@
 
     <!-- 推荐文章 -->
     <div v-if="!$common.isEmpty(recommendArticles)"
-         style="padding: 25px;border-radius: 10px;margin-top: 30px;animation: hideToShow 1s ease-in-out"
-         class="shadow-box background-opacity wow">
-      <div class="card-content2-title">
-<!--        <span>🔥推荐文章</span>-->
-        <span>🥝推荐文章</span>
+         class="shadow-box background-opacity wow aside-card">
+      <!--<div  class="card-content2-title">-->
+      <div class="aside-card-top">
+        <!--        <span>🔥推荐文章</span>-->
+        🥝推荐文章
+        <div class="mac-tab-style"></div>
       </div>
-      <div v-for="(article, index) in recommendArticles"
-           :key="index"
-           @click="router.push({path: '/article', query: {id: article.id}})">
-        <div class="aside-post-detail">
-          <div class="aside-post-image">
-            <el-image lazy class="my-el-image" :src="article.articleCover" fit="cover">
-              <template #error>
-                <div class="image-slot">
-                  <div class="error-aside-image">
-                    {{ article.username }}
+      <div class="aside-card-info">
+        <div v-for="(article, index) in recommendArticles"
+             :key="index"
+             @click="router.push({path: '/article', query: {id: article.id}})">
+          <div class="aside-post-detail">
+            <div class="aside-post-image" >
+              <el-image lazy class="my-el-image" :src="article.articleCover" fit="cover"
+                        >
+                <template #error>
+                  <div class="image-slot">
+                    <div class="error-aside-image">
+                      {{ article.username }}
+                    </div>
                   </div>
-                </div>
-              </template>
-            </el-image>
+                </template>
+              </el-image>
+            </div>
+            <div class="aside-post-title">
+              {{ article.articleTitle }}
+            </div>
           </div>
-          <div class="aside-post-title">
-            {{ article.articleTitle }}
+          <div class="aside-post-date">
+            <el-icon style="margin-right: 4px; vertical-align: -2px;">
+              <Calendar/>
+            </el-icon>
+            {{ article.createTime }}
           </div>
-        </div>
-        <div class="aside-post-date">
-          <el-icon style="margin-right: 4px; vertical-align: -2px;"><Calendar /></el-icon>{{ article.createTime }}
         </div>
       </div>
+
     </div>
 
     <!-- 速览 -->
-    <div v-if="!$common.mobile()" class="selectSort">
-      <div v-for="(sort, index) in sortInfo"
-           @click="selectSort(sort)"
-           :key="index"
-           :style="{background: $constant.sortColor[index % $constant.sortColor.length]}"
-           class="shadow-box-mini background-opacity wow"
-           style="position: relative;padding: 10px 25px 15px;border-radius: 10px;animation: hideToShow 1s ease-in-out;margin-top: 30px;cursor: pointer;color: var(--white)">
-        <div>速览</div>
-        <div class="sort-name">
-          {{ sort.sortName }}
-        </div>
-        <div style="font-weight: bold;margin-top: 8px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden">
-          {{ sort.sortDescription }}
-        </div>
-      </div>
-    </div>
+    <!--<div v-if="!$common.mobile()" class="selectSort">-->
+    <!--  <div v-for="(sort, index) in sortInfo"-->
+    <!--       @click="selectSort(sort)"-->
+    <!--       :key="index"-->
+    <!--       :style="{background: $constant.sortColor[index % $constant.sortColor.length]}"-->
+    <!--       class="shadow-box-mini background-opacity wow"-->
+    <!--       style="position: relative;padding: 10px 25px 15px;border-radius: 10px;animation: hideToShow 1s ease-in-out;margin-top: 30px;cursor: pointer;color: var(&#45;&#45;white)">-->
+    <!--    <div>速览</div>-->
+    <!--    <div class="sort-name">-->
+    <!--      {{ sort.sortName }}-->
+    <!--    </div>-->
+    <!--    <div style="font-weight: bold;margin-top: 8px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden">-->
+    <!--      {{ sort.sortDescription }}-->
+    <!--    </div>-->
+    <!--  </div>-->
+    <!--</div>-->
 
 
     <!--    最新树洞-->
     <newTreeHole></newTreeHole>
 
 
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import {ref, computed, onMounted, inject} from 'vue'
 import router from '@/router'
-import { ElMessage } from 'element-plus'
-import { Calendar, StarFilled } from '@element-plus/icons-vue'
+import {ElMessage} from 'element-plus'
+import {Calendar, StarFilled} from '@element-plus/icons-vue'
 import {useWebInfoStore, useSystemStore, useUserStore, useSortInfoStore} from '@/stores'
-import { articleApi } from '@/api'
+import {articleApi} from '@/api'
 import newTreeHole from "./newTreeHole.vue"
 import {getArticleList} from "@/api/modules/articleApi.js";
 
@@ -184,7 +194,7 @@ const getRecommendArticles = async () => {
   try {
     const res = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(res.data)) {
-      recommendArticles.value = res.data.records
+      recommendArticles.value = res.data.list
     }
   } catch (error) {
     ElMessage({
@@ -284,6 +294,9 @@ const showTip = () => {
   margin-bottom: 20px;
   color: var(--lightGreen);
   font-weight: bold;
+  height: 42px;
+  line-height: 42px;
+  border-bottom: 1px solid var(--lightGreen);
 }
 
 .card-content2-icon {
@@ -299,7 +312,8 @@ const showTip = () => {
 
 .aside-post-image {
   width: 40%;
-  border-radius: 0.2rem;
+  height: 73px;
+  border-radius: 0.4rem;
   margin-right: 8px;
   overflow: hidden;
 }
@@ -315,9 +329,10 @@ const showTip = () => {
 
 .aside-post-title {
   width: 60%;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  /* white-space: nowrap; 强制不换行*/
+  /*text-overflow: ellipsis; 超出部分在内容尾部显示...*/
+  margin-top: 5px;
+  font-size: 15px;
 }
 
 .aside-post-date {
@@ -421,5 +436,29 @@ const showTip = () => {
   border-radius: 0 40px 40px 0;
   background: var(--white);
   cursor: pointer;
+}
+
+.aside-card {
+  padding: 5px;
+  border-radius: 10px;
+  margin-top: 30px;
+  animation: hideToShow 1s ease-in-out
+}
+
+/*卡片顶部*/
+.aside-card-top {
+  padding-left: 10px;
+  margin-top: -4px;
+  height: 42px;
+  line-height: 42px;
+  border-bottom: 1px solid #ccc;
+  position: relative;
+  color: var(--lightGreen);
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.aside-card-info {
+  padding: 15px 15px 10px 15px;
 }
 </style>

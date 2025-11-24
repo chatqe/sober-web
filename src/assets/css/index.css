@@ -377,3 +377,17 @@ body {
     margin-top: 20px;
 }
 
+/*mac 卡片自定义*/
+.mac-tab-style {
+    content: " ";
+    position: absolute;
+    border-radius: 50%;
+    background: #fc625d;
+    width: 10px;
+    height: 10px;
+    box-shadow: 20px 0 #fdbc40, 40px 0 #35cd4b;
+    float: right;
+    right: 45px;
+    top: 16px;
+}
+

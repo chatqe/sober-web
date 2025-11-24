@@ -247,7 +247,7 @@ const getArticles = async () => {
   try {
     const response = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(response.data)) {
-      articles.value = articles.value.concat(response.data.records)
+      articles.value = articles.value.concat(response.data.list)
       pagination.value.total = response.data.total
     }
   } catch (error) {

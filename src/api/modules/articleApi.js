@@ -11,7 +11,7 @@ import request from '@/utils/request.js';
  * @returns {Promise}
  */
 export const getSortAndLabel = async () => {
-  return await request.get('/webInfo/listSortAndLabel');
+    return await request.get('/webInfo/listSortAndLabel');
 };
 
 /**
@@ -20,7 +20,7 @@ export const getSortAndLabel = async () => {
  * @returns {Promise}
  */
 export const getArticleById = async (id) => {
-  return await request.get('/admin/article/getArticleById', { params: { id } });
+    return await request.get('/admin/article/getArticleById', {params: {id}});
 };
 
 /**
@@ -29,8 +29,9 @@ export const getArticleById = async (id) => {
  * @returns {Promise}
  */
 export const getArticleList = async (params) => {
-  return await request.post('/article/listArticle', params);
+    return await request.post('/article/listArticle', params);
 };
+
 
 /**
  * 获取文章列表带 sort
@@ -38,7 +39,7 @@ export const getArticleList = async (params) => {
  * @returns {Promise}
  */
 export const listSortArticle = async (params) => {
-  return await request.get('/article/listSortArticle');
+    return await request.get('/article/listSortArticle');
 };
 
 /**
@@ -47,7 +48,7 @@ export const listSortArticle = async (params) => {
  * @returns {Promise}
  */
 export const saveArticle = async (article) => {
-  return await request.post('/article/saveArticle', article);
+    return await request.post('/article/saveArticle', article);
 };
 
 /**
@@ -56,7 +57,7 @@ export const saveArticle = async (article) => {
  * @returns {Promise}
  */
 export const updateArticle = async (article) => {
-  return await request.post('/article/updateArticle', article);
+    return await request.post('/article/updateArticle', article);
 };
 
 /**
@@ -65,7 +66,7 @@ export const updateArticle = async (article) => {
  * @returns {Promise}
  */
 export const changeArticleStatus = async (params) => {
-  return await request.post('/article/updateArticleStatus', params);
+    return await request.post('/article/updateArticleStatus', params);
 };
 
 /**
@@ -74,7 +75,7 @@ export const changeArticleStatus = async (params) => {
  * @returns {Promise}
  */
 export const deleteArticle = async (params) => {
-  return await request.post('/article/deleteArticle', params);
+    return await request.post('/article/deleteArticle', params);
 };
 
 /**
@@ -83,7 +84,7 @@ export const deleteArticle = async (params) => {
  * @returns {Promise}
  */
 export const getUpToken = async (key) => {
-  return await request.get('/qiniu/getUpToken', { params: { key } });
+    return await request.get('/qiniu/getUpToken', {params: {key}});
 };
 
 /**
@@ -92,7 +93,7 @@ export const getUpToken = async (key) => {
  * @returns {Promise}
  */
 export const uploadFile = async (formData) => {
-  return await request.upload('/resource/upload', formData);
+    return await request.upload('/resource/upload', formData);
 };
 
 /**
@@ -101,5 +102,5 @@ export const uploadFile = async (formData) => {
  * @returns {Promise}
  */
 export const saveResource = async (resource) => {
-  return await request.post('/resource/saveResource', resource);
+    return await request.post('/resource/saveResource', resource);
 };

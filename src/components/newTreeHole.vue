@@ -8,6 +8,7 @@
             class="scroll-wrap"
             :list="newTreeHoleList"
             :wheel="true"
+            :step="1.5"
             :v-model="true"
             :hover="true">
           <ul class="ui-wrap">
