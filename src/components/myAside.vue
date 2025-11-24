@@ -66,9 +66,9 @@
              :key="index"
              @click="router.push({path: '/article', query: {id: article.id}})">
           <div class="aside-post-detail">
-            <div class="aside-post-image" >
+            <div class="aside-post-image">
               <el-image lazy class="my-el-image" :src="article.articleCover" fit="cover"
-                        >
+              >
                 <template #error>
                   <div class="image-slot">
                     <div class="error-aside-image">
@@ -111,6 +111,20 @@
     <!--  </div>-->
     <!--</div>-->
 
+    <!--标签云-->
+    <div class="shadow-box background-opacity wow aside-card">
+      <div class="aside-card-top">
+        🏷️标签
+        <div class="mac-tab-style"></div>
+      </div>
+
+      <div class="aside-card-info ">
+        <div ref="cloudRef" class="tag-cloud">
+          <!--<span v-for="t in tags" :key="t">{{ t }}</span>-->
+        </div>
+      </div>
+    </div>
+
 
     <!--    最新树洞-->
     <newTreeHole></newTreeHole>
@@ -120,15 +134,14 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, inject} from 'vue'
+import {computed, inject, onMounted, ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {Calendar, StarFilled} from '@element-plus/icons-vue'
-import {useWebInfoStore, useSystemStore, useUserStore, useSortInfoStore} from '@/stores'
+import {useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
 import {articleApi} from '@/api'
 import newTreeHole from "./newTreeHole.vue"
-import {getArticleList} from "@/api/modules/articleApi.js";
-
+import TagCloud from 'TagCloud'
 // 获取注入的全局属性
 const $common = inject('$common')
 const $constant = inject('$constant')
@@ -152,9 +165,19 @@ const admires = ref([])
 const showAdmireDialog = ref(false)
 const articleSearch = ref("")
 
+const cloudRef = ref()
+const tags = ref(sortInfoStore.labels || ['Vue3', 'Vite', 'TS', 'Pinia', '标签云'])
+
 // 生命周期
 onMounted(() => {
   getRecommendArticles()
+  TagCloud(cloudRef.value, tags.value, {
+    radius: 150,          // 标签云旋转半径（px）
+    maxSpeed: 'fast',     // 最大速度 'slow'/'normal'/'fast'）
+    initSpeed: 'normal',  // 初始速度
+    direction: 135,       // 旋转方向 （顺时针角度，如0=上，90=左）
+    keep: true            // 鼠标移出后是否继续旋转
+  })
 })
 
 // 计算属性
@@ -461,4 +484,23 @@ const showTip = () => {
 .aside-card-info {
   padding: 15px 15px 10px 15px;
 }
+
+.tag-cloud :deep(.tagcloud) {
+  width: 100% !important;
+}
+
+.tag-cloud :deep(.tagcloud--item) {
+  color: var(--greyFont) !important;
+  font-size: 14px !important;
+  cursor: pointer;
+  transition: all .3s ease;
+}
+
+.tag-cloud :deep(.tagcloud--item:hover) {
+  color: var(--lightGreen) !important;
+  font-size: 16px !important;
+  font-weight: bold;
+/*  text-shadow: 0 0 8px rgba(57,197,187,1);*/
+}
+
 </style>

@@ -6,6 +6,7 @@ import {computed, ref} from 'vue'
 export const useSortInfoStore = defineStore('sortInfo', () => {
 
         const sortInfo = ref([])
+        const labels = ref([])
 
         const articleTotal = computed(() => {
             if (sortInfo.value && sortInfo.value.length !== 0) {
@@ -36,12 +37,19 @@ export const useSortInfoStore = defineStore('sortInfo', () => {
         const loadSortInfo = (sortInfoData) => {
             if (sortInfoData && sortInfoData.length !== 0) {
                 sortInfo.value = sortInfoData.sort((s1, s2) => s1.priority - s2.priority)
-
+                labels.value = [
+                    ...new Set(
+                        sortInfoData
+                            .filter(item => Array.isArray(item.labels))
+                            .flatMap(item => item.labels.map(l => l.labelName))
+                    )
+                ]
             }
         }
 
         return {
             sortInfo,
+            labels,
             articleTotal,
             navigationBar,
             loadSortInfo

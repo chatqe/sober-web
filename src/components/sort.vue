@@ -47,19 +47,16 @@
 
 <script setup>
 import {ref, computed, inject, onMounted, watch, nextTick} from 'vue'
-import {useRoute} from 'vue-router'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {defineAsyncComponent} from 'vue'
 import {useSortInfoStore, useSystemStore} from '@/stores'
 import {articleApi} from '@/api'
-import {getArticleList} from "@/api/modules/articleApi.js";
 
 // 获取注入的全局属性
 const $common = inject('$common')
 const $constant = inject('$constant')
 
-const route = useRoute()
 // const sortInfoStore = useSystemStore()
 const sortInfoStore = useSortInfoStore()
 
@@ -69,16 +66,16 @@ const articleList = defineAsyncComponent(() => import("./articleList.vue"))
 const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 
 // 响应式数据
-const sortId = ref(route.query.sortId)
-const labelId = ref(route.query.labelId)
+const sortId = ref(router.query.sortId)
+const labelId = ref(router.query.labelId)
 const sort = ref(null)
 const pagination = ref({
   pageNum: 1,
   pageSize: 10,
   total: 0,
   searchKey: "",
-  sortId: route.query.sortId,
-  labelId: route.query.labelId
+  sortId:sortId.value ,
+  labelId: labelId.value
 })
 const articles = ref([])
 
@@ -87,23 +84,22 @@ const sortInfo = computed(() => sortInfoStore.sortInfo)
 
 
 const handleCurrentChange = () => {
-  console.log('pageNum change:',pagination.value.pageNum)
   getArticles()
 }
 
 // 监听路由变化
-watch(() => route.query, () => {
+watch(() => router.query, () => {
   pagination.value = {
     current: 1,
     size: 10,
     total: 0,
     searchKey: "",
-    sortId: route.query.sortId,
-    labelId: route.query.labelId
+    sortId: router.query.sortId,
+    labelId: router.query.labelId
   }
   articles.value = []
-  sortId.value = route.query.sortId
-  labelId.value = route.query.labelId
+  sortId.value = router.query.sortId
+  labelId.value = router.query.labelId
   getSort()
   getArticles()
 })
@@ -132,7 +128,7 @@ const listArticle = (label) => {
     size: 10,
     total: 0,
     searchKey: "",
-    sortId: route.query.sortId,
+    sortId: router.query.sortId,
     labelId: label.id
   }
   articles.value = []

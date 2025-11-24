@@ -126,12 +126,11 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, watch, defineAsyncComponent, nextTick, inject} from 'vue'
-import {useUserStore, useWebInfoStore, useSystemStore, useSortInfoStore} from '@/stores'
+import {computed, defineAsyncComponent, inject, nextTick, onMounted, ref} from 'vue'
+import {useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {articleApi} from '@/api'
-import {getArticleList, listSortArticle} from "@/api/modules/articleApi.js";
 
 // 获取注入的全局属性
 const $common = inject('$common')
