@@ -12,106 +12,42 @@
                 fit="cover">
         <div slot="error" class="image-slot"></div>
       </el-image>
-
-      <div class="sign-container">
-        <div class="sign-img">
-          <div class="el-image my-el-image" style="border-radius: 15px; overflow: hidden;">
-            <img src="https://file.helloljm.com/assets/backgroundPicture.jpg" class="el-image__inner"
-                 style="object-fit: cover;" alt="背景图">
+      <div class="in-up" id="loginAndRegist" :class="{' right-panel-active': showRegist}">
+        <div class="form-container sign-up-container">
+          <div class="myCenter">
+            <h1>注册</h1>
+            <input v-model="username" type="text" maxlength="30" placeholder="用户名">
+            <input v-model="password" type="password" maxlength="30" placeholder="密码">
+            <input v-model="email" type="email" placeholder="邮箱">
+            <input v-model="code" type="text" placeholder="验证码" disabled>
+            <a style="margin: 0" href="#" @click="changeDialog('邮箱验证码')">获取验证码</a>
+            <button @click="regist()">注册</button>
           </div>
         </div>
-
-        <div class="sign-box">
-          <div class="myCenter" style="height: 30px ;">
-            <h2>青肆</h2>
+        <div class="form-container sign-in-container">
+          <div class="myCenter">
+            <h1>登录</h1>
+            <input v-model="account" type="text" placeholder="用户名/邮箱/手机号">
+            <input v-model="password" type="password" placeholder="密码">
+            <a href="#" @click="changeDialog('找回密码')">忘记密码？</a>
+            <button @click="login()">登录</button>
           </div>
-          <div>
-            <div v-if="isLogin">
-              <div class="sign-box-body">
-                <div class="sign-box-title">登录</div>
-                <div class="sign-box-button" @click="changeLoginCard">没有账号？立即注册 &gt;</div>
-              </div>
-
-              <div>
-                <div>
-                  <div>
-                    <div class="line-form">
-                      <input v-model="account" type="text" placeholder="用户名/邮箱" class="line-form-input">
-                    </div>
-                    <div class="line-form" style="margin-top: 20px;">
-                      <input v-model="password" autocomplete="current-password" type="password" placeholder="登录密码"
-                             class="line-form-input">
-                    </div>
-                    <div style="display: flex; justify-content: flex-end;">
-                      <div class="account-login-btn">修改密码</div>
-                      <div class="account-login-btn"> 免密登录</div>
-                    </div>
-                  </div>
-
-                  <div class="login-btn" @click="login()"
-                       style="background: linear-gradient(135deg, rgb(89, 195, 251) 10%, rgb(38, 141, 247) 100%);">
-                    <i aria-hidden="true"></i> 登录
-                  </div>
-                </div>
-
-                <div class="social-separator">社交账号登录</div>
-
-                <div class="social-loginbar">
-                  <div class="social-loginbar-item">
-                    <i style="vertical-align: middle;">
-                      <svg viewBox="0 0 1024 1024" width="30" height="30">
-                        <path
-                            d="M512 21.12c-271.488 0-491.52 220.032-491.52 491.52s220.032 491.52 491.52 491.52 491.52-220.032 491.52-491.52-220.032-491.52-491.52-491.52z m267.392 630.144c-4.096 11.776-9.856 17.792-17.28 17.792-1.92 0-3.84-0.768-6.016-2.304-2.176-1.536-4.096-3.328-5.888-5.504-1.792-2.048-3.712-4.736-5.888-8.064-2.176-3.328-3.84-6.016-4.992-8.192-1.152-2.176-2.56-4.864-4.224-8.064-1.664-3.2-2.56-4.992-2.816-5.504-0.256-0.256-0.512-0.256-0.896-0.256l-1.536 1.28c-12.288 32-25.984 55.168-41.088 69.504 4.096 4.096 10.496 8.192 19.2 12.032s15.744 8.192 21.504 12.928c5.76 4.736 9.344 11.52 11.008 20.224-0.384 0.768-0.896 2.432-1.28 4.992-0.384 2.432-1.152 4.352-2.176 5.632-13.312 20.096-44.672 30.208-94.08 30.208-11.008 0-22.528-0.896-34.432-2.816-11.904-1.92-22.144-3.968-30.464-6.272-8.448-2.304-19.2-5.376-32.512-9.344-3.072-1.024-5.504-1.792-7.168-2.176-2.944-0.768-7.68-1.28-14.336-1.408s-10.752-0.256-12.416-0.512c-8.448 9.344-21.76 16.128-39.68 20.224-17.92 4.096-35.456 6.272-52.48 6.272-7.296 0-14.464-0.128-21.504-0.512-7.04-0.256-16.768-1.28-28.928-2.816-12.288-1.536-22.784-3.712-31.488-6.4-8.704-2.688-16.384-6.912-23.168-12.416-6.784-5.632-10.112-12.288-10.112-19.968 0-8.32 1.024-14.464 3.072-18.56 2.048-4.096 6.272-9.088 12.8-15.104 2.304-0.384 6.528-1.792 12.672-4.096 6.144-2.304 11.264-3.584 15.36-3.712 0.768 0 2.304-0.256 4.352-0.64 0.384-0.384 0.64-0.896 0.64-1.28l-0.64-0.896c-9.984-2.304-21.12-13.184-33.664-32.896-12.416-19.584-20.096-35.84-22.784-48.768l-1.536-0.896c-0.768 0-2.048 2.048-3.712 6.272-3.712 8.448-9.344 16.256-17.024 23.168-7.552 6.912-15.616 10.88-24.192 11.648h-0.256c-0.768 0-1.408-0.512-1.92-1.408-0.384-0.896-0.896-1.536-1.536-1.664-4.736-11.264-7.168-21.632-7.168-31.104 0-57.088 26.112-105.472 78.464-145.152-1.664-3.968-2.432-9.344-2.432-16.256 0-4.096 1.152-9.216 3.456-15.232s4.736-10.752 7.424-13.952c-0.256-4.608 0.512-10.112 2.304-16.512s4.096-10.88 7.04-13.44c0-28.8 9.6-58.752 28.8-89.856 19.2-31.104 41.728-52.736 67.712-65.28 28.8-13.696 62.464-20.608 100.864-20.608 27.648 0 55.168 5.76 82.816 17.152 10.24 4.352 19.584 9.344 28.032 14.976 8.448 5.632 15.872 11.392 22.144 17.408s11.904 13.056 17.152 21.12c5.248 8.064 9.6 15.744 13.056 23.04s6.912 16 10.112 26.368c3.2 10.24 5.888 19.584 7.936 27.904s4.352 18.432 6.912 30.464l0.256 1.536c11.392 17.28 17.152 32.768 17.152 46.72 0 2.944-0.896 7.04-2.816 12.416-1.92 5.376-2.816 9.344-2.816 11.776 0 0.256 0.128 0.512 0.512 1.152 0.256 0.512 0.64 1.024 1.152 1.536 0.384 0.512 0.64 0.896 0.64 1.152 16 23.68 28.544 45.952 37.504 66.816 9.088 20.864 13.568 42.496 13.568 64.896-0.256 8.96-2.304 19.328-6.272 31.232z"
-                            fill="#EC502B"></path>
-                      </svg>
-                    </i>
-                  </div>
-                </div>
-              </div>
+        </div>
+        <div class="overlay-container">
+          <div class="overlay">
+            <div class="overlay-panel myCenter overlay-left">
+              <h1>已有帐号？</h1>
+              <p>请登录🚀</p>
+              <button class="ghost" @click="signIn()">登录</button>
             </div>
-
-            <!--  -->
-            <div v-else>
-              <div class="sign-box-body">
-                <div class="sign-box-title">注册</div>
-                <div class="sign-box-button" @click="changeLoginCard">已有账号？立即登录 &gt;</div>
-              </div>
-              <div>
-                <div>
-                  <div class="line-form">
-                    <input v-model="username" type="text" maxlength="30" placeholder="用户名" class="line-form-input">
-                  </div>
-                  <div class="line-form" style="margin-top: 20px;">
-                    <input v-model="password"
-                           type="password"
-                           autocomplete="new-password"
-                           maxlength="30"
-                           placeholder="登录密码"
-                           class="line-form-input">
-                  </div>
-                  <div class="line-form" style="margin-top: 20px;">
-                    <input v-model="email"
-                           type="text"
-                           placeholder="邮箱"
-                           class="line-form-input">
-                  </div>
-                  <div class="line-form" style="margin-top: 20px; position: relative;">
-                    <input v-model="code" autocomplete="off" type="number" placeholder="验证码" class="line-form-input">
-                    <button class="send-btn">验证码</button>
-                  </div>
-                </div>
-                <div class="login-btn" @click="regist()"
-                     style="background: linear-gradient(135deg, rgb(96, 228, 100) 10%, rgb(92, 184, 91) 100%);">
-                  <i aria-hidden="true"></i> 注册
-                </div>
-              </div>
+            <div class="overlay-panel myCenter overlay-right">
+              <h1>没有帐号？</h1>
+              <p>立即注册吧😃</p>
+              <button class="ghost" @click="signUp()">注册</button>
             </div>
-
           </div>
-
         </div>
       </div>
-
     </div>
 
     <!-- 用户信息 -->
@@ -145,11 +81,9 @@
               </div>
               <div>
                 <div v-if="!$common.isEmpty(currentUser.phoneNumber)">
-                  {{ currentUser.phoneNumber }} <span class="changeInfo"
-                                                      @click="changeDialog('修改手机号')">修改（功能未接入）</span>
+                  {{ currentUser.phoneNumber }} <span class="changeInfo" @click="changeDialog('修改手机号')">修改（功能未接入）</span>
                 </div>
-                <div v-else><span class="changeInfo" @click="changeDialog('绑定手机号')">绑定手机号（功能未接入）</span>
-                </div>
+                <div v-else><span class="changeInfo" @click="changeDialog('绑定手机号')">绑定手机号（功能未接入）</span></div>
               </div>
               <div>
                 <div v-if="!$common.isEmpty(currentUser.email)">
@@ -269,12 +203,12 @@
 </template>
 
 <script setup>
-import {ref, computed, onUnmounted, inject} from 'vue'
+import { ref, computed, onUnmounted, inject } from 'vue'
 import router from '@/router'
-import {ElMessage, ElMessageBox} from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
 import {authApi, userApi} from '@/api'
-import {defineAsyncComponent} from 'vue'
+import { defineAsyncComponent } from 'vue'
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -291,16 +225,6 @@ const webInfoStore = useWebInfoStore()
 const authStore = useAuthStore()
 
 // 响应式数据
-const loginParams = ref({
-  account: "",
-  password: ""
-})
-const registParams = ref({
-  username: "",
-  password: "",
-  phoneNumber: "",
-  email: ""
-})
 const username = ref("")
 const account = ref("")
 const password = ref("")
@@ -313,7 +237,6 @@ const code = ref("")
 const dialogTitle = ref("")
 const codeString = ref("验证码")
 const passwordFlag = ref(null)
-const isLogin = ref(true)
 let intervalCode = null
 
 // 计算属性
@@ -325,17 +248,13 @@ onUnmounted(() => {
   if (intervalCode) {
     clearInterval(intervalCode)
   }
+  console.log(webInfoStore.webInfo)
 })
 
 // 上传头像回调
 const addPicture = (res) => {
   avatar.value = res
   submitDialog()
-}
-
-// 新切换登录/注册面板
-const changeLoginCard = () => {
-  isLogin.value = !isLogin.value
 }
 
 // 切换登录/注册面板
@@ -368,7 +287,7 @@ const login = async () => {
       userStore.loadCurrentUser(res.data)
       authStore.setUserToken(res.data.accessToken)
       if (res.data.isAdmin) {
-        authStore.setIsAdmin(true)
+      authStore.setIsAdmin(true)
       }
       account.value = ""
       password.value = ""
@@ -433,7 +352,7 @@ const regist = async () => {
       localStorage.setItem("userToken", res.data.accessToken)
       username.value = ""
       password.value = ""
-      router.push({path: '/'})
+      router.push({ path: '/' })
     }
   } catch (error) {
     ElMessage({
@@ -703,7 +622,7 @@ const getCode = async () => {
         message: "验证码已发送，请注意查收！",
         type: "success"
       })
-
+      
       codeString.value = "30"
       intervalCode = setInterval(() => {
         if (codeString.value === "0") {
@@ -731,412 +650,240 @@ const getCode = async () => {
 
 <style scoped>
 
-.in-up-container {
-  height: 100vh;
-  position: relative;
-}
+  .in-up-container {
+    height: 100vh;
+    position: relative;
+  }
 
-.in-up {
-  opacity: 0.9;
-  border-radius: 10px;
-  box-shadow: 0 15px 30px var(--miniMask), 0 10px 10px var(--miniMask);
-  position: relative;
-  overflow: hidden;
-  width: 750px;
-  max-width: 100%;
-  min-height: 450px;
-  margin: 10px;
-}
+  .in-up {
+    opacity: 0.9;
+    border-radius: 10px;
+    box-shadow: 0 15px 30px var(--miniMask), 0 10px 10px var(--miniMask);
+    position: relative;
+    overflow: hidden;
+    width: 750px;
+    max-width: 100%;
+    min-height: 450px;
+    margin: 10px;
+  }
 
-.in-up p {
-  font-size: 14px;
-  letter-spacing: 1px;
-  margin: 20px 0 30px 0;
-}
+  .in-up p {
+    font-size: 14px;
+    letter-spacing: 1px;
+    margin: 20px 0 30px 0;
+  }
 
-.in-up a {
-  color: var(--black);
-  font-size: 14px;
-  text-decoration: none;
-  margin: 15px 0;
-}
+  .in-up a {
+    color: var(--black);
+    font-size: 14px;
+    text-decoration: none;
+    margin: 15px 0;
+  }
 
-.form-container {
-  position: absolute;
-  height: 100%;
-  transition: all 0.5s ease-in-out;
-}
+  .form-container {
+    position: absolute;
+    height: 100%;
+    transition: all 0.5s ease-in-out;
+  }
 
-.sign-in-container {
-  left: 0;
-  width: 50%;
-}
+  .sign-in-container {
+    left: 0;
+    width: 50%;
+  }
 
-.sign-up-container {
-  left: 0;
-  width: 50%;
-  opacity: 0;
-}
+  .sign-up-container {
+    left: 0;
+    width: 50%;
+    opacity: 0;
+  }
 
-.form-container div {
-  background: var(--white);
-  flex-direction: column;
-  padding: 0 20px;
-  height: 100%;
-}
+  .form-container div {
+    background: var(--white);
+    flex-direction: column;
+    padding: 0 20px;
+    height: 100%;
+  }
 
-.form-container input {
-  background: var(--maxLightGray);
-  border-radius: 2px;
-  border: none;
-  padding: 12px 15px;
-  margin: 10px 0;
-  width: 100%;
-  outline: none;
-}
+  .form-container input {
+    background: var(--maxLightGray);
+    border-radius: 2px;
+    border: none;
+    padding: 12px 15px;
+    margin: 10px 0;
+    width: 100%;
+    outline: none;
+  }
 
-.in-up button {
-  border-radius: 2rem;
-  border: none;
-  background: var(--lightRed);
-  color: var(--white);
-  font-size: 16px;
-  font-weight: bold;
-  padding: 12px 45px;
-  letter-spacing: 2px;
-  cursor: pointer;
-}
+  .in-up button {
+    border-radius: 2rem;
+    border: none;
+    background: var(--lightRed);
+    color: var(--white);
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 45px;
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
 
-.in-up button:hover {
-  animation: scale 0.8s ease-in-out;
-}
+  .in-up button:hover {
+    animation: scale 0.8s ease-in-out;
+  }
 
-.in-up button.ghost {
-  background: transparent;
-  border: 1px solid var(--white);
-}
+  .in-up button.ghost {
+    background: transparent;
+    border: 1px solid var(--white);
+  }
 
-.sign-up-container button {
-  margin-top: 20px;
-}
+  .sign-up-container button {
+    margin-top: 20px;
+  }
 
-.overlay-container {
-  position: absolute;
-  left: 50%;
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
-  transition: all 0.5s ease-in-out;
-}
+  .overlay-container {
+    position: absolute;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+  }
 
-.overlay {
-  background: var(--gradualRed);
-  color: var(--white);
-  position: relative;
-  left: -100%;
-  height: 100%;
-  width: 200%;
-}
+  .overlay {
+    background: var(--gradualRed);
+    color: var(--white);
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+  }
 
-.overlay-panel {
-  position: absolute;
-  top: 0;
-  flex-direction: column;
-  height: 100%;
-  width: 50%;
-  transition: all 0.5s ease-in-out;
-}
+  .overlay-panel {
+    position: absolute;
+    top: 0;
+    flex-direction: column;
+    height: 100%;
+    width: 50%;
+    transition: all 0.5s ease-in-out;
+  }
 
-.overlay-right {
-  right: 0;
-  transform: translateY(0);
-}
+  .overlay-right {
+    right: 0;
+    transform: translateY(0);
+  }
 
-.overlay-left {
-  transform: translateY(-20%);
-}
+  .overlay-left {
+    transform: translateY(-20%);
+  }
 
-.in-up.right-panel-active .sign-in-container {
-  transform: translateY(100%);
-}
+  .in-up.right-panel-active .sign-in-container {
+    transform: translateY(100%);
+  }
 
-.in-up.right-panel-active .overlay-container {
-  transform: translateX(-100%);
-}
+  .in-up.right-panel-active .overlay-container {
+    transform: translateX(-100%);
+  }
 
-.in-up.right-panel-active .sign-up-container {
-  transform: translateX(100%);
-  opacity: 1;
-}
+  .in-up.right-panel-active .sign-up-container {
+    transform: translateX(100%);
+    opacity: 1;
+  }
 
-.in-up.right-panel-active .overlay {
-  transform: translateX(50%);
-}
+  .in-up.right-panel-active .overlay {
+    transform: translateX(50%);
+  }
 
-.in-up.right-panel-active .overlay-left {
-  transform: translateY(0);
-}
+  .in-up.right-panel-active .overlay-left {
+    transform: translateY(0);
+  }
 
-.in-up.right-panel-active .overlay-right {
-  transform: translateY(20%);
-}
+  .in-up.right-panel-active .overlay-right {
+    transform: translateY(20%);
+  }
 
-.user-container {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-}
+  .user-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
 
-.user-info {
-  width: 80%;
-  z-index: 10;
-  margin-top: 70px;
-  height: calc(100vh - 90px);
-  margin-bottom: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.user-left {
-  width: 50%;
-  background: var(--maxMaxWhiteMask);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-.user-right {
-  width: 50%;
-  background: var(--maxWhiteMask);
-  padding: 20px;
-}
-
-.user-title {
-  text-align: right;
-  user-select: none;
-}
-
-.user-content {
-  text-align: left;
-}
-
-.user-title div {
-  height: 55px;
-  line-height: 55px;
-  text-align: center;
-}
-
-.user-content > div {
-  height: 55px;
-  display: flex;
-  align-items: center;
-}
-
-.user-content >>> .el-input__inner, .user-content >>> .el-textarea__inner {
-  border: none;
-  background: var(--whiteMask);
-}
-
-.user-content >>> .el-input__count {
-  background: var(--transparent);
-  user-select: none;
-}
-
-.changeInfo {
-  color: var(--white);
-  font-size: 0.75rem;
-  cursor: pointer;
-  background: var(--themeBackground);
-  padding: 3px;
-  border-radius: 0.2rem;
-  user-select: none;
-}
-
-@media screen and (max-width: 920px) {
   .user-info {
-    width: 90%;
+    width: 80%;
+    z-index: 10;
+    margin-top: 70px;
+    height: calc(100vh - 90px);
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
   }
 
   .user-left {
-    width: 100%;
+    width: 50%;
+    background: var(--maxMaxWhiteMask);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    padding: 20px;
   }
 
   .user-right {
-    display: none;
+    width: 50%;
+    background: var(--maxWhiteMask);
+    padding: 20px;
   }
-}
 
+  .user-title {
+    text-align: right;
+    user-select: none;
+  }
 
-.sign-container {
-  position: relative;
-  width: 100%;
-  max-width: 800px;
-  margin: 20px;
-  animation: 0.5s cubic-bezier(0.32, 0.85, 0.45, 1.18) 0s 1 normal none running baseShow;
-  z-index: 10;
-}
+  .user-content {
+    text-align: left;
+  }
 
-.sign-img {
-  position: absolute;
-  padding-right: 35%;
-  top: -40px;
-  left: 0;
-  right: 0;
-  bottom: -40px;
-}
+  .user-title div {
+    height: 55px;
+    line-height: 55px;
+    text-align: center;
+  }
 
-.sign-box {
-  position: relative;
-  margin-left: 50%;
-  max-width: 400px;
-  backdrop-filter: saturate(5) blur(20px);
-  background: rgba(255, 255, 255, 0.8);
-  padding: 30px 30px 15px;
-  border-radius: 15px;
-}
+  .user-content > div {
+    height: 55px;
+    display: flex;
+    align-items: center;
+  }
 
-.sign-box-body {
-  padding: 15px 0;
-}
+  .user-content >>> .el-input__inner, .user-content >>> .el-textarea__inner {
+    border: none;
+    background: var(--whiteMask);
+  }
 
+  .user-content >>> .el-input__count {
+    background: var(--transparent);
+    user-select: none;
+  }
 
-.sign-box-title {
-  position: relative;
-  font-size: 30px;
-  font-weight: 700;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  color: #4e5358;
-}
+  .changeInfo {
+    color: var(--white);
+    font-size: 0.75rem;
+    cursor: pointer;
+    background: var(--themeBackground);
+    padding: 3px;
+    border-radius: 0.2rem;
+    user-select: none;
+  }
 
-.sign-box-title::before {
-  position: absolute;
-  transition: .4s;
-  transform-origin: left;
-  content: "";
-  width: 40px;
-  height: 3px;
-  background: #f04494;
-  left: 0;
-  bottom: 0;
-  border-radius: 5px;
-  box-shadow: 1px 1px 3px -1px #f04494;
-}
+  @media screen and (max-width: 920px) {
+    .user-info {
+      width: 90%;
+    }
 
-.sign-box-title:hover::before {
-  width: 60px;
-}
+    .user-left {
+      width: 100%;
+    }
 
-
-.sign-box-button {
-  margin: 10px 0;
-  color: #777;
-  font-size: 12px;
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  transition: all .3s;
-}
-
-.sign-box-button:hover {
-  color: #f04494;
-}
-
-.line-form {
-  padding-bottom: 3px;
-  background: linear-gradient(90deg, rgba(50, 50, 50, .06), rgba(50, 50, 50, .06)) 0 100% / 100% 1px no-repeat;
-}
-
-
-.line-form:hover {
-  background: linear-gradient(90deg, #f04494, #f04494) 0 100% / 0 1px no-repeat;
-  animation: borderExpand .8s ease-out forwards;
-}
-
-.line-form-input {
-  outline: 0;
-  border: 0;
-  width: 100%;
-  padding: 2px;
-  opacity: .8;
-  background: 0 0;
-}
-
-.send-btn {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  padding: 4px 12px;
-  background: rgba(41, 151, 247, .1);
-  color: #2997f7;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-
-.account-login-btn {
-  color: #999;
-  cursor: pointer;
-  font-size: 13px;
-  margin: 10px 2px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-}
-
-.account-login-btn:hover {
-  color: #f04494;
-}
-
-.login-btn {
-  color: #fff;
-  font-size: 14px;
-  width: 80%;
-  margin: 30px auto 20px;
-  border-radius: 25px;
-  padding: 5px;
-  text-align: center;
-  clear: both;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  cursor: pointer;
-  transition: all .3s ease-in-out;
-}
-
-.login-btn:hover {
-  box-shadow: 0 0 5px #39c5bb;
-}
-
-.social-separator {
-  margin-bottom: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #b1b1b1;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-}
-
-.social-loginbar {
-  display: flex;
-  color: #fff;
-  font-size: 13px;
-  justify-content: center;
-}
-
-.social-loginbar-item {
-  margin: 0 10px;
-  cursor: pointer;
-}
+    .user-right {
+      display: none;
+    }
+  }
 </style>

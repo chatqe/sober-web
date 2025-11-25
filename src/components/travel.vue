@@ -10,7 +10,7 @@
         <div style="position: absolute;left: 0;top: 0;padding: 5px 20px">
           <!-- 标题 -->
           <div style="color: var(--white);margin: 0 10px">
-            <div style="line-height: 2 ;margin-top: 20px">
+            <div style="line-height: 2 ;margin-top: 12px">
               时光相册
             </div>
             <div style="font-size: 22px;font-weight: bold;line-height: 2;margin-top: 15px">
@@ -161,7 +161,7 @@ onMounted(() => {
 
   .travel-header {
     margin: 60px auto 30px;
-    height: 150px;
+    height: 120px;
     position: relative;
     overflow: hidden;
     border-radius: 20px;

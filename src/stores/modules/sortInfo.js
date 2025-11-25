@@ -6,6 +6,7 @@ import {computed, ref} from 'vue'
 export const useSortInfoStore = defineStore('sortInfo', () => {
 
         const sortInfo = ref([])
+        // 标签云
         const labels = ref([])
 
         const articleTotal = computed(() => {

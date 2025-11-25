@@ -135,7 +135,10 @@
 
             <!-- 个人中心 -->
             <li>
-              <el-dropdown placement="bottom">
+              <div v-if="$common.isEmpty(userStore.currentUser)" class="login-wrap">
+                <div class="login-menu" @click="router.push({path: '/user'})" >登录</div>
+              </div>
+              <el-dropdown v-else placement="bottom">
                 <el-avatar class="user-avatar" :size="36"
                            style="margin-top: 12px"
                            :src="!$common.isEmpty(userStore.currentUser)?userStore.currentUser.avatar:webInfoStore.webInfo?.avatar">
@@ -166,6 +169,15 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
+
+              <!--<div v-if="$common.isEmpty(userStore.currentUser)" class="login-wrap">-->
+              <!--  <div class="login-menu">登录</div>-->
+              <!--</div>-->
+
+              <!--<el-avatar v-else class="user-avatar" :size="36"-->
+              <!--  style="margin-top: 12px"-->
+              <!--  :src="userStore.currentUser.avatar">-->
+              <!--</el-avatar>-->
             </li>
           </ul>
         </div>
@@ -173,7 +185,7 @@
     </transition>
 
 
-    <div id="main-container" >
+    <div id="main-container">
       <router-view></router-view>
     </div>
 
@@ -408,6 +420,7 @@ onMounted(() => {
   getWebInfo()
   getSortInfo()
   getSysConfig()
+
 
   // 响应式处理
   mobile.value = window.innerWidth < 1100
@@ -818,5 +831,23 @@ const changeMouseAnimation = () => {
   .toolButton {
     right: 0.5vh;
   }
+}
+
+
+.login-wrap {
+  position: relative;
+  margin-top: 10px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.login-menu {
+  font-size: 15px;
+  border-radius: 50%;
+  background-color: #ff8cb0;
+  text-align: center;
+  line-height: 40px;
+  color: #fff;
 }
 </style>

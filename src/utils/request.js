@@ -7,8 +7,7 @@
 
 import axios from "axios";
 // 处理url参数
-// import qs from "qs";
-// import {stringify} from 'query-string';
+import qs from "qs";
 import {useAuthStore, useUserStore} from "@/stores/index.js";
 import {API_CODES, TIMEOUT} from "@/constant/index.js";
 import {ElMessage} from "element-plus";
@@ -99,8 +98,7 @@ export default {
         }
 
         // 将参数转为 URLSearchParams（如果不是 json）
-        const data = json ? params : new URLSearchParams(params);
-
+        const data = json ? params : qs.stringify(params);
         return new Promise((resolve, reject) => {
             request
                 .post(url, data, config)

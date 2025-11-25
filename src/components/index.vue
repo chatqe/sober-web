@@ -104,9 +104,18 @@
               <div v-show="indexType === 2">
                 <ArticleList :articleList="articles"/>
                 <div class="pagination-wrap">
-                  <div @click="pageArticles()" class="pagination" v-if="pagination.total !== articles.length">
-                    下一页
-                  </div>
+                  <!--<div @click="pageArticles()" class="pagination" v-if="pagination.total !== articles.length">-->
+                  <!--  下一页-->
+                  <!--</div>-->
+                  <el-pagination
+                      v-if="pagination.total>10"
+                      v-model:current-page="pagination.pageNum"
+                      v-model:page-size="pagination.pageSize"
+                      background
+                      layout=" prev, pager, next"
+                      :total="pagination.total"
+                      @current-change="handleCurrentChange"
+                  />
                   <div v-else style="user-select: none">
                     ~~到底啦~~
                   </div>
@@ -160,8 +169,8 @@ const indexType = ref(1)
 const announcementMaxWidth = ref('auto')
 const printerInfo = ref("你看对面的青山多漂亮")
 const pagination = ref({
-  current: 1,
-  size: 10,
+  pageNum: 1,
+  pageSize: 10,
   total: 0,
   searchKey: "",
   sortId: null,
@@ -238,15 +247,19 @@ const selectArticle = async (articleSearch) => {
 }
 
 const pageArticles = () => {
-  pagination.value.current += 1
+  pagination.value.pageNum += 1
   getArticles()
 }
 
+const handleCurrentChange = () => {
+  getArticles()
+}
 const getArticles = async () => {
   try {
     const response = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(response.data)) {
-      articles.value = articles.value.concat(response.data.list)
+      // articles.value = articles.value.concat(response.data.list)
+      articles.value = response.data.list
       pagination.value.total = response.data.total
     }
   } catch (error) {

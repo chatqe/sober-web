@@ -8,8 +8,8 @@
 import request from '@/utils/request.js';
 
 // 用户登录
-export const login = (credentials) => {
-    return request.post('/user/login', {}, false,false);
+export const login = (params) => {
+    return request.post('/user/login', params, false,false);
 };
 
 // 用户退出
