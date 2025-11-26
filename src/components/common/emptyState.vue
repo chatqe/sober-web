@@ -57,7 +57,7 @@ const props = defineProps({
   width: 90%;
   /* 核心：左右外边距自动，实现水平居中 */
   margin: 0 auto;
-  min-height: 60.5vh;
+  min-height: 64vh;
   /* 内边距：与父容器保持距离 */
   padding: 40px 20px;
   box-sizing: border-box;

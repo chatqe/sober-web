@@ -84,7 +84,6 @@ const getGuShi = async () => {
 
 const getHitokoto = async () => {
   try {
-    console.log('发起请求了')
     const response = await fetch($constant.hitokoto);
     hitokoto.value = await response.json();
   } catch (error) {
@@ -98,7 +97,6 @@ onMounted(() => {
     if (props.isHitokoto) {
       getHitokoto();
     } else {
-      console.log('getGuShi')
       getGuShi();
     }
   } else {

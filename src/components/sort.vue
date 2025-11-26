@@ -46,13 +46,14 @@
 </template>
 
 <script setup>
-import {ref, computed, inject, onMounted, watch, nextTick} from 'vue'
-import router from '@/router'
+import {computed, defineAsyncComponent, inject, nextTick, onMounted, ref, watch} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {ElMessage} from 'element-plus'
-import {defineAsyncComponent} from 'vue'
-import {useSortInfoStore, useSystemStore} from '@/stores'
+import {useSortInfoStore} from '@/stores'
 import {articleApi} from '@/api'
 
+const route = useRoute()
+const router = useRouter()
 // 获取注入的全局属性
 const $common = inject('$common')
 const $constant = inject('$constant')
@@ -65,9 +66,8 @@ const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
 const articleList = defineAsyncComponent(() => import("./articleList.vue"))
 const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 
-// 响应式数据
-const sortId = ref(router.query.sortId)
-const labelId = ref(router.query.labelId)
+const sortId = ref(route.query.sortId)
+const labelId = ref(route.query.labelId)
 const sort = ref(null)
 const pagination = ref({
   pageNum: 1,
@@ -88,18 +88,18 @@ const handleCurrentChange = () => {
 }
 
 // 监听路由变化
-watch(() => router.query, () => {
+watch(() => route.query, () => {
   pagination.value = {
     current: 1,
     size: 10,
     total: 0,
     searchKey: "",
-    sortId: router.query.sortId,
-    labelId: router.query.labelId
+    sortId: route.query.sortId,
+    labelId: route.query.labelId
   }
   articles.value = []
-  sortId.value = router.query.sortId
-  labelId.value = router.query.labelId
+  sortId.value = route.query.sortId
+  labelId.value = route.query.labelId
   getSort()
   getArticles()
 })
@@ -128,7 +128,7 @@ const listArticle = (label) => {
     size: 10,
     total: 0,
     searchKey: "",
-    sortId: router.query.sortId,
+    sortId: route.query.sortId,
     labelId: label.id
   }
   articles.value = []

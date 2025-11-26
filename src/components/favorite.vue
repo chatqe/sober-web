@@ -9,10 +9,10 @@
         <div style="position: absolute;left: 0;top: 0;padding: 5px 20px">
           <!-- 标题 -->
           <div style="color: var(--white);margin: 0 10px">
-            <div style="line-height: 2 ;margin-top: 20px">
+            <div style="line-height: 2 ;margin-top: 12px">
               {{ favVideoInfo.title }}
             </div>
-            <div style="font-size: 25px;font-weight: bold;line-height: 2;margin-top: 15px">
+            <div style="font-size: 22px;font-weight: bold;line-height: 2;margin-top: 15px">
               {{ favVideoInfo.desc }}
             </div>
           </div>
@@ -97,7 +97,7 @@ function getCollect() {
 
 .favorite-header {
   margin: 60px auto 30px;
-  height: 150px;
+  height: 120px;
   position: relative;
   overflow: hidden;
   border-radius: 20px;

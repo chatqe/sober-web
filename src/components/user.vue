@@ -36,10 +36,12 @@
                 <div>
                   <div>
                     <div class="line-form">
-                      <input v-model="account" type="text" placeholder="用户名/邮箱" class="line-form-input">
+                      <input v-model="loginParams.account" type="text" placeholder="用户名/邮箱"
+                             class="line-form-input">
                     </div>
                     <div class="line-form" style="margin-top: 20px;">
-                      <input v-model="password" autocomplete="current-password" type="password" placeholder="登录密码"
+                      <input v-model="loginParams.password" autocomplete="current-password" type="password"
+                             placeholder="登录密码"
                              class="line-form-input">
                     </div>
                     <div style="display: flex; justify-content: flex-end;">
@@ -70,7 +72,7 @@
               </div>
             </div>
 
-            <!--  -->
+            <!-- 注册 -->
             <div v-else>
               <div class="sign-box-body">
                 <div class="sign-box-title">注册</div>
@@ -79,10 +81,11 @@
               <div>
                 <div>
                   <div class="line-form">
-                    <input v-model="username" type="text" maxlength="30" placeholder="用户名" class="line-form-input">
+                    <input v-model="registParams.username" type="text" maxlength="30" placeholder="用户名"
+                           class="line-form-input">
                   </div>
                   <div class="line-form" style="margin-top: 20px;">
-                    <input v-model="password"
+                    <input v-model="registParams.password"
                            type="password"
                            autocomplete="new-password"
                            maxlength="30"
@@ -96,8 +99,9 @@
                            class="line-form-input">
                   </div>
                   <div class="line-form" style="margin-top: 20px; position: relative;">
-                    <input v-model="code" autocomplete="off" type="number" placeholder="验证码" class="line-form-input">
-                    <button class="send-btn">验证码</button>
+                    <input v-model="registParams.code" autocomplete="off" type="number" placeholder="验证码"
+                           class="line-form-input">
+                    <button class="send-btn" @click="getCode">验证码</button>
                   </div>
                 </div>
                 <div class="login-btn" @click="regist()"
@@ -112,7 +116,34 @@
         </div>
       </div>
 
+
+      <!--图形验证码弹层-->
+      <el-dialog center align-center
+          v-model="captchaShow"
+          title="图形验证码"
+          width="400"
+          :before-close="captchaClose">
+        <div>
+          <el-image class="my-el-image"
+              lazy
+              src=".././assets/file/captcha.png"
+              fit="cover">
+        </el-image>
+        </div>
+        <div>
+          <el-input v-model="captcha.value" autocomplete="off" />
+        </div>
+
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="dialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="dialogVisible = false">确定</el-button>
+          </div>
+        </template>
+      </el-dialog>
+
     </div>
+
 
     <!-- 用户信息 -->
     <div v-else class="user-container myCenter my-animation-hideToShow">
@@ -290,31 +321,29 @@ const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
 const authStore = useAuthStore()
 
-// 响应式数据
+// 登录参数
 const loginParams = ref({
   account: "",
   password: ""
 })
+// 注册参数
 const registParams = ref({
   username: "",
   password: "",
-  phoneNumber: "",
-  email: ""
+  code: ''
 })
-const username = ref("")
-const account = ref("")
-const password = ref("")
 const phoneNumber = ref("")
 const email = ref("")
 const avatar = ref("")
 const showDialog = ref(false)
 const showRegist = ref(false)
-const code = ref("")
 const dialogTitle = ref("")
 const codeString = ref("验证码")
 const passwordFlag = ref(null)
 const isLogin = ref(true)
 let intervalCode = null
+const captchaShow = ref(false)
+const captcha = ref('')
 
 // 计算属性
 const currentUser = computed(() => userStore.currentUser)
@@ -333,6 +362,10 @@ const addPicture = (res) => {
   submitDialog()
 }
 
+const captchaClose = () => {
+  console.log("关闭验证码对话框")
+}
+
 // 新切换登录/注册面板
 const changeLoginCard = () => {
   isLogin.value = !isLogin.value
@@ -349,7 +382,7 @@ const signIn = () => {
 
 // 登录
 const login = async () => {
-  if ($common.isEmpty(account.value) || $common.isEmpty(password.value)) {
+  if ($common.isEmpty(loginParams.value.account) || $common.isEmpty(loginParams.value.password)) {
     ElMessage({
       message: "请输入账号或密码！",
       type: "error"
@@ -358,8 +391,8 @@ const login = async () => {
   }
 
   let user = {
-    account: account.value.trim(),
-    password: $common.encrypt(password.value.trim())
+    account: loginParams.value.account.trim(),
+    password: $common.encrypt(loginParams.value.password.trim())
   }
 
   try {
@@ -370,8 +403,8 @@ const login = async () => {
       if (res.data.isAdmin) {
         authStore.setIsAdmin(true)
       }
-      account.value = ""
-      password.value = ""
+      loginParams.value.account = ""
+      loginParams.value.password = ""
       await router.push({path: '/'})
     }
   } catch (error) {
@@ -384,7 +417,7 @@ const login = async () => {
 
 // 注册
 const regist = async () => {
-  if ($common.isEmpty(username.value) || $common.isEmpty(password.value)) {
+  if ($common.isEmpty(registParams.value.username) || $common.isEmpty(registParams.value.password)) {
     ElMessage({
       message: "请输入用户名或密码！",
       type: "error"
@@ -400,7 +433,7 @@ const regist = async () => {
     return false
   }
 
-  if ($common.isEmpty(code.value)) {
+  if ($common.isEmpty(registParams.value.code)) {
     ElMessage({
       message: "请输入验证码！",
       type: "error"
@@ -408,7 +441,7 @@ const regist = async () => {
     return
   }
 
-  if (username.value.indexOf(" ") !== -1 || password.value.indexOf(" ") !== -1) {
+  if (registParams.value.username.indexOf(" ") !== -1 || registParams.value.password.indexOf(" ") !== -1) {
     ElMessage({
       message: "用户名或密码不能包含空格！",
       type: "error"
@@ -417,9 +450,9 @@ const regist = async () => {
   }
 
   let user = {
-    username: username.value.trim(),
-    code: code.value.trim(),
-    password: $common.encrypt(password.value.trim())
+    username: registParams.value.username.trim(),
+    code: registParams.value.code.trim(),
+    password: $common.encrypt(registParams.value.password.trim())
   }
 
   if (dialogTitle.value === "邮箱验证码") {
@@ -431,8 +464,10 @@ const regist = async () => {
     if (!$common.isEmpty(res.data)) {
       userStore.loadCurrentUser(res.data)
       localStorage.setItem("userToken", res.data.accessToken)
-      username.value = ""
-      password.value = ""
+      registParams.value.username = ""
+      registParams.value.password = ""
+      registParams.value.code = ""
+      email.value = ""
       router.push({path: '/'})
     }
   } catch (error) {
@@ -681,6 +716,25 @@ const clearDialog = () => {
 
 // 获取验证码
 const getCode = async () => {
+  // if ($common.isEmpty(email.value)) {
+  //   ElMessage({
+  //     message: "请输入邮箱！",
+  //     type: "error"
+  //   })
+  //   return false
+  // }
+  // if (!(/^\w+@[a-zA-Z0-9]{2,10}(?:\.[a-z]{2,4}){1,3}$/.test(email.value))) {
+  //   ElMessage({
+  //     message: "邮箱格式有误！",
+  //     type: "error"
+  //   })
+  //   return false
+  // }
+  captchaShow.value = true
+
+
+}
+const getCode1 = async () => {
   if (codeString.value === "验证码") {
     // 获取验证码
     let params = {}
@@ -974,7 +1028,7 @@ const getCode = async () => {
   width: 100%;
   max-width: 800px;
   margin: 20px;
-  animation: 0.5s cubic-bezier(0.32, 0.85, 0.45, 1.18) 0s 1 normal none running baseShow;
+  animation: baseShow 0.5s cubic-bezier(0.32, 0.85, 0.45, 1.18);
   z-index: 10;
 }
 
