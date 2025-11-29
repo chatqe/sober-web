@@ -176,8 +176,8 @@ body {
 }
 
 .shadow-box {
-   /* box-shadow: 0 1px 20px -6px var(--borderColor);*/
-    box-shadow:  2px 2px 5px var(--borderColor);/*新卡片边框样式*/
+    /* box-shadow: 0 1px 20px -6px var(--borderColor);*/
+    box-shadow: 2px 2px 5px var(--borderColor); /*新卡片边框样式*/
     transition: all 0.3s ease;
 }
 
@@ -234,6 +234,12 @@ body {
     max-width: 1200px;
 }
 
+/**
+ * el 对话框 叉号覆盖样式
+ */
+.el-dialog__header.show-close {
+    padding-right: 0 !important;
+}
 
 #waifu-toggle, #waifu {
     z-index: 100;

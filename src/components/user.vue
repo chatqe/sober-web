@@ -118,28 +118,41 @@
 
 
       <!--图形验证码弹层-->
-      <el-dialog center align-center
-          v-model="captchaShow"
-          title="图形验证码"
-          width="400"
-          :before-close="captchaClose">
-        <div>
-          <el-image class="my-el-image"
-              lazy
-              src=".././assets/file/captcha.png"
-              fit="cover">
-        </el-image>
-        </div>
-        <div>
-          <el-input v-model="captcha.value" autocomplete="off" />
+      <el-dialog v-model="captchaShow"
+                 width="25%"
+                 title="图形验证码"
+                 center
+                 align-center
+                 :before-close="captchaClose">
+
+        <div class="captcha-container myCenter">
+          <div style="margin: 20px auto;">
+            <div>
+              <el-image class="my-el-image captcha-image"
+                        lazy
+                        :src="captchaImg"
+                        fit="cover"/>
+            </div>
+            <div>
+              <el-input v-model="captcha.value" size="large" autocomplete="off"/>
+            </div>
+          </div>
+
+          <!--底部按钮-->
+          <div class="myCenter">
+            <proButton style="margin-right: 20px;"
+                       :info="'取消'"
+                       @click="captchaSubCancel"
+                       :before="$constant.before_color_1"
+                       :after="$constant.after_color_2"/>
+            <proButton :info="'确定'"
+                       @click="captchaSubConfirm"
+                       :before="$constant.before_color_2"
+                       :after="$constant.after_color_2"/>
+          </div>
+
         </div>
 
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="dialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="dialogVisible = false">确定</el-button>
-          </div>
-        </template>
       </el-dialog>
 
     </div>
@@ -306,6 +319,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
 import {authApi, userApi} from '@/api'
 import {defineAsyncComponent} from 'vue'
+import {getCaptchaCode} from "@/api/modules/auth.js";
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -343,6 +357,8 @@ const passwordFlag = ref(null)
 const isLogin = ref(true)
 let intervalCode = null
 const captchaShow = ref(false)
+const captchaImg = ref('')
+const verifyuuid = ref('')
 const captcha = ref('')
 
 // 计算属性
@@ -364,6 +380,13 @@ const addPicture = (res) => {
 
 const captchaClose = () => {
   console.log("关闭验证码对话框")
+  captchaShow.value = false
+}
+const captchaSubCancel = () => {
+  captchaClose()
+}
+const captchaSubConfirm = () => {
+  captchaClose()
 }
 
 // 新切换登录/注册面板
@@ -732,6 +755,10 @@ const getCode = async () => {
   // }
   captchaShow.value = true
 
+  const res = await authApi.getCaptchaCode({flag: true, email: email.value})
+  captchaImg.value = res.data.img
+  verifyuuid.value = res.data.uuid
+  // console.log(res)
 
 }
 const getCode1 = async () => {
@@ -1192,5 +1219,15 @@ const getCode1 = async () => {
 .social-loginbar-item {
   margin: 0 10px;
   cursor: pointer;
+}
+
+
+.captcha-container {
+  margin-bottom: 15px;
+  flex-direction: column;
+}
+
+.captcha-image {
+  border-radius: 15px;
 }
 </style>

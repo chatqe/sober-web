@@ -9,7 +9,7 @@ import request from '@/utils/request.js';
 
 // 用户登录
 export const login = (params) => {
-    return request.post('/user/login', params, false,false);
+    return request.post('/user/login', params, false, false);
 };
 
 // 用户退出
@@ -19,10 +19,14 @@ export const logout = () => {
 
 // 刷新 token
 export const refreshToken = (refreshToken) => {
-    return request.post('/auth/refresh', { refreshToken });
+    return request.post('/auth/refresh', {refreshToken});
 };
 
 // 获取当前用户信息
 export const getCurrentUser = () => {
     return request.get('/auth/me');
+};
+// 获取图形验证码
+export const getCaptchaCode = (params) => {
+    return request.get('/user/captcha', params, false);
 };
