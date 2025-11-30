@@ -30,3 +30,13 @@ export const getCurrentUser = () => {
 export const getCaptchaCode = (params) => {
     return request.get('/user/captcha', params, false);
 };
+// 图形验证码校验
+export const captchaCheck = (params) => {
+    return request.post('/user/captchaCheck', params, false, false);
+};
+
+// 邮箱验证码
+export const emailCode = (params) => {
+    return request.get('/user/getCodeByRegister', params, false);
+};
+

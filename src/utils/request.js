@@ -45,7 +45,7 @@ request.interceptors.response.use((resp) => {
         return resp
     }
 
-    const msg = data?.message || `请求失败[${data?.code || 'unknown'}]`
+    const msg = data?.msg || `请求失败[${data?.code || 'unknown'}]`
 
     // 跳转
     if (data?.code === API_CODES.CLIENT_REDIRECT_LOGIN) {

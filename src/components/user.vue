@@ -134,7 +134,7 @@
                         fit="cover"/>
             </div>
             <div>
-              <el-input v-model="captcha.value" size="large" autocomplete="off"/>
+              <el-input v-model="captcha" size="large" autocomplete="off"/>
             </div>
           </div>
 
@@ -319,7 +319,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
 import {authApi, userApi} from '@/api'
 import {defineAsyncComponent} from 'vue'
-import {getCaptchaCode} from "@/api/modules/auth.js";
+import {captchaCheck, getCaptchaCode} from "@/api/modules/auth.js";
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -379,14 +379,38 @@ const addPicture = (res) => {
 }
 
 const captchaClose = () => {
-  console.log("关闭验证码对话框")
+  // console.log("关闭验证码对话框")
   captchaShow.value = false
 }
 const captchaSubCancel = () => {
   captchaClose()
 }
-const captchaSubConfirm = () => {
-  captchaClose()
+const captchaSubConfirm = async () => {
+  if ($common.isEmpty(email.value)) {
+    ElMessage.error("请输入邮箱验证码!")
+    return
+  }
+
+  if ($common.isEmpty(captcha.value)) {
+    ElMessage.error("请输入验证码！")
+    return
+  }
+
+  const res = await authApi.captchaCheck({uuid: verifyuuid.value, code: captcha.value})
+  if (!res.data) {
+    ElMessage.error("验证码错误！")
+    return
+  } else {
+    captchaClose()
+    captcha.value = ''
+    dialogTitle.value = "邮箱验证码"
+    let params = {}
+    if (!checkParams(params)) return
+    console.log('params:', params)
+    const res = await authApi.emailCode(params)
+    ElMessage.success("验证码已发送，请注意查收！")
+  }
+  console.log('res:', res)
 }
 
 // 新切换登录/注册面板
@@ -543,9 +567,10 @@ const submitUserInfo = async () => {
   }
 }
 
-// 检查参数
+// 检查参数同时赋值
 const checkParams = (params) => {
-  if (dialogTitle.value === "修改手机号" || dialogTitle.value === "绑定手机号" || (dialogTitle.value === "找回密码" && passwordFlag.value === 1)) {
+  if (dialogTitle.value === "修改手机号" || dialogTitle.value === "绑定手机号"
+      || (dialogTitle.value === "找回密码" && passwordFlag.value === 1)) {
     params.flag = 1
     if ($common.isEmpty(phoneNumber.value)) {
       ElMessage({
@@ -563,24 +588,13 @@ const checkParams = (params) => {
     }
     params.place = phoneNumber.value
     return true
-  } else if (dialogTitle.value === "修改邮箱" || dialogTitle.value === "绑定邮箱" || dialogTitle.value === "邮箱验证码" || (dialogTitle.value === "找回密码" && passwordFlag.value === 2)) {
+  } else if (dialogTitle.value === "修改邮箱" || dialogTitle.value === "绑定邮箱"
+      || dialogTitle.value === "邮箱验证码" || (dialogTitle.value === "找回密码" && passwordFlag.value === 2)) {
     params.flag = 2
-    if ($common.isEmpty(email.value)) {
-      ElMessage({
-        message: "请输入邮箱！",
-        type: "error"
-      })
-      return false
+    if (verifyEmail()) {
+      params.place = email.value
+      return true
     }
-    if (!(/^\w+@[a-zA-Z0-9]{2,10}(?:\.[a-z]{2,4}){1,3}$/.test(email.value))) {
-      ElMessage({
-        message: "邮箱格式有误！",
-        type: "error"
-      })
-      return false
-    }
-    params.place = email.value
-    return true
   }
   return false
 }
@@ -739,22 +753,8 @@ const clearDialog = () => {
 
 // 获取验证码
 const getCode = async () => {
-  // if ($common.isEmpty(email.value)) {
-  //   ElMessage({
-  //     message: "请输入邮箱！",
-  //     type: "error"
-  //   })
-  //   return false
-  // }
-  // if (!(/^\w+@[a-zA-Z0-9]{2,10}(?:\.[a-z]{2,4}){1,3}$/.test(email.value))) {
-  //   ElMessage({
-  //     message: "邮箱格式有误！",
-  //     type: "error"
-  //   })
-  //   return false
-  // }
+  if (!verifyEmail()) return
   captchaShow.value = true
-
   const res = await authApi.getCaptchaCode({flag: true, email: email.value})
   captchaImg.value = res.data.img
   verifyuuid.value = res.data.uuid
@@ -808,6 +808,24 @@ const getCode1 = async () => {
   }
 }
 
+
+const verifyEmail = () => {
+  if ($common.isEmpty(email.value)) {
+    ElMessage({
+      message: "请输入邮箱！",
+      type: "error"
+    })
+    return false
+  }
+  if (!(/^\w+@[a-zA-Z0-9]{2,10}(?:\.[a-z]{2,4}){1,3}$/.test(email.value))) {
+    ElMessage({
+      message: "邮箱格式有误！",
+      type: "error"
+    })
+    return false
+  }
+  return true
+}
 </script>
 
 <style scoped>
