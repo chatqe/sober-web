@@ -3,12 +3,12 @@
     <!-- 登陆和注册 -->
     <div v-if="$common.isEmpty(currentUser)"
          class="myCenter in-up-container my-animation-hideToShow">
-      <!-- 背景图片 -->
+      <!-- 背景图片 webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)] -->
       <el-image class="my-el-image"
                 style="position: absolute"
                 v-once
                 lazy
-                :src="webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]"
+                :src="bgImg"
                 fit="cover">
         <div slot="error" class="image-slot"></div>
       </el-image>
@@ -16,6 +16,7 @@
       <div class="sign-container">
         <div class="sign-img">
           <div class="el-image my-el-image" style="border-radius: 15px; overflow: hidden;">
+            <!--<img :src="bgImg" class="el-image__inner"-->
             <img src="https://file.helloljm.com/assets/backgroundPicture.jpg" class="el-image__inner"
                  style="object-fit: cover;" alt="背景图">
           </div>
@@ -45,8 +46,8 @@
                              class="line-form-input">
                     </div>
                     <div style="display: flex; justify-content: flex-end;">
-                      <div class="account-login-btn">修改密码</div>
-                      <div class="account-login-btn"> 免密登录</div>
+                      <div class="account-login-btn" @click="changeDialog1">忘记密码</div>
+                      <div class="account-login-btn" @click="changeDialog1">免密登录</div>
                     </div>
                   </div>
 
@@ -99,12 +100,12 @@
                            class="line-form-input">
                   </div>
                   <div class="line-form" style="margin-top: 20px; position: relative;">
-                    <input v-model="registParams.code" autocomplete="off" type="number" placeholder="验证码"
+                    <input v-model="registParams.code" autocomplete="off" type="text" placeholder="验证码"
                            class="line-form-input">
                     <button class="send-btn" @click="getCode">验证码</button>
                   </div>
                 </div>
-                <div class="login-btn" @click="regist()"
+                <div class="login-btn" @click="register"
                      style="background: linear-gradient(135deg, rgb(96, 228, 100) 10%, rgb(92, 184, 91) 100%);">
                   <i aria-hidden="true"></i> 注册
                 </div>
@@ -119,13 +120,16 @@
 
       <!--图形验证码弹层-->
       <el-dialog v-model="captchaShow"
+                 :modal="false"
+                 :modal-penetrable="true"
                  width="25%"
                  title="图形验证码"
                  center
                  align-center
+
                  :before-close="captchaClose">
 
-        <div class="captcha-container myCenter">
+        <div class="captcha-container myCenter ">
           <div style="margin: 20px auto;">
             <div>
               <el-image class="my-el-image captcha-image"
@@ -150,10 +154,59 @@
                        :before="$constant.before_color_2"
                        :after="$constant.after_color_2"/>
           </div>
+        </div>
+      </el-dialog>
 
+      <!-- 忘记密码容器 -->
+      <div v-if="changeFlag.forgetPwd" class="ground-glass-bg fwd-body">
+        <div style="font-size: 20px;margin-top: 10px;">忘记密码</div>
+        <div class="fwd-close" @click="fwdClose">❌︎</div>
+
+        <div class="fwd-input-box">
+          <div>邮箱</div>
+          <input v-model="email"
+                 type="text"
+                 class="fwd-input ">
         </div>
 
-      </el-dialog>
+
+        <div class="fwd-input-box">
+          <div>新密码</div>
+          <input v-model="registParams.password"
+                 :type="showPwd ? 'text' : 'password'"
+                 autocomplete="new-password"
+                 maxlength="30"
+                 class="fwd-input">
+          <i v-if="showPwd" class="fwd-eye" @click="showPwd=!showPwd">
+            <svg t="1764851214710" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                 p-id="2896" width="23" height="23">
+              <path
+                  d="M512 768c-183.466667 0-328.533333-85.333333-426.666667-256 98.133333-170.666667 243.2-256 426.666667-256s328.533333 85.333333 426.666667 256c-98.133333 170.666667-243.2 256-426.666667 256z m8.533333-426.666667c-128 0-256 55.466667-328.533333 170.666667 72.533333 115.2 200.533333 170.666667 328.533333 170.666667s238.933333-55.466667 311.466667-170.666667c-72.533333-115.2-183.466667-170.666667-311.466667-170.666667z m-8.533333 298.666667c-72.533333 0-128-55.466667-128-128s55.466667-128 128-128 128 55.466667 128 128-55.466667 128-128 128z m0-85.333333c25.6 0 42.666667-17.066667 42.666667-42.666667s-17.066667-42.666667-42.666667-42.666667-42.666667 17.066667-42.666667 42.666667 17.066667 42.666667 42.666667 42.666667z"
+                  fill="#444444" p-id="2897"></path>
+            </svg>
+          </i>
+          <i v-else class="fwd-eye" @click="showPwd=!showPwd">
+            <svg t="1764851356786" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                 p-id="3397" width="23" height="23">
+              <path
+                  d="M422.4 776.533333l76.8-76.8h8.533333c145.066667 0 251.733333-55.466667 332.8-170.666666-25.6-34.133333-55.466667-64-85.333333-89.6L819.2 384c46.933333 38.4 85.333333 89.6 119.466667 145.066667-98.133333 170.666667-243.2 251.733333-426.666667 251.733333-29.866667 4.266667-59.733333 0-89.6-4.266667z m-238.933333-119.466666c-34.133333-34.133333-68.266667-76.8-98.133334-128 98.133333-170.666667 243.2-251.733333 426.666667-251.733334h46.933333l-85.333333 85.333334c-128 8.533333-226.133333 64-298.666667 166.4 17.066667 25.6 38.4 51.2 59.733334 68.266666l-51.2 59.733334zM755.2 213.333333l59.733333 59.733334L277.333333 810.666667l-59.733333-59.733334L755.2 213.333333z"
+                  fill="#444444" p-id="3398"></path>
+            </svg>
+          </i>
+        </div>
+
+        <div class="fwd-input-box">
+          <div>验证码</div>
+          <div style=" position: relative;">
+            <input v-model="registParams.code" autocomplete="off" type="text"
+                   class="fwd-input">
+            <button class="send-btn" @click="emailCode" style="height: 100%;right: 1px;">发送
+            </button>
+          </div>
+        </div>
+
+      </div>
+
 
     </div>
 
@@ -313,13 +366,13 @@
 </template>
 
 <script setup>
-import {ref, computed, onUnmounted, inject} from 'vue'
-import router from '@/router'
+import {computed, defineAsyncComponent, inject, onUnmounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
 import {authApi, userApi} from '@/api'
-import {defineAsyncComponent} from 'vue'
-import {captchaCheck, getCaptchaCode} from "@/api/modules/auth.js";
+
+const router = useRouter()
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -335,6 +388,9 @@ const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
 const authStore = useAuthStore()
 
+// 背景图片
+const bgImg = webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]
+
 // 登录参数
 const loginParams = ref({
   account: "",
@@ -344,7 +400,7 @@ const loginParams = ref({
 const registParams = ref({
   username: "",
   password: "",
-  code: ''
+  code: ""
 })
 const phoneNumber = ref("")
 const email = ref("")
@@ -360,6 +416,15 @@ const captchaShow = ref(false)
 const captchaImg = ref('')
 const verifyuuid = ref('')
 const captcha = ref('')
+const changeFlag = ref({
+  forgetPwd: false, // 忘记密码
+  register: false,
+  bindPhone: false,
+  bindEmail: false,
+  changePhone: false,
+  changeEmail: false,
+})
+const showPwd = ref(false)
 
 // 计算属性
 const currentUser = computed(() => userStore.currentUser)
@@ -384,6 +449,7 @@ const captchaClose = () => {
 }
 const captchaSubCancel = () => {
   captchaClose()
+  captcha.value = ''
 }
 const captchaSubConfirm = async () => {
   if ($common.isEmpty(email.value)) {
@@ -406,11 +472,11 @@ const captchaSubConfirm = async () => {
     dialogTitle.value = "邮箱验证码"
     let params = {}
     if (!checkParams(params)) return
-    console.log('params:', params)
+    // console.log('params:', params)
     const res = await authApi.emailCode(params)
     ElMessage.success("验证码已发送，请注意查收！")
   }
-  console.log('res:', res)
+  // console.log('res:', res)
 }
 
 // 新切换登录/注册面板
@@ -463,7 +529,7 @@ const login = async () => {
 }
 
 // 注册
-const regist = async () => {
+const register = async () => {
   if ($common.isEmpty(registParams.value.username) || $common.isEmpty(registParams.value.password)) {
     ElMessage({
       message: "请输入用户名或密码！",
@@ -499,23 +565,20 @@ const regist = async () => {
   let user = {
     username: registParams.value.username.trim(),
     code: registParams.value.code.trim(),
-    password: $common.encrypt(registParams.value.password.trim())
-  }
-
-  if (dialogTitle.value === "邮箱验证码") {
-    user.email = email.value
+    password: $common.encrypt(registParams.value.password.trim()),
+    email: email.value.trim(),
   }
 
   try {
-    const res = await userApi.regist(user)
+    const res = await userApi.register(user)
     if (!$common.isEmpty(res.data)) {
       userStore.loadCurrentUser(res.data)
-      localStorage.setItem("userToken", res.data.accessToken)
+      authStore.setUserToken(res.data.accessToken)
       registParams.value.username = ""
       registParams.value.password = ""
       registParams.value.code = ""
       email.value = ""
-      router.push({path: '/'})
+      await router.push({path: '/'})
     }
   } catch (error) {
     ElMessage({
@@ -641,6 +704,30 @@ const changeDialog = (value) => {
   showDialog.value = true
 }
 
+// 新切换对话框
+const changeDialog1 = () => {
+  changeFlag.value.forgetPwd = true
+
+  // if ($common.isEmpty(email.value)) {
+  //   ElMessage({
+  //     message: "请输入邮箱！",
+  //     type: "error"
+  //   })
+  //   return false
+  // }
+  // if (!(/^\w+@[a-zA-Z0-9]{2,10}(?:\.[a-z]{2,4}){1,3}$/.test(email.value))) {
+  //   ElMessage({
+  //     message: "邮箱格式有误！",
+  //     type: "error"
+  //   })
+  //   return false
+  // }
+
+
+  // dialogTitle.value = value
+  // showDialog.value = true
+}
+
 // 提交对话框内容
 const submitDialog = async () => {
   if (dialogTitle.value === "修改头像") {
@@ -758,8 +845,6 @@ const getCode = async () => {
   const res = await authApi.getCaptchaCode({flag: true, email: email.value})
   captchaImg.value = res.data.img
   verifyuuid.value = res.data.uuid
-  // console.log(res)
-
 }
 const getCode1 = async () => {
   if (codeString.value === "验证码") {
@@ -825,6 +910,19 @@ const verifyEmail = () => {
     return false
   }
   return true
+}
+
+const fwdClose = () => {
+  changeFlag.value.forgetPwd = false
+  showPwd.value = false
+  registParams.value = {}
+  email.value = ""
+}
+
+const emailCode = async () => {
+  if (!verifyEmail()) return
+  // const res = await authApi.emailCode({})
+  ElMessage.success("验证码已发送，请注意查收！")
 }
 </script>
 
@@ -1247,5 +1345,53 @@ const verifyEmail = () => {
 
 .captcha-image {
   border-radius: 15px;
+}
+
+.fwd-body {
+  position: fixed;
+  z-index: 2006;
+  width: 350px;
+  height: 350px;
+  gap: 17px;
+  padding: 30px 25px 25px;
+  /* 0.4s	一次动画耗时 0.4 秒（400 ms）。
+     cubic-bezier(0.2, 0, 0.2, 1)	速度曲线（缓动函数）。比默认 ease 更“先慢后快再慢”，让放大过程更柔和。
+     forwards	填充模式 → 动画结束后保持最后一帧的状态（scale(1) + opacity:1），不会瞬间跳回初始值。*/
+  animation: fadeInZoom 0.4s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+}
+
+.fwd-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #999;
+}
+
+/* 输入框容器 */
+.fwd-input-box {
+  position: relative;
+  width: 220px; /* 你想多宽就调 */
+}
+
+.fwd-input {
+  width: 100%;
+  font-size: 14px;
+  padding: 4px 28px 4px 6px; /* 右侧留 28px 给图标 */
+  box-sizing: border-box;
+  border: none;
+  line-height: 22px;
+  border-radius: 5px;
+  outline: none;
+}
+
+.fwd-eye {
+  position: absolute;
+  right: 10px;
+  top: 75%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;
 }
 </style>

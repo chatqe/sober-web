@@ -25,7 +25,8 @@
 
 /* 2. 让边框颜色 = 当前类型的主色 */
 .el-message--success {
-  border-color: var(--el-color-success); /* 成功消息边框颜色 - 与成功状态颜色保持一致 */
+  background-color: var(--themeBackground);
+  border-color: var(--themeBackground); /* 成功消息边框颜色 - 与成功状态颜色保持一致 */
 }
 
 .el-message--warning {
@@ -150,11 +151,11 @@
   }
 
   /* 左右箭头图标大小 */
- .el-icon svg{
+  .el-icon svg {
     font-size: 12px !important;
-   /* 给 SVG 形状加 0.5px 描边 → 视觉变粗 */
-   stroke: currentColor !important;
-   stroke-width: 60px !important;
-   paint-order: stroke !important;
+    /* 给 SVG 形状加 0.5px 描边 → 视觉变粗 */
+    stroke: currentColor !important;
+    stroke-width: 60px !important;
+    paint-order: stroke !important;
   }
 }

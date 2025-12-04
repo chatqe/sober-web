@@ -7,6 +7,11 @@
 
 import request from '@/utils/request.js';
 
+// 注册用户
+export const register = (params) => {
+    return request.post('/user/register', params);
+};
+
 // 获取用户列表
 export const getUserList = (params = {}) => {
     return request.get('/users', { params });

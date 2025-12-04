@@ -346,7 +346,7 @@ const regist = async () => {
   }
 
   try {
-    const res = await userApi.regist(user)
+    const res = await userApi.register(user)
     if (!$common.isEmpty(res.data)) {
       userStore.loadCurrentUser(res.data)
       localStorage.setItem("userToken", res.data.accessToken)
