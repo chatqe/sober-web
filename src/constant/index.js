@@ -11,3 +11,10 @@ export const TIMEOUT = {
     DEFAULT: 10000,
     UPLOAD: 60000,
 }
+
+
+export const EmailBizType = {
+    REGISTER: 'REGISTER',
+    LOGIN: 'LOGIN',
+    RESET_PWD: 'RESET_PWD',
+};

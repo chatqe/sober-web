@@ -200,9 +200,13 @@
           <div style=" position: relative;">
             <input v-model="registParams.code" autocomplete="off" type="text"
                    class="fwd-input">
-            <button class="send-btn" @click="emailCode" style="height: 100%;right: 1px;">发送
+            <button class="send-btn" @click="emailCode(EmailBizType.RESET_PWD)" style="height: 100%;right: 1px;">发送
             </button>
           </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <el-button type="primary" plain round>提交新密码</el-button>
         </div>
 
       </div>
@@ -371,7 +375,7 @@ import {useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
 import {authApi, userApi} from '@/api'
-
+import {EmailBizType} from "@/constant/index.js";
 const router = useRouter()
 
 // 获取注入的全局属性
@@ -458,7 +462,7 @@ const captchaSubConfirm = async () => {
   }
 
   if ($common.isEmpty(captcha.value)) {
-    ElMessage.error("请输入验证码！")
+    ElMessage.error("请输入图形验证码！")
     return
   }
 
@@ -919,9 +923,9 @@ const fwdClose = () => {
   email.value = ""
 }
 
-const emailCode = async () => {
+const emailCode = async (bizType) => {
   if (!verifyEmail()) return
-  // const res = await authApi.emailCode({})
+  const res = await authApi.emailCode({email:email.value,bizType})
   ElMessage.success("验证码已发送，请注意查收！")
 }
 </script>

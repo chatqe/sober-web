@@ -37,6 +37,6 @@ export const captchaCheck = (params) => {
 
 // 邮箱验证码
 export const emailCode = (params) => {
-    return request.get('/user/getCodeByRegister', params, false);
+    return request.get('/user/mailCode', params, false);
 };
 
