@@ -14,7 +14,7 @@ export const register = (params) => {
 
 // 获取用户列表
 export const getUserList = (params = {}) => {
-    return request.get('/users', { params });
+    return request.get('/users', {params});
 };
 
 // 获取用户详情
@@ -25,6 +25,11 @@ export const getUserDetail = (userId) => {
 // 创建用户
 export const createUser = (userData) => {
     return request.post('/users', userData);
+};
+
+// 根据邮箱重置密码
+export const resetPwdForFgtPwd = (userData) => {
+    return request.post('/user/resetPwdForFgtPwd', userData, false,false);
 };
 
 // 更新用户信息

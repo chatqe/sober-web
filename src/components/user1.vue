@@ -81,7 +81,7 @@
               </div>
               <div>
                 <div v-if="!$common.isEmpty(currentUser.phoneNumber)">
-                  {{ currentUser.phoneNumber }} <span class="changeInfo" @click="changeDialog('修改手机号')">修改（功能未接入）</span>
+                  {{ currentUser.phoneNum }} <span class="changeInfo" @click="changeDialog('修改手机号')">修改（功能未接入）</span>
                 </div>
                 <div v-else><span class="changeInfo" @click="changeDialog('绑定手机号')">绑定手机号（功能未接入）</span></div>
               </div>
@@ -228,7 +228,7 @@ const authStore = useAuthStore()
 const username = ref("")
 const account = ref("")
 const password = ref("")
-const phoneNumber = ref("")
+const phoneNum = ref("")
 const email = ref("")
 const avatar = ref("")
 const showDialog = ref(false)

@@ -37,11 +37,11 @@
                 <div>
                   <div>
                     <div class="line-form">
-                      <input v-model="loginParams.account" type="text" placeholder="用户名/邮箱"
+                      <input v-model="account" type="text" placeholder="用户名/邮箱"
                              class="line-form-input">
                     </div>
                     <div class="line-form" style="margin-top: 20px;">
-                      <input v-model="loginParams.password" autocomplete="current-password" type="password"
+                      <input v-model="loginPwd" autocomplete="current-password" type="password"
                              placeholder="登录密码"
                              class="line-form-input">
                     </div>
@@ -82,11 +82,11 @@
               <div>
                 <div>
                   <div class="line-form">
-                    <input v-model="registParams.username" type="text" maxlength="30" placeholder="用户名"
+                    <input v-model="username" type="text" maxlength="30" placeholder="用户名"
                            class="line-form-input">
                   </div>
                   <div class="line-form" style="margin-top: 20px;">
-                    <input v-model="registParams.password"
+                    <input v-model="registPwd"
                            type="password"
                            autocomplete="new-password"
                            maxlength="30"
@@ -100,7 +100,7 @@
                            class="line-form-input">
                   </div>
                   <div class="line-form" style="margin-top: 20px; position: relative;">
-                    <input v-model="registParams.code" autocomplete="off" type="text" placeholder="验证码"
+                    <input v-model="code" autocomplete="off" type="text" placeholder="验证码"
                            class="line-form-input">
                     <button class="send-btn" @click="getCode">验证码</button>
                   </div>
@@ -172,7 +172,7 @@
 
         <div class="fwd-input-box">
           <div>新密码</div>
-          <input v-model="registParams.password"
+          <input v-model="registPwd"
                  :type="showPwd ? 'text' : 'password'"
                  autocomplete="new-password"
                  maxlength="30"
@@ -198,7 +198,7 @@
         <div class="fwd-input-box">
           <div>验证码</div>
           <div style=" position: relative;">
-            <input v-model="registParams.code" autocomplete="off" type="text"
+            <input v-model="code" autocomplete="off" type="text"
                    class="fwd-input">
             <button class="send-btn" @click="emailCode(EmailBizType.RESET_PWD)" style="height: 100%;right: 1px;">发送
             </button>
@@ -206,7 +206,7 @@
         </div>
 
         <div style="margin-top:10px">
-          <el-button type="primary" plain round>提交新密码</el-button>
+          <el-button type="primary" plain round @click="resetPwdForFgtPwd">提交新密码</el-button>
         </div>
 
       </div>
@@ -299,7 +299,7 @@
         <div>
           <div v-if="dialogTitle === '修改手机号' || dialogTitle === '绑定手机号'">
             <div style="margin-bottom: 5px">手机号：</div>
-            <el-input v-model="phoneNumber"></el-input>
+            <el-input v-model="phoneNum"></el-input>
             <div style="margin-top: 10px;margin-bottom: 5px">验证码：</div>
             <el-input v-model="code"></el-input>
             <div style="margin-top: 10px;margin-bottom: 5px">密码：</div>
@@ -319,20 +319,20 @@
           </div>
           <div v-else-if="dialogTitle === '找回密码'">
             <div class="myCenter" style="margin-bottom: 12px">
-              <el-radio-group v-model="passwordFlag">
+              <el-radio-group v-model="pwdFlag">
                 <el-radio :label="1" style="margin-right: 10px">手机号</el-radio>
                 <el-radio :label="2">邮箱</el-radio>
               </el-radio-group>
             </div>
-            <div v-if="passwordFlag === 1">
+            <div v-if="pwdFlag === 1">
               <div style="margin-bottom: 5px">手机号：</div>
-              <el-input v-model="phoneNumber"></el-input>
+              <el-input v-model="phoneNum"></el-input>
               <div style="margin-top: 10px;margin-bottom: 5px">验证码：</div>
               <el-input v-model="code"></el-input>
               <div style="margin-top: 10px;margin-bottom: 5px">新密码：</div>
               <el-input maxlength="30" v-model="password"></el-input>
             </div>
-            <div v-else-if="passwordFlag === 2">
+            <div v-else-if="pwdFlag === 2">
               <div style="margin-bottom: 5px">邮箱：</div>
               <el-input v-model="email"></el-input>
               <div style="margin-top: 10px;margin-bottom: 5px">验证码：</div>
@@ -376,6 +376,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
 import {authApi, userApi} from '@/api'
 import {EmailBizType} from "@/constant/index.js";
+
 const router = useRouter()
 
 // 获取注入的全局属性
@@ -396,24 +397,21 @@ const authStore = useAuthStore()
 const bgImg = webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]
 
 // 登录参数
-const loginParams = ref({
-  account: "",
-  password: ""
-})
+const account = ref("")
+const loginPwd = ref("")
 // 注册参数
-const registParams = ref({
-  username: "",
-  password: "",
-  code: ""
-})
-const phoneNumber = ref("")
+const username = ref("")
+const registPwd = ref("")
+const code = ref("")
+const phoneNum = ref("")
 const email = ref("")
 const avatar = ref("")
+const password = ref("") // 新增密码变量，用于对话框
 const showDialog = ref(false)
 const showRegist = ref(false)
 const dialogTitle = ref("")
 const codeString = ref("验证码")
-const passwordFlag = ref(null)
+const pwdFlag = ref(null)
 const isLogin = ref(true)
 let intervalCode = null
 const captchaShow = ref(false)
@@ -499,7 +497,7 @@ const signIn = () => {
 
 // 登录
 const login = async () => {
-  if ($common.isEmpty(loginParams.value.account) || $common.isEmpty(loginParams.value.password)) {
+  if ($common.isEmpty(account.value) || $common.isEmpty(loginPwd.value)) {
     ElMessage({
       message: "请输入账号或密码！",
       type: "error"
@@ -508,8 +506,8 @@ const login = async () => {
   }
 
   let user = {
-    account: loginParams.value.account.trim(),
-    password: $common.encrypt(loginParams.value.password.trim())
+    account: account.value.trim(),
+    password: $common.encrypt(loginPwd.value.trim())
   }
 
   try {
@@ -520,8 +518,8 @@ const login = async () => {
       if (res.data.isAdmin) {
         authStore.setIsAdmin(true)
       }
-      loginParams.value.account = ""
-      loginParams.value.password = ""
+      account.value = ""
+      loginPwd.value = ""
       await router.push({path: '/'})
     }
   } catch (error) {
@@ -534,7 +532,7 @@ const login = async () => {
 
 // 注册
 const register = async () => {
-  if ($common.isEmpty(registParams.value.username) || $common.isEmpty(registParams.value.password)) {
+  if ($common.isEmpty(username.value) || $common.isEmpty(registPwd.value)) {
     ElMessage({
       message: "请输入用户名或密码！",
       type: "error"
@@ -550,7 +548,7 @@ const register = async () => {
     return false
   }
 
-  if ($common.isEmpty(registParams.value.code)) {
+  if ($common.isEmpty(code.value)) {
     ElMessage({
       message: "请输入验证码！",
       type: "error"
@@ -558,7 +556,7 @@ const register = async () => {
     return
   }
 
-  if (registParams.value.username.indexOf(" ") !== -1 || registParams.value.password.indexOf(" ") !== -1) {
+  if (username.value.indexOf(" ") !== -1 || registPwd.value.indexOf(" ") !== -1) {
     ElMessage({
       message: "用户名或密码不能包含空格！",
       type: "error"
@@ -567,9 +565,9 @@ const register = async () => {
   }
 
   let user = {
-    username: registParams.value.username.trim(),
-    code: registParams.value.code.trim(),
-    password: $common.encrypt(registParams.value.password.trim()),
+    username: username.value.trim(),
+    code: code.value.trim(),
+    password: $common.encrypt(registPwd.value.trim()),
     email: email.value.trim(),
   }
 
@@ -578,9 +576,9 @@ const register = async () => {
     if (!$common.isEmpty(res.data)) {
       userStore.loadCurrentUser(res.data)
       authStore.setUserToken(res.data.accessToken)
-      registParams.value.username = ""
-      registParams.value.password = ""
-      registParams.value.code = ""
+      username.value = ""
+      registPwd.value = ""
+      code.value = ""
       email.value = ""
       await router.push({path: '/'})
     }
@@ -637,26 +635,26 @@ const submitUserInfo = async () => {
 // 检查参数同时赋值
 const checkParams = (params) => {
   if (dialogTitle.value === "修改手机号" || dialogTitle.value === "绑定手机号"
-      || (dialogTitle.value === "找回密码" && passwordFlag.value === 1)) {
+      || (dialogTitle.value === "找回密码" && pwdFlag.value === 1)) {
     params.flag = 1
-    if ($common.isEmpty(phoneNumber.value)) {
+    if ($common.isEmpty(phoneNum.value)) {
       ElMessage({
         message: "请输入手机号！",
         type: "error"
       })
       return false
     }
-    if (!(/^1[345789]\d{9}$/.test(phoneNumber.value))) {
+    if (!(/^1[345789]\d{9}$/.test(phoneNum.value))) {
       ElMessage({
         message: "手机号格式有误！",
         type: "error"
       })
       return false
     }
-    params.place = phoneNumber.value
+    params.place = phoneNum.value
     return true
   } else if (dialogTitle.value === "修改邮箱" || dialogTitle.value === "绑定邮箱"
-      || dialogTitle.value === "邮箱验证码" || (dialogTitle.value === "找回密码" && passwordFlag.value === 2)) {
+      || dialogTitle.value === "邮箱验证码" || (dialogTitle.value === "找回密码" && pwdFlag.value === 2)) {
     params.flag = 2
     if (verifyEmail()) {
       params.place = email.value
@@ -765,7 +763,7 @@ const submitDialog = async () => {
   } else if (dialogTitle.value === "修改手机号" || dialogTitle.value === "绑定手机号" || dialogTitle.value === "修改邮箱" || dialogTitle.value === "绑定邮箱") {
     updateSecretInfo()
   } else if (dialogTitle.value === "找回密码") {
-    if (passwordFlag.value !== 1 && passwordFlag.value !== 2) {
+    if (pwdFlag.value !== 1 && pwdFlag.value !== 2) {
       ElMessage({
         message: "请选择找回方式！",
         type: "error"
@@ -832,7 +830,7 @@ const updateSecretInfo = async () => {
 // 清理对话框
 const clearDialog = () => {
   showDialog.value = false
-  phoneNumber.value = ""
+  phoneNum.value = ""
   email.value = ""
   password.value = ""
   code.value = ""
@@ -916,17 +914,54 @@ const verifyEmail = () => {
   return true
 }
 
+const verifyCode = () => {
+  if ($common.isEmpty(code.value)) {
+    ElMessage.error("请输入验证码！")
+    return false
+  }
+  if (code.value.length < 6) {
+    ElMessage.error("验证码长度有误！")
+    return false
+  }
+  return true
+}
+
 const fwdClose = () => {
   changeFlag.value.forgetPwd = false
   showPwd.value = false
-  registParams.value = {}
+  username.value = ""
+  registPwd.value = ""
+  code.value = ""
   email.value = ""
 }
 
 const emailCode = async (bizType) => {
   if (!verifyEmail()) return
-  const res = await authApi.emailCode({email:email.value,bizType})
+  const res = await authApi.emailCode({email: email.value, bizType})
   ElMessage.success("验证码已发送，请注意查收！")
+}
+
+const resetPwdForFgtPwd = async () => {
+  if (!verifyEmail()) return
+  if ($common.isEmpty(registPwd.value)) {
+    ElMessage({
+      message: "请输入密码！",
+      type: "error"
+    })
+    return
+  }
+  if (!verifyCode()) return
+  const res = await userApi.resetPwdForFgtPwd({
+    email: email.value,
+    password: $common.encrypt(registPwd.value.trim()),
+    code: code.value,
+    bizType: EmailBizType.RESET_PWD
+  })
+  console.log('发送请求')
+  if (!$common.isEmpty(res.data)) {
+    ElMessage.success("修改成功，请重新登陆！")
+    fwdClose()
+  }
 }
 </script>
 

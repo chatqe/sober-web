@@ -18,7 +18,7 @@
       <el-table :data="users" border class="table" header-cell-class-name="table-header">
         <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
         <el-table-column prop="username" label="用户名" align="center"></el-table-column>
-        <el-table-column prop="phoneNumber" label="手机号" align="center"></el-table-column>
+        <el-table-column prop="phoneNum" label="手机号" align="center"></el-table-column>
         <el-table-column prop="email" label="邮箱" align="center"></el-table-column>
         <el-table-column label="赞赏" width="100" align="center">
           <template #default="scope">
