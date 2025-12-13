@@ -3,6 +3,7 @@
  *
  * @author sjq
  * @since 2025-10-27 22:20
+ * @update 2025-12-11 优化代码结构和性能
  */
 
 import axios from "axios";
@@ -12,22 +13,66 @@ import {useAuthStore, useUserStore} from "@/stores/index.js";
 import {API_CODES, TIMEOUT} from "@/constant/index.js";
 import {ElMessage} from "element-plus";
 
-const authStore = useAuthStore()
-const userStore = useUserStore()
+// 初始化状态管理
+const authStore = useAuthStore();
+const userStore = useUserStore();
 
+// 环境配置
 const baseURL = import.meta.env.VITE_BASE_URL;
 const webUrl = import.meta.env.VITE_WEB_URL;
 
+// 创建axios实例
 const request = axios.create({
     baseURL,
     timeout: TIMEOUT.DEFAULT,
     withCredentials: true
-})
+});
 
 // axios.defaults.baseURL = constant.baseURL;
 
+/**
+ * 获取认证头信息
+ * @param {boolean} isAdmin - 是否为管理员请求
+ * @returns {Object} 认证头配置
+ */
+const getAuthHeaders = (isAdmin) => {
+    return {
+        Authorization: isAdmin ? authStore.adminToken : authStore.userToken
+    };
+};
 
-// 添加请求拦截器
+/**
+ * 创建请求配置
+ * @param {Object} options - 配置选项
+ * @param {boolean} options.isAdmin - 是否为管理员请求
+ * @param {string} [options.contentType] - 内容类型
+ * @param {number} [options.timeout] - 超时时间
+ * @param {Function} [options.onProgress] - 进度回调函数
+ * @returns {Object} 请求配置
+ */
+const createReqConfig = ({isAdmin, contentType, timeout, onProgress}) => {
+    const config = {
+        headers: {
+            ...getAuthHeaders(isAdmin),
+            ...(contentType && {"Content-Type": contentType})
+        },
+        ...(timeout && {timeout})
+    };
+
+    // 添加上传进度回调
+    if (onProgress) {
+        config.onUploadProgress = (progressEvent) => {
+            if (progressEvent.total > 0) {
+                progressEvent.percent = (progressEvent.loaded / progressEvent.total) * 100;
+            }
+            onProgress(progressEvent);
+        };
+    }
+
+    return config;
+};
+
+// 请求拦截器
 request.interceptors.request.use((config) => {
     // 在发送请求之前做些什么
     return config;
@@ -36,7 +81,7 @@ request.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-// 添加响应拦截器
+// 响应拦截器
 request.interceptors.response.use((resp) => {
     const {data} = resp
     // 业务成功
@@ -52,10 +97,10 @@ request.interceptors.response.use((resp) => {
         userStore.loadCurrentUser({})
         userStore.loadCurrentAdmin({})
         userStore.clearUserData()
-        window.location.href = webUrl + "/user"
+        window.location.href = `${webUrl}/user`
     } else {
         // 请求失败
-        console.log('[API Error]', msg)
+        console.error('[API Error]', msg)
         ElMessage.error(msg)
     }
     return Promise.reject(new Error(msg));
@@ -79,107 +124,73 @@ request.interceptors.response.use((resp) => {
     return Promise.reject(error);
 });
 
-
 /**
  * 当data为URLSearchParams对象时设置为application/x-www-form-urlencoded;charset=utf-8
  * 当data为普通对象时，会被设置为application/json;charset=utf-8
  */
 export default {
-    post(url, params = {}, isAdmin = false, json = true) {
-        let config;
-        if (isAdmin) {
-            config = {
-                headers: {"Authorization": authStore.adminToken}
-            };
-        } else {
-            config = {
-                headers: {"Authorization": authStore.userToken}
-            };
-        }
-
-        // 将参数转为 URLSearchParams（如果不是 json）
+    /**
+     * POST请求
+     * @param {string} url - 请求地址
+     * @param {Object} params - 请求参数
+     * @param {boolean} isAdmin - 是否为管理员请求
+     * @param {boolean} json - 是否为JSON请求
+     * @returns {Promise<Object>} 响应数据
+     */
+    async post(url, params = {}, isAdmin = false, json = true) {
+        const config = createReqConfig({isAdmin});
         const data = json ? params : qs.stringify(params);
-        return new Promise((resolve, reject) => {
-            request
-                .post(url, data, config)
-                .then(res => {
-                    resolve(res.data);
-                })
-                .catch(err => {
-                    reject(err);
-                });
-        });
+        const res = await request.post(url, data, config);
+        return res.data;
     },
 
-    get(url, params = {}, isAdmin = false) {
-        let headers;
-        if (isAdmin) {
-            headers = {"Authorization": authStore.adminToken};
-        } else {
-            headers = {"Authorization": authStore.userToken};
-        }
-
-        return new Promise((resolve, reject) => {
-            request.get(url, {
-                params: params,
-                headers: headers
-            }).then(res => {
-                resolve(res.data);
-            }).catch(err => {
-                reject(err)
-            })
+    /**
+     * GET请求
+     * @param {string} url - 请求地址
+     * @param {Object} params - 请求参数
+     * @param {boolean} isAdmin - 是否为管理员请求
+     * @returns {Promise<Object>} 响应数据
+     */
+    async get(url, params = {}, isAdmin = false) {
+        const config = createReqConfig({isAdmin});
+        const res = await request.get(url, {
+            params,
+            headers: config.headers
         });
+        return res.data;
     },
 
-    upload(url, param, isAdmin = false, option) {
-        let config;
-        if (isAdmin) {
-            config = {
-                headers: {"Authorization": authStore.adminToken, "Content-Type": "multipart/form-data"},
-                timeout: 60000
-            };
-        } else {
-            config = {
-                headers: {"Authorization": authStore.userToken, "Content-Type": "multipart/form-data"},
-                timeout: 60000
-            };
-        }
-        if (typeof option !== "undefined") {
-            config.onUploadProgress = progressEvent => {
-                if (progressEvent.total > 0) {
-                    progressEvent.percent = progressEvent.loaded / progressEvent.total * 100;
-                }
-                option.onProgress(progressEvent);
-            };
-        }
-
-        return new Promise((resolve, reject) => {
-            request
-                .post(url, param, config)
-                .then(res => {
-                    resolve(res.data);
-                })
-                .catch(err => {
-                    reject(err);
-                });
+    /**
+     * 文件上传请求
+     * @param {string} url - 请求地址
+     * @param {FormData} param - 表单数据
+     * @param {boolean} isAdmin - 是否为管理员请求
+     * @param {Object} [option] - 配置选项
+     * @returns {Promise<Object>} 响应数据
+     */
+    async upload(url, param, isAdmin = false, option = {}) {
+        const config = createReqConfig({
+            isAdmin,
+            contentType: "multipart/form-data",
+            timeout: 60000,
+            onProgress: option.onProgress
         });
+        const res = await request.post(url, param, config);
+        return res.data;
     },
 
-    uploadQiniu(url, param) {
-        let config = {
+    /**
+     * 七牛云文件上传请求
+     * @param {string} url - 请求地址
+     * @param {FormData} param - 表单数据
+     * @returns {Promise<Object>} 响应数据
+     */
+    async uploadQiniu(url, param) {
+        const config = {
             headers: {"Content-Type": "multipart/form-data"},
             timeout: 60000
         };
-
-        return new Promise((resolve, reject) => {
-            request
-                .post(url, param, config)
-                .then(res => {
-                    resolve(res.data);
-                })
-                .catch(err => {
-                    reject(err);
-                });
-        });
+        const res = await request.post(url, param, config);
+        return res.data;
     }
-}
+};

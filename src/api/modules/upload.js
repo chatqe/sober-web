@@ -21,11 +21,22 @@ const authStore = useAuthStore();
  * @returns {Promise} - 返回上传token
  */
 export const getUpToken = async (key, isAdmin = false) => {
-  const config = isAdmin 
-    ? { headers: { "Authorization": authStore.adminToken } }
-    : { headers: { "Authorization": authStore.userToken } };
+  try { 
+    // 使用现有的request.get方法，传递正确的params对象
+    const res = await request.get('/qiniu/getUpToken', { key }, isAdmin);
     
-  return await request.get('/qiniu/getUpToken', { params: { key }, ...config });
+    // 检查响应格式
+    if (res && res.code === 200) {
+      return res.data;
+    } else if (res && res.code !== 200) {
+      throw new Error(res.msg || '获取上传token失败');
+    } else {
+      throw new Error('服务异常！');
+    }
+  } catch (error) {
+    console.error('获取七牛云上传token失败:', error);
+    throw error;
+  }
 };
 
 /**

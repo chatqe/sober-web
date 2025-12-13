@@ -15,6 +15,7 @@
     "@amap/amap-jsapi-loader": "^0.0.7",
     "@antv/g2": "^5.4.2",
     "@element-plus/icons-vue": "^2.3.2",
+    "@liripeng/vue-audio-player": "^2.0.4",
     "@tinymce/tinymce-vue": "^4.0.0",
     "TagCloud": "^2.5.0",
     "animejs": "^4.2.2",
@@ -51,5 +52,6 @@
     "unplugin-auto-import": "^20.2.0",
     "unplugin-vue-components": "^30.0.0",
     "vite": "^7.1.7"
-  }
+  },
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"
 }

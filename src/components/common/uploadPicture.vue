@@ -112,7 +112,7 @@ function customUpload(options) {
 
   let currentUser = userStore.currentUser;
   let key = props.prefix + "/" + (!($common.isEmpty(currentUser?.username)) ? (currentUser.username.replace(/[^a-zA-Z]/g, '') + currentUser.id) : '') + new Date().getTime() + Math.floor(Math.random() * 1000) + suffix;
-
+  console.log('key: ',key,'props: ', props)
   if (props.storeType === "local") {
     let fd = new FormData();
     fd.append("file", options.file);
@@ -127,9 +127,10 @@ function customUpload(options) {
     return uploadApi.getUpToken(key, props.isAdmin)
       .then(res => {
         options.data = {
-          token: res.data,
+          token: res,
           key: key
         };
+        console.log("options: ", options)
         return upload(options);
       })
       .catch(error => {

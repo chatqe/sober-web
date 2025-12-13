@@ -14,7 +14,7 @@ export const login = (params) => {
 
 // 用户退出
 export const logout = () => {
-    return request.get('/user/logout', {}, true);
+    return request.get('/user/logout');
 };
 
 // 刷新 token

@@ -2,16 +2,16 @@
   <div class="poem-container myCenter my-animation-hideToShow"
        v-if="!$common.isEmpty(guShi.origin) || !$common.isEmpty(hitokoto.hitokoto)">
     <!-- 背景图片 -->
-    <!--<el-image class="my-el-image poem-image"-->
-    <!--          style="position: absolute;margin-top: -50px"-->
-    <!--          v-once-->
-    <!--          lazy-->
-    <!--          :src="webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]"-->
-    <!--          fit="cover">-->
-    <!--  <template #error>-->
-    <!--    <div class="image-slot"></div>-->
-    <!--  </template>-->
-    <!--</el-image>-->
+    <el-image class="my-el-image poem-image"
+              style="position: absolute;margin-top: -50px"
+              v-once
+              lazy
+              :src="webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]"
+              fit="cover">
+      <template #error>
+        <div class="image-slot"></div>
+      </template>
+    </el-image>
     <div class="poem-wrap">
       <div v-if="isShehui"><span>须知少时拏云志，曾许人间第一流</span></div>
       <div v-else><span>{{isHitokoto?hitokoto.from:guShi.origin}}</span></div>

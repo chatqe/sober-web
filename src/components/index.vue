@@ -126,9 +126,15 @@
         </div>
 
         <!-- 页脚 -->
-        <div style="background: var(--background)">
-          <MyFooter/>
-        </div>
+        <!--<div style="background: var(&#45;&#45;background)">-->
+        <!--  <MyFooter/>-->
+        <!--</div>-->
+        <MyFooter
+            mainColor="#FF88AA"
+            contrastColor="#FFFFFF"
+            symbol="✨"
+            :atmosphereSymbols="['🌸', '🎀', '⭐']"
+        />
       </template>
     </Loader>
   </div>

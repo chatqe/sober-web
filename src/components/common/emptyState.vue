@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from 'vue'
+import {defineProps} from 'vue'
 
 // 组件 props：支持自定义图片、描述文本等
 const props = defineProps({
@@ -161,8 +161,8 @@ const props = defineProps({
   margin-top: 20px;
   font-size: 16px;
   /*color: #666;*/
-  /*color: #000;*/
-  color: #fff;
+  color: #000;
+  /*color: #fff;*/
   line-height: 1.5;
 }
 

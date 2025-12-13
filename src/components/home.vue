@@ -136,7 +136,7 @@
             <!-- 个人中心 -->
             <li>
               <div v-if="$common.isEmpty(userStore.currentUser)" class="login-wrap">
-                <div class="login-menu" @click="router.push({path: '/user'})" >登录</div>
+                <div class="login-menu" @click="router.push({path: '/user'})">登录</div>
               </div>
               <el-dropdown v-else placement="bottom">
                 <el-avatar class="user-avatar" :size="36"
@@ -245,7 +245,7 @@
             style="position:fixed;left:0;top:0;pointer-events:none;z-index: 1000">
     </canvas>
 
-    <aPlayer></aPlayer>
+    <!--<aPlayer></aPlayer>-->
 
     <!-- 图片预览 -->
     <div id="outerImg">
@@ -380,17 +380,15 @@
 </template>
 
 <script setup>
-import {computed, inject, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
+import {computed, inject, onMounted, onUnmounted, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import router from '@/router'
-import {ElMessage, ElMessageBox} from 'element-plus'
+import {ElMessage} from 'element-plus'
 import {useAuthStore, useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
 import {HomeFilled, MagicStick, Menu, Moon, Sunny, SwitchButton, Tools, User} from '@element-plus/icons-vue'
-import aPlayer from './common/aPlayer.vue'
+import aPlayer from './common/AudioPlayer.vue'
 import mousedown from '../utils/mousedown'
-
-// API模块导入
-import {systemApi, userApi, webApi} from '@/api'
+import {authApi, systemApi, webApi} from '@/api'
 
 const route = useRoute()
 const $common = inject('$common')
@@ -410,9 +408,12 @@ const toolbarDrawer = ref(false)
 const mouseAnimation = ref(false)
 const toolButton = ref(false)
 const adminLogin = authStore.isAdmin
+const currBgImg = ref('') // 当前背景
 
 // 初始化数据
 onMounted(() => {
+
+  getBgImg()
   // 设置工具栏状态
   systemStore.changeToolbarStatus({enter: false, visible: true})
 
@@ -420,8 +421,6 @@ onMounted(() => {
   getWebInfo()
   getSortInfo()
   getSysConfig()
-
-
   // 响应式处理
   mobile.value = window.innerWidth < 1100
 
@@ -430,9 +429,8 @@ onMounted(() => {
   window.addEventListener('scroll', onScrollPage)
 
   // 初始化鼠标动画
-  if (mouseAnimation.value) {
-    mousedown()
-  }
+  if (mouseAnimation.value) mousedown()
+
 
   // 监听滚动条变化
   unwatchScrollTop = watch(scrollTop, (newVal, oldVal) => {
@@ -449,7 +447,13 @@ onMounted(() => {
     }
     systemStore.changeToolbarStatus(toolbarStatus)
   })
+
 })
+
+const getBgImg = () => {
+  const src = webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]
+  currBgImg.value = `url(${src})`
+}
 
 // 处理窗口大小变化
 const handleResize = () => {
@@ -514,7 +518,7 @@ const goIm = () => {
 
 const logout = async () => {
   try {
-    await userApi.logout()
+    await authApi.logout()
     userStore.loadCurrentUser({})
     localStorage.removeItem('userToken')
     ElMessage.success('退出成功')
@@ -849,5 +853,17 @@ const changeMouseAnimation = () => {
   text-align: center;
   line-height: 40px;
   color: #fff;
+}
+
+.index-container {
+  background-image: v-bind(currBgImg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  /* 增强可读性的渐变叠加 */
+  /*background-color: rgba(255, 255, 255, 0.8);*/
+  background-blend-mode: overlay;
+  min-height: 100vh;
 }
 </style>

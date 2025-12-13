@@ -467,7 +467,7 @@ const captchaSubConfirm = async () => {
   const res = await authApi.captchaCheck({uuid: verifyuuid.value, code: captcha.value})
   if (!res.data) {
     ElMessage.error("验证码错误！")
-    return
+
   } else {
     captchaClose()
     captcha.value = ''
@@ -957,7 +957,6 @@ const resetPwdForFgtPwd = async () => {
     code: code.value,
     bizType: EmailBizType.RESET_PWD
   })
-  console.log('发送请求')
   if (!$common.isEmpty(res.data)) {
     ElMessage.success("修改成功，请重新登陆！")
     fwdClose()

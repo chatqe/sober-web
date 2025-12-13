@@ -32,15 +32,15 @@ body {
 /*    box-sizing: border-box; !* 避免 padding 撑开容器 *!*/
 /*}*/
 
-#main-container:not(:has(.love-container), :has([class*="message-input"]),:has(.baberrage-stage),:has(.background-image-index))::before {
-    background-image: url(@/assets/file/emptyBg.jpg);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    content: '';
-    position: fixed;
-    inset: 0;
-}
+/*#main-container:not(:has(.love-container), :has([class*="message-input"]),:has(.baberrage-stage),:has(.background-image-index))::before {*/
+/*    background-image: url(@/assets/file/emptyBg.jpg);*/
+/*    background-size: cover;*/
+/*    background-repeat: no-repeat;*/
+/*    background-position: center;*/
+/*    content: '';*/
+/*    position: fixed;*/
+/*    inset: 0;*/
+/*}*/
 
 /* 字体 */
 @font-face {

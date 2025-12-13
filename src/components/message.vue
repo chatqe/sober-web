@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div>
+    <div><!--  :src="randomCover" -->
       <el-image style="animation: header-effect 2s"
                 class="background-image"
                 v-once
                 lazy
-                :src="randomCover"
+
                 fit="cover">
         <template #error>
           <div class="image-slot background-image-error"></div>
@@ -89,13 +89,13 @@ function getRandomColor() {
 }
 
 // 计算属性
-const randomCover = computed(() => {
-  const covers = webInfoStore.webInfo?.randomCover || [];
-  if (covers.length > 0) {
-    return covers[Math.floor(Math.random() * covers.length)];
-  }
-  return '';
-});
+// const randomCover = computed(() => {
+//   const covers = webInfoStore.webInfo?.randomCover || [];
+//   if (covers.length > 0) {
+//     return covers[Math.floor(Math.random() * covers.length)];
+//   }
+//   return '';
+// });
 
 // 获取树洞数据
 const getTreeHole = async () => {
