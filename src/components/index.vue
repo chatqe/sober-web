@@ -129,12 +129,7 @@
         <!--<div style="background: var(&#45;&#45;background)">-->
         <!--  <MyFooter/>-->
         <!--</div>-->
-        <MyFooter
-            mainColor="#FF88AA"
-            contrastColor="#FFFFFF"
-            symbol="✨"
-            :atmosphereSymbols="['🌸', '🎀', '⭐']"
-        />
+        <MyFooter/>
       </template>
     </Loader>
   </div>

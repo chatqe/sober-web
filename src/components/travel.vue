@@ -57,7 +57,8 @@
     </div>
 
     <!-- 页脚 -->
-    <div style="background: var(--favoriteBg)">
+    <!--<div style="background: var(&#45;&#45;favoriteBg)">-->
+    <div>
       <myFooter></myFooter>
     </div>
   </div>
@@ -156,7 +157,7 @@ onMounted(() => {
 
   .travel-container {
     padding: 25px;
-    background: var(--favoriteBg);
+    /*background: var(--favoriteBg);*/
   }
 
   .travel-header {

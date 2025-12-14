@@ -26,7 +26,8 @@
     </div>
   </div>
   <!-- 页脚 -->
-  <div style="background: var(--background)" >
+  <!--<div style="background: var(&#45;&#45;background)" >-->
+  <div>
     <MyFooter/>
   </div>
 </template>
@@ -92,7 +93,7 @@ function getCollect() {
 
 .favorite-container {
   padding: 25px;
-  background: var(--favoriteBg);
+ /* background: var(--favoriteBg);*/
 }
 
 .favorite-header {
