@@ -5,7 +5,7 @@
       <twoPoem></twoPoem>
     </div>
 
-    <div style="background: var(--background);padding-top: 40px;" class="my-animation-slide-bottom">
+    <div class="my-animation-slide-bottom sort-container">
       <!-- 标签 -->
       <div class="sort-warp shadow-box" v-if="!$common.isEmpty(sort) && !$common.isEmpty(sort.labels)">
         <div v-for="(label, index) in sort.labels" :key="index"
@@ -40,14 +40,14 @@
         </div>
       </div>
       <!-- 页脚 -->
-      <myFooter></myFooter>
+      <!--<myFooter></myFooter>-->
     </div>
   </div>
 </template>
 
 <script setup>
 import {computed, defineAsyncComponent, inject, nextTick, onMounted, ref, watch} from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {useSortInfoStore} from '@/stores'
 import {articleApi} from '@/api'
@@ -74,7 +74,7 @@ const pagination = ref({
   pageSize: 10,
   total: 0,
   searchKey: "",
-  sortId:sortId.value ,
+  sortId: sortId.value,
   labelId: labelId.value
 })
 const articles = ref([])
@@ -162,6 +162,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.sort-container {
+  background: var(--background);
+  padding-top: 40px;
+  display: flex; /* 解决margin折叠问题*/
+  flex-direction: column;
+}
 
 .sort-warp {
   width: 70%;

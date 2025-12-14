@@ -58,9 +58,9 @@
 
     <!-- 页脚 -->
     <!--<div style="background: var(&#45;&#45;favoriteBg)">-->
-    <div>
-      <myFooter></myFooter>
-    </div>
+    <!--<div>-->
+    <!--  <myFooter></myFooter>-->
+    <!--</div>-->
   </div>
 </template>
 

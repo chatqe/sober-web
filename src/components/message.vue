@@ -51,7 +51,7 @@
       <div class="comment-content">
         <comment :source="source" :type="'message'" :userId="userId"></comment>
       </div>
-      <myFooter></myFooter>
+      <!--<myFooter></myFooter>-->
     </div>
   </div>
 </template>
@@ -247,7 +247,8 @@ const submitMessage = async () => {
 
 .comment-wrap {
   background: var(--background);
-  position: absolute;
+/*  position: absolute;*/
+
   top: 100vh;
   width: 100%;
 }

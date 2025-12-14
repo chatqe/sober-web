@@ -412,7 +412,7 @@
 
       <div>
         <!-- 页脚 -->
-        <myFooter></myFooter>
+        <!--<myFooter></myFooter>-->
       </div>
     </div>
   </div>
@@ -423,6 +423,7 @@ import {defineAsyncComponent, inject, onMounted, onUnmounted, reactive, ref} fro
 import {ElMessage} from 'element-plus'
 import {useUserStore, useWebInfoStore} from '@/stores'
 import {familyApi, webApi, webInfoApi} from '@/api'
+import ProButton from "@/components/common/proButton.vue";
 
 // 获取注入的全局属性
 const $common = inject('$common')
@@ -770,7 +771,8 @@ onUnmounted(() => {
 .love-container {
   background-image: linear-gradient(to right, rgba(37, 82, 110, 0.1) 1px, var(--background) 1px), linear-gradient(to bottom, rgba(37, 82, 110, 0.1) 1px, var(--background) 1px);
   background-size: 3rem 3rem;
-  /*background: var(--background);*/
+  display: flex; /* 解决 容器margin折叠问题*/
+  flex-direction: column;
 }
 
 .bg-wrap {
@@ -801,8 +803,8 @@ onUnmounted(() => {
 
 .love-avatar {
   border: rgba(255, 255, 255, 0.2) 4px solid;
-  width: 180px;
-  height: 180px;
+  width: 150px;
+  height: 150px;
 }
 
 .love-title {

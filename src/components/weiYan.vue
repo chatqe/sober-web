@@ -23,7 +23,7 @@
       </div>
 
       <!-- 页脚 -->
-      <myFooter :showFooter="showFooter"></myFooter>
+      <!--<myFooter :showFooter="showFooter"></myFooter>-->
     </div>
 
     <el-dialog title="微言"

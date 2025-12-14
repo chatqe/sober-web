@@ -188,7 +188,7 @@
     <div id="main-container">
       <router-view></router-view>
     </div>
-
+    <MyFooter v-bind="footerCfg"/>
 
     <div class="toolButton">
       <div class="backTop" v-if="toolButton" @click="toTop()">
@@ -381,16 +381,18 @@
 
 <script setup>
 import {computed, inject, onMounted, onUnmounted, ref, watch} from 'vue'
-import {useRoute} from 'vue-router'
-import router from '@/router'
+import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {useAuthStore, useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
 import {HomeFilled, MagicStick, Menu, Moon, Sunny, SwitchButton, Tools, User} from '@element-plus/icons-vue'
 import aPlayer from './common/AudioPlayer.vue'
 import mousedown from '../utils/mousedown'
 import {authApi, systemApi, webApi} from '@/api'
+import MyFooter from "@/components/common/myFooter.vue";
+import {routeMeta} from "@/router/metaCfg.js";
 
 const route = useRoute()
+const router = useRouter()
 const $common = inject('$common')
 const $constant = inject('$constant')
 const userStore = useUserStore()
@@ -409,6 +411,15 @@ const mouseAnimation = ref(false)
 const toolButton = ref(false)
 const adminLogin = authStore.isAdmin
 const currBgImg = ref('') // 当前背景
+
+
+const footerCfg = computed(() => {
+  for (let i = route.matched.length - 1; i >= 0; i--) {
+    const key = route.matched[i].name
+    if (key && routeMeta[key]) return routeMeta[key]
+  }
+  return
+})
 
 // 初始化数据
 onMounted(() => {

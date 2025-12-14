@@ -49,6 +49,9 @@ const routes = [
             }, {
                 path: "/travel",
                 name: "travel",
+                meta: {
+                    gradDir: 'to top'   // gradientDirection 渐变方向 由下往上渐变；不写或写 'to bottom' 就是默认由上到下
+                },
                 component: () => import('../components/travel.vue')
             }, {
                 path: "/message",

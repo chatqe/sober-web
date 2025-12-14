@@ -129,7 +129,7 @@
         <!--<div style="background: var(&#45;&#45;background)">-->
         <!--  <MyFooter/>-->
         <!--</div>-->
-        <MyFooter/>
+
       </template>
     </Loader>
   </div>

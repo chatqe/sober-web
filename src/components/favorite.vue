@@ -27,9 +27,9 @@
   </div>
   <!-- 页脚 -->
   <!--<div style="background: var(&#45;&#45;background)" >-->
-  <div>
-    <MyFooter/>
-  </div>
+  <!--<div>-->
+  <!--  <MyFooter/>-->
+  <!--</div>-->
 </template>
 
 <script setup>

@@ -1,5 +1,5 @@
 <template>
-  <footer class="app-footer">
+  <footer v-show="visible" class="app-footer">
     <div class="footer-box footer-title">{{ webInfo.footer }}</div>
     <div class="footer-box icp">Powered By<a href="https://youngwanton.top" target="_blank"> YoungWanton</a></div>
     <div class="footer-box">© 2025 Your Company</div>
@@ -7,17 +7,29 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {computed, defineProps} from 'vue';
 import {useWebInfoStore} from '@/stores';
 
+defineProps({
+  gradDir: {
+    type: String,
+    default: 'to bottom'
+  },
+  visible: {
+    type: Boolean,
+    default: true
+  }
+})
 
 // 从Pinia获取状态
 const webInfoStore = useWebInfoStore();
 const webInfo = computed(() => webInfoStore.webInfo);
+
 </script>
 
 <style scoped>
 .app-footer {
+  --grad-dir: v-bind(gradDir);
   height: 190px;
   position: relative; /* 让伪元素以它做定位基准 */
   display: flex;
@@ -39,7 +51,8 @@ const webInfo = computed(() => webInfoStore.webInfo);
   /*right: 0;*/
   /*top: 0;*/
   /* height: 100%;  高度为容器百分比*/
-  background: linear-gradient(to bottom, var(--background) 10%, transparent 100%);
+  /*background: linear-gradient(to bottom, var(--background) 10%, transparent 100%);*/
+  background-image: linear-gradient(var(--grad-dir), var(--background) 10%, transparent 100%);
   z-index: 1; /* 盖住背景图，但低于文字 */
   pointer-events: none;
 }
