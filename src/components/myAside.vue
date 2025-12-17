@@ -54,7 +54,7 @@
 
     <!-- 推荐文章 -->
     <div v-if="!$common.isEmpty(recommendArticles)"
-         class="shadow-box background-opacity wow aside-card">
+         class="shadow-box background-opacity  wow aside-card">
       <!--<div  class="card-content2-title">-->
       <div class="aside-card-top">
         <!--        <span>🔥推荐文章</span>-->
@@ -465,7 +465,8 @@ const showTip = () => {
   padding: 5px;
   border-radius: 10px;
   margin-top: 30px;
-  animation: hideToShow 1s ease-in-out
+  animation: hideToShow 1s ease-in-out;
+  background: var(--card-bg);
 }
 
 /*卡片顶部*/

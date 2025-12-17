@@ -43,6 +43,7 @@
     --miniWhiteMask: rgba(255, 255, 255, 0.15);
     /* 透明 */
     --transparent: rgba(0, 0, 0, 0);
+
     /* mini黑色遮罩 */
     --miniMask: rgba(0, 0, 0, 0.15);
     /* 黑色遮罩 */
@@ -52,6 +53,15 @@
     /* 深黑遮罩 */
     --maxMask: rgba(0, 0, 0, 0.7);
 
+    /*****************新增****************/
+    /* miniBg黑色遮罩 */
+    --mini-bg-mask: rgba(0, 0, 0, .18);
+    /*页面容器背景遮罩*/
+    --cntr-bg: rgba(253, 253, 253, .35);
+    --card-bg: rgba(253, 253, 253, .85);
+    --card-box-shadow: 0 3px 8px 6px rgba(7, 17, 27, .09);
+    --comment-day-bg: rgba(253, 253, 253, .85);
+    --card-comment-bg: var(--comment-day-bg);
 
     --white: white;
 

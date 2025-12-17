@@ -67,7 +67,7 @@
             <li @click="router.push({path: '/love'})">
               <div class="my-menu">
                 <!--💋 <span>家</span>-->
-                ❤️‍🔥 <span>家</span>
+                ❤️‍🔥 <span>小窝</span>
               </div>
             </li>
 

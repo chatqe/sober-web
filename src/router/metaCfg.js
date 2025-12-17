@@ -17,7 +17,8 @@ export const routeMeta = {
         gradDir,
     },
     sort: {
-        gradDir: baseGradDir,
+        // gradDir: baseGradDir,
+        gradDir,
     },
     love: {
         gradDir: baseGradDir,

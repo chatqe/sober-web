@@ -58,7 +58,6 @@ const router = useRouter()
 const $common = inject('$common')
 const $constant = inject('$constant')
 
-// const sortInfoStore = useSystemStore()
 const sortInfoStore = useSortInfoStore()
 
 const twoPoem = defineAsyncComponent(() => import("./common/twoPoem.vue"))
@@ -66,8 +65,10 @@ const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
 const articleList = defineAsyncComponent(() => import("./articleList.vue"))
 const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 
-const sortId = ref(route.query.sortId)
-const labelId = ref(route.query.labelId)
+
+
+const sortId = computed(() => router.currentRoute.value.query.sortId)
+const labelId = computed(() => router.currentRoute.value.query.labelId)
 const sort = ref(null)
 const pagination = ref({
   pageNum: 1,
@@ -81,7 +82,6 @@ const articles = ref([])
 
 // 计算属性
 const sortInfo = computed(() => sortInfoStore.sortInfo)
-
 
 const handleCurrentChange = () => {
   getArticles()
@@ -112,9 +112,10 @@ const pageArticles = () => {
 
 const getSort = () => {
   if (!$common.isEmpty(sortInfo.value)) {
-    let sortArray = sortInfo.value.filter(f => {
-      return f.id === parseInt(sortId.value)
-    })
+    // let sortArray = sortInfo.value.filter(f => {
+    //   return f.id === parseInt(sortId.value)
+    // })
+    let sortArray = sortInfo.value.filter(f => f.id === sortId.value)
     if (!$common.isEmpty(sortArray)) {
       sort.value = sortArray[0]
     }
@@ -159,17 +160,20 @@ onMounted(() => {
   getSort()
   getArticles()
 })
+
+
 </script>
 
 <style scoped>
 .sort-container {
-  background: var(--background);
+  /*background: var(--background);*/
   padding-top: 40px;
   display: flex; /* 解决margin折叠问题*/
   flex-direction: column;
 }
 
 .sort-warp {
+  background: var(--cntr-bg);
   width: 70%;
   max-width: 780px;
   margin: 0 auto;
@@ -177,12 +181,17 @@ onMounted(() => {
   border-radius: 10px;
   display: flex;
   flex-wrap: wrap;
+
 }
 
 .article-wrap {
-  width: 70%;
+  background: var(--cntr-bg);
+  width: 75%;
   margin: 40px auto;
   min-height: 600px;
+  border-radius: 5px;
+  box-shadow: var(--card-box-shadow);
+  padding: 60px;
 }
 
 .isActive {

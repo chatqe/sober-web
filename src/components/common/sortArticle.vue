@@ -20,7 +20,7 @@
         </el-image>
       </div>
       <!-- 内容 -->
-      <div class="recent-post-item-post">
+      <div class="recent-post-item-post card-bg">
         <!-- 时间 -->
         <div class="post-meta">
           <svg viewBox="0 0 1024 1024" width="14" height="14" style="vertical-align: -2px;">
@@ -241,7 +241,9 @@ const $constant = inject('$constant');
     letter-spacing: 4px;
     color: var(--white);
   }
-
+.card-bg {
+  background: var(--card-bg);
+}
   @media screen and (max-width: 1400px) {
     .recent-post-item {
       width: calc(100% / 2 - 20px);

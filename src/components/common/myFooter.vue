@@ -52,7 +52,7 @@ const webInfo = computed(() => webInfoStore.webInfo);
   /*top: 0;*/
   /* height: 100%;  高度为容器百分比*/
   /*background: linear-gradient(to bottom, var(--background) 10%, transparent 100%);*/
-  background-image: linear-gradient(var(--grad-dir), var(--background) 10%, transparent 100%);
+  background-image: linear-gradient(var(--grad-dir), var(--background) 5%, transparent 100%);
   z-index: 1; /* 盖住背景图，但低于文字 */
   pointer-events: none;
 }

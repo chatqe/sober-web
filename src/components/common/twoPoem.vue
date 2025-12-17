@@ -113,6 +113,10 @@ onMounted(() => {
   position: relative;
 }
 
+.poem-container {
+  background-color: var(--mini-bg-mask);
+}
+
 .poem-wrap {
   border-radius: 10px;
   z-index: 10;
