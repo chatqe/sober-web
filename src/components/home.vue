@@ -136,7 +136,11 @@
             <!-- 个人中心 -->
             <li>
               <div v-if="$common.isEmpty(userStore.currentUser)" class="login-wrap">
-                <div class="login-menu" @click="router.push({path: '/user'})">登录</div>
+                <!--<div class="login-menu" @click="router.push({path: '/user'})">登录</div>-->
+                <button class="login-avtar">
+                  <EpUserFilled style="width: 32px; height: 32px; color: var(--grey);"/>
+                </button>
+
               </div>
               <el-dropdown v-else placement="bottom">
                 <el-avatar class="user-avatar" :size="36"
@@ -850,11 +854,26 @@ const changeMouseAnimation = () => {
 
 
 .login-wrap {
+  display: flex;
+  align-items: center;
   position: relative;
-  margin-top: 10px;
-  width: 40px;
-  height: 40px;
+  height: 100%;
+
+}
+
+.login-avtar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey);
   cursor: pointer;
+  border-radius: 50%;
+  outline: 0;
+  border: none;
+  touch-action: manipulation;
+  transition-duration: .2s;
+  height: 35px;
+  width: 35px;
 }
 
 .login-menu {

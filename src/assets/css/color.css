@@ -62,6 +62,7 @@
     --card-box-shadow: 0 3px 8px 6px rgba(7, 17, 27, .09);
     --comment-day-bg: rgba(253, 253, 253, .85);
     --card-comment-bg: var(--comment-day-bg);
+    --grey: #595A5A;
 
     --white: white;
 
