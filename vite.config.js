@@ -39,7 +39,7 @@ export default defineConfig({
                 ElementPlusResolver({importStyle: 'sass'}),
                 // 自动注册图标组件
                 IconsResolver({
-                    prefix: false,
+                    prefix: 'Icon',// prefix: false,
                     enabledCollections: ['ep'],
                 }),
             ]

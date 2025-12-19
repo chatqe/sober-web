@@ -33,7 +33,7 @@
 import {computed, inject, onMounted, ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
-import {useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
+import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import {articleApi, webInfoApi} from '@/api'
 import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
 
@@ -43,7 +43,7 @@ const $constant = inject('$constant')
 
 const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
-const systemStore = useSystemStore()
+const sortInfoStore = useSortInfoStore()
 
 const recommendArticles = ref([])
 const newTreeHoleList = ref([])
@@ -69,7 +69,7 @@ const pagination = ref({
 
 // 计算属性
 const webInfo = computed(() => webInfoStore.webInfo)
-const sortInfo = computed(() => systemStore.sortInfo)
+const sortInfo = computed(() => sortInfoStore.sortInfo)
 
 
 // 方法

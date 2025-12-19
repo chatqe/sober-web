@@ -189,7 +189,7 @@ onMounted(() => {
   width: 75%;
   margin: 40px auto;
   min-height: 600px;
-  border-radius: 5px;
+  border-radius: 15px;
   box-shadow: var(--card-box-shadow);
   padding: 60px;
 }

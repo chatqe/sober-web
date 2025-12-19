@@ -138,7 +138,7 @@ import {computed, inject, onMounted, ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {Calendar, StarFilled} from '@element-plus/icons-vue'
-import {useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
+import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import {articleApi} from '@/api'
 import newTreeHole from "./newTreeHole.vue"
 import TagCloud from 'TagCloud'
@@ -149,7 +149,6 @@ const $constant = inject('$constant')
 // 路由和状态管理
 // ... existing code ...
 const webInfoStore = useWebInfoStore()
-const systemStore = useSystemStore()
 const userStore = useUserStore()
 const sortInfoStore = useSortInfoStore()
 

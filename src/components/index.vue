@@ -137,7 +137,7 @@
 
 <script setup>
 import {computed, defineAsyncComponent, inject, nextTick, onMounted, ref} from 'vue'
-import {useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
+import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {articleApi} from '@/api'
@@ -162,7 +162,6 @@ const MyAside = defineAsyncComponent(() => import('./myAside.vue'))
 const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
 const sortInfoStore = useSortInfoStore()
-const systemStore = useSystemStore()
 
 const loading = ref(false)
 const showAside = ref(true)

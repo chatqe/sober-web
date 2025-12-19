@@ -3,6 +3,11 @@
     <!-- el过渡动画 -->
     <transition name="el-fade-in-linear">
       <!-- 导航栏 -->
+      <!--<div v-show="toolbar.visible|| ($common.mobile() || mobile)"-->
+      <!--     @mouseenter="hoverEnter = true"-->
+      <!--     @mouseleave="hoverEnter = false"-->
+      <!--     :class="[{ enter: toolbar.enter }, { hoverEnter: (hoverEnter || route.path.includes( '/favorite') || route.path === '/travel') && !toolbar.enter }]"-->
+      <!--     class="toolbar-content myBetween">-->
       <div v-show="toolbar.visible|| ($common.mobile() || mobile)"
            @mouseenter="hoverEnter = true"
            @mouseleave="hoverEnter = false"
@@ -72,7 +77,7 @@
             </li>
 
 
-            <!-- 百宝箱 -->
+            <!-- 百宝箱 🎧️-->
             <el-dropdown popper-class="new-el-dropdown" :hide-timeout="500" placement="bottom">
               <li>
                 <div class="my-menu">
@@ -83,7 +88,7 @@
                 <el-dropdown-menu>
                   <el-dropdown-item>
                     <div @click="router.push({name: 'favMusic'})">
-                      音乐
+                      🎧︎ 音乐
                     </div>
                   </el-dropdown-item>
                   <el-dropdown-item>
@@ -93,7 +98,7 @@
                   </el-dropdown-item>
                   <el-dropdown-item>
                     <div @click="router.push({name: 'favFriend'})">
-                      友链
+                      💃 友链
                     </div>
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -112,13 +117,6 @@
                 📪 <span>留言</span>
               </div>
             </li>
-            <!-- 友人帐 -->
-            <!--            <li @click="router.push({path: '/friend'})">-->
-            <!--              <div class="my-menu">-->
-            <!--                💃 <span>友人帐</span>-->
-            <!--              </div>-->
-            <!--            </li>-->
-
             <!-- 关于 -->
             <!--            <li @click="router.push({path: '/about'})">-->
             <!--              <div class="my-menu">-->
@@ -137,9 +135,10 @@
             <li>
               <div v-if="$common.isEmpty(userStore.currentUser)" class="login-wrap">
                 <!--<div class="login-menu" @click="router.push({path: '/user'})">登录</div>-->
-                <button class="login-avtar">
-                  <EpUserFilled style="width: 32px; height: 32px; color: var(--grey);"/>
+                <button class="login-avtar" @click="showAuthModal = !showAuthModal">
+                  <IconEpUserFilled class="icon-user"/>
                 </button>
+                <AuthModal v-show="showAuthModal" @closeAuthModal="showAuthModal=false"/>
 
               </div>
               <el-dropdown v-else placement="bottom">
@@ -209,9 +208,10 @@
 
       <!-- 首页 -->
       <div class="goHome">
-        <el-icon style="color: var(--black);">
-          <HomeFilled/>
-        </el-icon>
+        <!--<el-icon style="color: var(&#45;&#45;black);">-->
+        <!--  <HomeFilled/>-->
+        <!--</el-icon>-->
+        <IconEpHomeFilled class="tools-icon"></IconEpHomeFilled>
       </div>
 
       <el-popover placement="left"
@@ -219,9 +219,10 @@
                   trigger="hover">
         <template #reference>
           <div>
-            <el-icon class="iconRotate" style="color: var(--black);">
-              <Tools/>
-            </el-icon>
+            <!--<el-icon class="iconRotate" style="color: var(&#45;&#45;black);margin-left: 2px;">-->
+            <!--  <Tools/>-->
+            <!--</el-icon>-->
+            <IconEpTools class="iconRotate tools-icon" style="color: var(--black);"></IconEpTools>
           </div>
         </template>
         <div class="my-setting">
@@ -387,13 +388,20 @@
 import {computed, inject, onMounted, onUnmounted, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
-import {useAuthStore, useSortInfoStore, useSystemStore, useUserStore, useWebInfoStore} from '@/stores'
-import {HomeFilled, MagicStick, Menu, Moon, Sunny, SwitchButton, Tools, User} from '@element-plus/icons-vue'
-import aPlayer from './common/AudioPlayer.vue'
+import {
+  useAuthStore,
+  useSortInfoStore,
+  useSysConfigStore,
+  useToolbarStore,
+  useUserStore,
+  useWebInfoStore
+} from '@/stores'
+import {MagicStick, Menu, Moon, Sunny, SwitchButton, User} from '@element-plus/icons-vue'
 import mousedown from '../utils/mousedown'
 import {authApi, systemApi, webApi} from '@/api'
 import MyFooter from "@/components/common/myFooter.vue";
 import {routeMeta} from "@/router/metaCfg.js";
+import AuthModal from "@/components/AuthModal.vue";
 
 const route = useRoute()
 const router = useRouter()
@@ -402,7 +410,8 @@ const $constant = inject('$constant')
 const userStore = useUserStore()
 const authStore = useAuthStore()
 const webInfoStore = useWebInfoStore()
-const systemStore = useSystemStore()
+const toolStore = useToolbarStore()
+const sysConfigStore = useSysConfigStore()
 const sortInfoStore = useSortInfoStore()
 
 // 响应式数据
@@ -415,7 +424,7 @@ const mouseAnimation = ref(false)
 const toolButton = ref(false)
 const adminLogin = authStore.isAdmin
 const currBgImg = ref('') // 当前背景
-
+const showAuthModal = ref(false)
 
 const footerCfg = computed(() => {
   for (let i = route.matched.length - 1; i >= 0; i--) {
@@ -430,7 +439,7 @@ onMounted(() => {
 
   getBgImg()
   // 设置工具栏状态
-  systemStore.changeToolbarStatus({enter: false, visible: true})
+  toolStore.changeToolbarStatus({enter: false, visible: true})
 
   // 初始化数据
   getWebInfo()
@@ -460,7 +469,7 @@ onMounted(() => {
       enter: enter,
       visible: top,
     }
-    systemStore.changeToolbarStatus(toolbarStatus)
+    toolStore.changeToolbarStatus(toolbarStatus)
   })
 
 })
@@ -486,7 +495,7 @@ let unwatchScrollTop = null
 
 // 计算属性
 const toolbar = computed(() => {
-  return systemStore.toolbar
+  return toolStore.toolbar
 })
 
 const sortInfo = computed(() => {
@@ -562,7 +571,7 @@ const getSysConfig = async () => {
     // const res = await systemApi.listSysConfig()
     const res = await systemApi.getSysConfig()
     if (res && res.data && !$common.isEmpty(res.data)) {
-      systemStore.loadSysConfig(res.data)
+      sysConfigStore.loadSysConfig(res.data)
       // buildCssPicture()
     }
   } catch (error) {
@@ -584,21 +593,21 @@ const getSortInfo = async () => {
 }
 const buildCssPicture = () => {
   let root = document.querySelector(':root')
-  if (!$common.isEmpty(systemStore.sysConfig)) {
-    if (!$common.isEmpty(systemStore.sysConfig.styleBgColor)) {
-      root.style.setProperty('--styleBgColor', systemStore.sysConfig.styleBgColor)
+  if (!$common.isEmpty(sysConfigStore.sysConfig)) {
+    if (!$common.isEmpty(sysConfigStore.sysConfig.styleBgColor)) {
+      root.style.setProperty('--styleBgColor', sysConfigStore.sysConfig.styleBgColor)
     }
-    if (!$common.isEmpty(systemStore.sysConfig.styleTextColor)) {
-      root.style.setProperty('--styleTextColor', systemStore.sysConfig.styleTextColor)
+    if (!$common.isEmpty(sysConfigStore.sysConfig.styleTextColor)) {
+      root.style.setProperty('--styleTextColor', sysConfigStore.sysConfig.styleTextColor)
     }
-    if (!$common.isEmpty(systemStore.sysConfig.styleTitleColor)) {
-      root.style.setProperty('--styleTitleColor', systemStore.sysConfig.styleTitleColor)
+    if (!$common.isEmpty(sysConfigStore.sysConfig.styleTitleColor)) {
+      root.style.setProperty('--styleTitleColor', sysConfigStore.sysConfig.styleTitleColor)
     }
-    if (!$common.isEmpty(systemStore.sysConfig.styleBorderColor)) {
-      root.style.setProperty('--styleBorderColor', systemStore.sysConfig.styleBorderColor)
+    if (!$common.isEmpty(sysConfigStore.sysConfig.styleBorderColor)) {
+      root.style.setProperty('--styleBorderColor', sysConfigStore.sysConfig.styleBorderColor)
     }
-    if (!$common.isEmpty(systemStore.sysConfig.styleCardBgColor)) {
-      root.style.setProperty('--styleCardBgColor', systemStore.sysConfig.styleCardBgColor)
+    if (!$common.isEmpty(sysConfigStore.sysConfig.styleCardBgColor)) {
+      root.style.setProperty('--styleCardBgColor', sysConfigStore.sysConfig.styleCardBgColor)
     }
   }
 }
@@ -675,12 +684,14 @@ const changeMouseAnimation = () => {
 }
 
 .toolbar-content.enter {
-  background: var(--toolbarBackground);
-  color: var(--toolbarFont);
+  /*background: var(--toolbarBackground);*/
+  background: var(--mini-nav-mask);
+  color: var(--white);
+  /*  color: var(--toolbarFont);*/
 }
 
 .toolbar-content.hoverEnter {
-  background: var(--translucent);
+  /*background: var(--translucent);*/
 }
 
 .toolbar-title {
@@ -764,7 +775,7 @@ const changeMouseAnimation = () => {
 
 
 .toolButton {
-  right: 3vh;
+  right: 6vh;
   bottom: 3vh;
   animation: slide-bottom 0.5s ease-in-out both;
   cursor: pointer;
@@ -815,11 +826,17 @@ const changeMouseAnimation = () => {
   cursor: pointer;
 }
 
+.tools-icon {
+  color: var(--black);
+  width: 26px;
+  height: 26px;
+}
+
 .backTop {
   transition: all 0.3s ease-in;
   position: relative;
   top: 5px;
-  left: -8px;
+  left: -7px;
 }
 
 .backTop svg {
@@ -858,6 +875,7 @@ const changeMouseAnimation = () => {
   align-items: center;
   position: relative;
   height: 100%;
+  left: 10px;
 
 }
 
@@ -872,8 +890,29 @@ const changeMouseAnimation = () => {
   border: none;
   touch-action: manipulation;
   transition-duration: .2s;
-  height: 35px;
-  width: 35px;
+  height: 30px;
+  width: 30px;
+}
+
+.login-avtar:hover {
+  /* box-shadow: X Y blur spread color
+      X Y偏移（这里 0 0 居中）
+      blur第三轴 → 发散大小（由 0 → 12px）
+      spread第四轴 → 环宽度（保持 3px）
+      color　color-mix 引用变量 + alpha
+      想再柔和 → 加大 blur、降低透明度即可
+ */
+  box-shadow: 0 0 12px 5px color-mix(in srgb, var(--lightGreen) 100%, transparent);
+}
+
+.icon-user {
+  width: 32px;
+  height: 32px;
+  color: var(--grey);
+}
+
+.icon-user:hover {
+  color: var(--lightGreen);
 }
 
 .login-menu {
