@@ -138,7 +138,8 @@
                 <button class="login-avtar" @click="showAuthModal = !showAuthModal">
                   <IconEpUserFilled class="icon-user"/>
                 </button>
-                <AuthModal v-show="showAuthModal" @closeAuthModal="showAuthModal=false"/>
+                <!--<AuthModal v-show="showAuthModal" @closeAuthModal="showAuthModal=false"/>-->
+                <AuthModal v-model="showAuthModal"/>
 
               </div>
               <el-dropdown v-else placement="bottom">
