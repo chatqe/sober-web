@@ -86,8 +86,6 @@ body {
 }
 
 
-
-
 .my-el-image {
     width: 100%;
     height: 100%;
@@ -412,4 +410,32 @@ body {
     /*justify-content: center; !* 水平居中 *!*/
     align-items: center; /* 垂直居中 */
     backdrop-filter: blur(5px); /* 背景模糊效果，创建磨砂玻璃效果 */
+}
+
+/* 全局遮罩层 */
+.backdrop-overlay {
+    /* 固定定位，覆盖整个视口 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* 半透明背景 */
+    /* 确保背景不滚动 */
+    background: rgba(0, 0, 0, 0.3) fixed !important;
+    /* 确保遮罩层在最顶层绘制 */
+    isolation: isolate;
+    /* 强制覆盖整个视口高度 */
+    height: 100vh !important;
+    width: 100vw !important;
+    /* 居中显示内容 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* 确保层级最高 */
+    z-index: 1000;
+    /* 允许点击遮罩层，但不关闭模态框 */
+    pointer-events: auto;
+    /* 淡入动画 */
+    animation: fadeIn 0.3s ease;
 }

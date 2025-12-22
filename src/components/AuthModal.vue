@@ -91,26 +91,42 @@ onUnmounted(() => {
 })
 
 // 实现大厂标准的滚动锁函数 - 只使用CSS overflow: hidden
+// 全局变量存储滚动位置
+let oldScrollTop = 0;
+
 function toggleLock(on) {
-  const top = window.pageYOffset
   if (on) {
     // 记录滚动位置
-    document.body.style.setProperty('--scroll-top', `${top}px`)
-    // 同时锁body和html元素，覆盖所有根滚动容器
+    oldScrollTop = window.pageYOffset;    // 同时锁body和html元素
+    // 设置body的top为负的滚动位置，视觉上保持背景位置不变
+    document.body.style.top = `-${oldScrollTop}px`;
     document.body.classList.add('lock-scroll')
     document.documentElement.classList.add('lock-scroll')
+    console.log('滚动锁已添加') // 调试日志
   } else {
     // 移除滚动锁
     document.body.classList.remove('lock-scroll')
     document.documentElement.classList.remove('lock-scroll')
     // 恢复滚动位置
-    window.scrollTo({top, behavior: 'instant'})
+    window.scrollTo({
+      top: oldScrollTop,
+      behavior: 'instant' // 瞬间恢复，无动画
+    });
+    console.log('滚动锁已移除') // 调试日志
   }
 }
 
-// 监听visible属性，自动控制滚动锁
-watch(visible, v => toggleLock(v), {immediate: true})
-
+/* 立即执行：打开就锁，关闭就解 */
+watch(() => visible.value, toggleLock, {immediate: true})
+// watch(
+//     () => visible.value,
+//     v => {
+//       console.log('visible =>', v)   // ← 打印最新值
+//       console.log('--scoll-top', document.body.style.getPropertyValue('--scroll-top'))
+//       toggleLock(v)                  // ← 继续原逻辑
+//     },
+//     { immediate: true }
+// )
 const captchaClose = () => {
   // console.log("关闭验证码对话框")
   captchaShow.value = false
@@ -307,7 +323,7 @@ const verifyCode = () => {
 
 const fwdClose = () => {
   changeFlag.value.forgetPwd = false
-  showPwd.value = false
+  showFgtPwd.value = false
   username.value = ""
   registPwd.value = ""
   code.value = ""
@@ -347,7 +363,7 @@ const resetPwdForFgtPwd = async () => {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="visible" class="auth-modal-overlay" @click.self="void 0">
+      <div v-if="visible" class="backdrop-overlay" @click.self="void 0">
         <div class="auth-container">
           <!-- 添加关闭按钮 -->
           <div class="auth-close" @click="close">×</div>
@@ -418,13 +434,15 @@ const resetPwdForFgtPwd = async () => {
                     <input v-model="username" type="text" maxlength="30" placeholder="用户名"
                            class="line-form-input">
                   </div>
-                  <div class="line-form" style="margin-top: 20px;">
+                  <div class="line-form eye-pos" style="margin-top: 20px;">
                     <input v-model="registPwd"
-                           type="password"
+                           :type="showPwd ? 'text' : 'password'"
                            autocomplete="new-password"
                            maxlength="30"
                            placeholder="登录密码"
                            class="line-form-input">
+                    <IconEpHide class="pwd-eye" v-if="showPwd" @click="showPwd=!showPwd"></IconEpHide>
+                    <IconEpView class="pwd-eye" v-else @click="showPwd=!showPwd"></IconEpView>
                   </div>
                   <div class="line-form" style="margin-top: 20px;">
                     <input v-model="email"
@@ -489,44 +507,50 @@ const resetPwdForFgtPwd = async () => {
           </el-dialog>
 
           <!-- 忘记密码容器 -->
-          <div v-if="changeFlag.forgetPwd" class="ground-glass-bg fwd-body">
-            <div style="font-size: 20px;margin-top: 10px;">忘记密码</div>
-            <div class="fwd-close" @click="fwdClose">❌︎</div>
+          <div v-if="changeFlag.forgetPwd" class="backdrop-overlay">
+            <div v-if="changeFlag.forgetPwd" class="ground-glass-bg fwd-body">
+              <div style="font-size: 20px;margin-top: 10px;">忘记密码</div>
+              <div class="fwd-close" @click="fwdClose">❌︎</div>
 
-            <div class="fwd-input-box">
-              <div>邮箱</div>
-              <input v-model="email"
-                     type="text"
-                     class="fwd-input ">
-            </div>
-
-
-            <div class="fwd-input-box eye-pos">
-              <div>新密码</div>
-              <input v-model="registPwd"
-                     :type="showFgtPwd ? 'text' : 'password'"
-                     autocomplete="new-password"
-                     maxlength="30"
-                     class="fwd-input">
-              <IconEpHide class="pwd-eye" style="top:25px" v-if="showFgtPwd" @click="showFgtPwd=!showFgtPwd"></IconEpHide>
-              <IconEpView class="pwd-eye" style="top:25px" v-else @click="showFgtPwd=!showFgtPwd"></IconEpView>
-            </div>
-
-            <div class="fwd-input-box">
-              <div>验证码</div>
-              <div style=" position: relative;">
-                <input v-model="code" autocomplete="off" type="text"
-                       class="fwd-input">
-                <button class="send-btn" @click="emailCode(EmailBizType.RESET_PWD)" style="height: 100%;right: 1px;">发送
-                </button>
+              <div class="fwd-input-box">
+                <div>邮箱</div>
+                <input v-model="email"
+                       type="text"
+                       class="fwd-input ">
               </div>
-            </div>
 
-            <div style="margin-top:10px">
-              <el-button type="primary" plain round @click="resetPwdForFgtPwd">提交新密码</el-button>
-            </div>
 
+              <div class="fwd-input-box eye-pos">
+                <div>新密码</div>
+                <input v-model="registPwd"
+                       :type="showFgtPwd ? 'text' : 'password'"
+                       autocomplete="new-password"
+                       maxlength="30"
+                       class="fwd-input">
+                <IconEpHide class="pwd-eye" style="top:25px" v-if="showFgtPwd"
+                            @click="showFgtPwd=!showFgtPwd"></IconEpHide>
+                <IconEpView class="pwd-eye" style="top:25px" v-else @click="showFgtPwd=!showFgtPwd"></IconEpView>
+              </div>
+
+              <div class="fwd-input-box">
+                <div>验证码</div>
+                <div style=" position: relative;">
+                  <input v-model="code" autocomplete="off" type="text"
+                         class="fwd-input">
+                  <button class="send-btn" @click="emailCode(EmailBizType.RESET_PWD)" style="height: 100%;right: 1px;">
+                    发送
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-top:10px">
+                <el-button type="primary" plain round @click="resetPwdForFgtPwd">提交新密码</el-button>
+              </div>
+
+            </div>
           </div>
+
+
         </div>
       </div>
     </Transition>
@@ -538,39 +562,27 @@ const resetPwdForFgtPwd = async () => {
 :root {
   --scroll-top: 0px;
 }
-</style>
-
-<style scoped>
-/* 遮罩层样式 */
-.auth-modal-overlay {
-  /* 固定定位，覆盖整个视口 */
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  /* 半透明背景 */
-  background: rgba(0, 0, 0, 0.5);
-  /* 居中显示内容 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* 确保层级最高 */
-  z-index: 1000;
-  /* 允许点击遮罩层，但不关闭模态框 */
-  pointer-events: auto;
-  /* 淡入动画 */
-  animation: fadeIn 0.3s ease;
-}
 
 /* 大厂标准的滚动锁样式（记录滚动位置，防止闪回顶部） */
 body.lock-scroll,
 html.lock-scroll {
-  overflow: hidden;
-  position: fixed;
-  width: 100vw;
-  top: calc(-1 * var(--scroll-top, 0px));
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  /* 不设置top，由JavaScript动态设置 */
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+
+  /* 防止iOS弹性滚动 */
+  -webkit-overflow-scrolling: touch;
 }
+
+</style>
+
+<style scoped>
+
 
 /* 模态框容器 */
 .auth-container {
@@ -913,9 +925,16 @@ body.modal-open {
 
 .fwd-body {
   position: fixed;
+  max-width: 90vw;
   z-index: 2006;
   width: 350px;
   height: 390px;
+  /* 核心居中逻辑  inset: 0;
+  margin: auto;*/
+  left: 0;
+  right: 0; /* 仅左右贴边 */
+  top: 20px; /* 或任意你需要的垂直位置 */
+  margin: 0 auto; /* 仅左右 margin 自动 */
   justify-content: center;
   gap: 17px;
   padding: 30px 25px 25px;
