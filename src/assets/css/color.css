@@ -8,7 +8,7 @@
     --fontColor: black;
     /* 边框 */
     /*--borderColor: rgba(0, 0, 0, 0.5);*/
-    --borderColor: rgba(0, 0, 0, 0.1);/* 新文章卡片边框样式*/
+    --borderColor: rgba(0, 0, 0, 0.1); /* 新文章卡片边框样式*/
     /* 边框 */
     /*--borderHoverColor: rgba(110, 110, 110, 0.4);*/
     --borderHoverColor: hsla(0, 0%, 43%, .2);
@@ -100,4 +100,14 @@
     --love: url(../file/bg.jpg);
     --loveCarBg: url(../file/loveCarBg1.jpg);
     --loveBackground: #ffffff;
+
+    /************ 新增样式 *************/
+    --accent-pink: #f04494; /* 输入框底部粉色 */
+    --primary-blue: rgb(38, 141, 247);
+    --primary-gradient: linear-gradient(135deg, rgb(89, 195, 251) 10%, var(--primary-blue) 100%);
+    --secondary-gradient: linear-gradient(135deg, rgb(96, 228, 100) 10%, rgb(92, 184, 91) 100%);
+    --text-primary: #4e5358;
+    --text-secondary: #777;
+    --text-muted: #b1b1b1;
+
 }

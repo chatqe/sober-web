@@ -28,9 +28,9 @@
           </div>
           <div>
             <div v-if="isLogin">
-              <div class="sign-box-body">
-                <div class="sign-box-title">登录</div>
-                <div class="sign-box-button" @click="changeLoginCard">没有账号？立即注册 &gt;</div>
+              <div class="sign-box__body">
+                <div class="sign-box__title">登录</div>
+                <div class="sign-box__button" @click="changeLoginCard">没有账号？立即注册 &gt;</div>
               </div>
 
               <div>
@@ -75,9 +75,9 @@
 
             <!-- 注册 -->
             <div v-else>
-              <div class="sign-box-body">
-                <div class="sign-box-title">注册</div>
-                <div class="sign-box-button" @click="changeLoginCard">已有账号？立即登录 &gt;</div>
+              <div class="sign-box__body">
+                <div class="sign-box__title">注册</div>
+                <div class="sign-box__button" @click="changeLoginCard">已有账号？立即登录 &gt;</div>
               </div>
               <div>
                 <div>
@@ -1232,12 +1232,13 @@ const resetPwdForFgtPwd = async () => {
   border-radius: 15px;
 }
 
-.sign-box-body {
+/*BEM 命名规范 ：优化类名*/
+.sign-box__body {
   padding: 15px 0;
 }
 
 
-.sign-box-title {
+.sign-box__title {
   position: relative;
   font-size: 30px;
   font-weight: 700;
@@ -1247,7 +1248,7 @@ const resetPwdForFgtPwd = async () => {
   color: #4e5358;
 }
 
-.sign-box-title::before {
+.sign-box__title::before {
   position: absolute;
   transition: .4s;
   transform-origin: left;
@@ -1261,12 +1262,12 @@ const resetPwdForFgtPwd = async () => {
   box-shadow: 1px 1px 3px -1px #f04494;
 }
 
-.sign-box-title:hover::before {
+.sign-box__title:hover::before {
   width: 60px;
 }
 
 
-.sign-box-button {
+.sign-box__button {
   margin: 10px 0;
   color: #777;
   font-size: 12px;
@@ -1277,7 +1278,7 @@ const resetPwdForFgtPwd = async () => {
   transition: all .3s;
 }
 
-.sign-box-button:hover {
+.sign-box__button:hover {
   color: #f04494;
 }
 
