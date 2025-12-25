@@ -461,9 +461,10 @@ const resetPwdForFgtPwd = async () => {
                   <i aria-hidden="true"></i> 注册
                 </div>
               </div>
-
-
             </div>
+
+            <!-- 忘记密码容器 -->
+
 
           </div>
 
@@ -507,51 +508,49 @@ const resetPwdForFgtPwd = async () => {
           </el-dialog>
 
           <!-- 忘记密码容器 -->
-          <div v-if="changeFlag.forgetPwd" class="backdrop-overlay">
-            <div v-if="changeFlag.forgetPwd" class="ground-glass-bg fwd-body">
-              <div style="font-size: 20px;margin-top: 10px;">忘记密码</div>
-              <div class="fwd-close" @click="fwdClose">❌︎</div>
+          <div v-if="changeFlag.forgetPwd" class="ground-glass-bg fwd-body">
+            <div style="font-size: 20px;margin-top: 10px;">忘记密码</div>
+            <div class="fwd-close" @click="fwdClose">❌︎</div>
 
-              <div class="fwd-input-box">
-                <div>邮箱</div>
-                <input v-model="email"
-                       type="text"
-                       class="fwd-input ">
-              </div>
-
-
-              <div class="fwd-input-box eye-pos">
-                <div>新密码</div>
-                <input v-model="registPwd"
-                       :type="showFgtPwd ? 'text' : 'password'"
-                       autocomplete="new-password"
-                       maxlength="30"
-                       class="fwd-input">
-                <IconEpHide class="pwd-eye" style="top:25px" v-if="showFgtPwd"
-                            @click="showFgtPwd=!showFgtPwd"></IconEpHide>
-                <IconEpView class="pwd-eye" style="top:25px" v-else @click="showFgtPwd=!showFgtPwd"></IconEpView>
-              </div>
-
-              <div class="fwd-input-box">
-                <div>验证码</div>
-                <div style=" position: relative;">
-                  <input v-model="code" autocomplete="off" type="text"
-                         class="fwd-input">
-                  <button class="send-btn" @click="emailCode(EmailBizType.RESET_PWD)" style="height: 100%;right: 1px;">
-                    发送
-                  </button>
-                </div>
-              </div>
-
-              <div style="margin-top:10px">
-                <el-button type="primary" plain round @click="resetPwdForFgtPwd">提交新密码</el-button>
-              </div>
-
+            <div class="fwd-input-box">
+              <div>邮箱</div>
+              <input v-model="email"
+                     type="text"
+                     class="fwd-input ">
             </div>
+
+
+            <div class="fwd-input-box eye-pos">
+              <div>新密码</div>
+              <input v-model="registPwd"
+                     :type="showFgtPwd ? 'text' : 'password'"
+                     autocomplete="new-password"
+                     maxlength="30"
+                     class="fwd-input">
+              <IconEpHide class="pwd-eye" style="top:25px" v-if="showFgtPwd"
+                          @click="showFgtPwd=!showFgtPwd"></IconEpHide>
+              <IconEpView class="pwd-eye" style="top:25px" v-else @click="showFgtPwd=!showFgtPwd"></IconEpView>
+            </div>
+
+            <div class="fwd-input-box">
+              <div>验证码</div>
+              <div style=" position: relative;">
+                <input v-model="code" autocomplete="off" type="text"
+                       class="fwd-input">
+                <button class="send-btn" @click="emailCode(EmailBizType.RESET_PWD)" style="height: 100%;right: 1px;">
+                  发送
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-top:10px">
+              <el-button type="primary" plain round @click="resetPwdForFgtPwd">提交新密码</el-button>
+            </div>
+
           </div>
-
-
         </div>
+
+
       </div>
     </Transition>
   </Teleport>
@@ -670,14 +669,6 @@ html.lock-scroll {
     transform: scale(1);
     opacity: 1;
   }
-}
-
-/* 防止背景滚动的body样式 */
-body.modal-open {
-  overflow: hidden;
-  /* 防止iOS上的弹性滚动 */
-  position: fixed;
-  width: 100%;
 }
 
 
@@ -970,12 +961,4 @@ body.modal-open {
   outline: none;
 }
 
-.fwd-eye {
-  position: absolute;
-  right: 10px;
-  top: 75%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  user-select: none;
-}
 </style>

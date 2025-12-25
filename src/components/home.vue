@@ -402,7 +402,7 @@ import mousedown from '../utils/mousedown'
 import {authApi, systemApi, webApi} from '@/api'
 import MyFooter from "@/components/common/myFooter.vue";
 import {routeMeta} from "@/router/metaCfg.js";
-import AuthModal from "@/components/AuthModal.vue";
+import AuthModal from "@/components/auth/AuthModal.vue";
 
 const route = useRoute()
 const router = useRouter()
