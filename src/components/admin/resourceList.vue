@@ -109,35 +109,73 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue';
+<script setup lang="ts">
+import { ref, reactive, onMounted, Ref, inject } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import uploadPicture from '../common/uploadPicture.vue';
-import { resourceApi } from '@/api';
+import { resourceApi } from '@/api/index.js';
 
-// 辅助函数
-const isEmpty = (obj) => {
-  return obj === null || obj === undefined || (typeof obj === 'object' && Object.keys(obj).length === 0);
-};
+// 定义接口
+interface Resource {
+  id: number;
+  originalName: string;
+  userId: number;
+  type: string;
+  status: boolean;
+  path: string;
+  mimeType: string;
+  size: number;
+  storeType: string;
+  createTime: string;
+  [key: string]: any;
+}
+
+interface Pagination {
+  current: number;
+  size: number;
+  total: number;
+  resourceType: string;
+}
+
+interface StoreType {
+  label: string;
+  value: string;
+}
+
+interface ResourceDeleteRequest {
+  path: string;
+}
+
+interface ResourceStatusRequest {
+  id: number;
+  flag: boolean;
+}
+
+// 从全局注入获取公共工具函数
+interface CommonUtils {
+  isEmpty: (obj: any) => boolean;
+}
+
+const $common = inject<CommonUtils>('$common')!
 
 // 响应式数据
-const resources = ref([]);
-const resourceDialog = ref(false);
-const storeType = ref(localStorage.getItem("defaultStoreType"));
-const pagination = reactive({
+const resources: Ref<Resource[]> = ref([]);
+const resourceDialog: Ref<boolean> = ref(false);
+const storeType: Ref<string | null> = ref(localStorage.getItem("defaultStoreType"));
+const pagination: Pagination = reactive({
   current: 1,
   size: 10,
   total: 0,
   resourceType: ""
 });
 
-const storeTypes = [
+const storeTypes: StoreType[] = [
   {label: "服务器", value: "local"},
   {label: "七牛云", value: "qiniu"}
 ];
 
 // 获取资源列表
-const getResources = async () => {
+const getResources = async (): Promise<void> => {
   try {
     const res = await resourceApi.listResource(pagination);
     if (!res.data) {
@@ -147,11 +185,11 @@ const getResources = async () => {
       });
       return;
     }
-    if (!isEmpty(res.data)) {
+    if (!($common.isEmpty(res.data))) {
       resources.value = res.data.records;
       pagination.total = res.data.total;
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '请求失败',
       type: "error"
@@ -160,7 +198,7 @@ const getResources = async () => {
 };
 
 // 删除资源
-const handleDelete = async (item) => {
+const handleDelete = async (item: Resource): Promise<void> => {
   try {
     await ElMessageBox.confirm('确认删除资源？', '提示', {
       confirmButtonText: '确定',
@@ -169,15 +207,16 @@ const handleDelete = async (item) => {
       center: true
     });
     
-    await resourceApi.deleteResource({path: item.path});
+    const deleteRequest: ResourceDeleteRequest = {path: item.path};
+    await resourceApi.deleteResource(deleteRequest);
     pagination.current = 1;
     await getResources();
     ElMessage({
       message: "删除成功！",
       type: "success"
     });
-  } catch (error) {
-    if (error !== 'cancel') {
+  } catch (error: any) {
+    if (error === 'cancel') {
       ElMessage({
         type: 'info',
         message: '已取消删除!'
@@ -192,14 +231,15 @@ const handleDelete = async (item) => {
 };
 
 // 更改资源状态
-const changeStatus = async (item) => {
+const changeStatus = async (item: Resource): Promise<void> => {
   try {
-    await resourceApi.changeResourceStatus({id: item.id, flag: item.status});
+    const statusRequest: ResourceStatusRequest = {id: item.id, flag: item.status};
+    await resourceApi.changeResourceStatus(statusRequest);
     ElMessage({
       message: "修改成功！",
       type: "success"
     });
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '请求失败',
       type: "error"
@@ -208,13 +248,13 @@ const changeStatus = async (item) => {
 };
 
 // 添加文件
-const addFile = (res) => {
+const addFile = (res: any): void => {
   // 保持空实现，与原代码一致
 };
 
 // 新增资源
-const addResources = () => {
-  if (isEmpty(pagination.resourceType)) {
+const addResources = (): void => {
+  if ($common.isEmpty(pagination.resourceType)) {
     ElMessage({
       message: "请选择资源类型！",
       type: "error"
@@ -225,20 +265,20 @@ const addResources = () => {
 };
 
 // 搜索
-const search = () => {
+const search = (): void => {
   pagination.total = 0;
   pagination.current = 1;
   getResources();
 };
 
 // 分页变化
-const handlePageChange = (val) => {
+const handlePageChange = (val: number): void => {
   pagination.current = val;
   getResources();
 };
 
 // 组件挂载时获取数据
-onMounted(() => {
+onMounted((): void => {
   getResources();
 });
 </script>

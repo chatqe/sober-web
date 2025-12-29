@@ -32,23 +32,41 @@
   <!--</div>-->
 </template>
 
-<script setup>
-import {inject, onMounted, ref} from 'vue'
+<script setup lang="ts">
+import {inject, onMounted, Ref, ref} from 'vue'
 import {ElMessage} from 'element-plus'
-import {webInfoApi} from '@/api';
+import {webInfoApi} from '@/api/index.js';
 import myFooter from './common/myFooter.vue'
+import {CommonUtils, AppConstants} from '@/types'
 
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common: CommonUtils = inject('$common')!
+const $constant: AppConstants = inject('$constant')!
+
+// 定义数据类型
+interface FavVideoInfo {
+  title: string
+  desc: string
+}
+
+interface CollectItem {
+  url: string
+  cover: string
+  title: string
+  introduction: string
+}
+
+interface CollectData {
+  [key: string]: CollectItem[]
+}
 
 // 响应式数据
-const card = ref(null)
-const favVideoInfo = ref({
+const card: Ref<number | null> = ref(null)
+const favVideoInfo: Ref<FavVideoInfo> = ref({
   title: "百宝箱",
   desc: "留下你的网站吧,嘻嘻嘻",
 })
-const collects = ref({})
+const collects: Ref<CollectData> = ref({})
 
 // 生命周期钩子
 onMounted(() => {
@@ -62,11 +80,11 @@ defineExpose({
   getCollect
 })
 
-function toUrl(url) {
+function toUrl(url: string): void {
   window.open(url)
 }
 
-function changeFavorite(newCard) {
+function changeFavorite(newCard: number): void {
   if (newCard === 1) {
     if ($common.isEmpty(collects.value)) {
       getCollect()
@@ -75,17 +93,16 @@ function changeFavorite(newCard) {
   card.value = newCard
 }
 
-function getCollect() {
-  webInfoApi.listCollect()
-      .then((res) => {
-        if (!res.data) return
-        if (!res.data || $common.isEmpty(res.data)) return
-        if (!res.data || typeof res.data !== 'object') return
-        collects.value = res.data
-      })
-      .catch((error) => {
-        ElMessage.error(error.message || '获取收藏失败')
-      })
+async function getCollect(): Promise<void> {
+  try {
+    const res = await webInfoApi.listCollect()
+    if (!res.data) return
+    if ($common.isEmpty(res.data)) return
+    if (typeof res.data !== 'object') return
+    collects.value = res.data as CollectData
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取收藏失败')
+  }
 }
 </script>
 

@@ -132,20 +132,65 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, inject } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { webInfoApi } from '@/api'
+import { webInfoApi } from '@/api/index.js'
+
+// 定义接口
+interface SortItem {
+  id: number;
+  sortName: string;
+  sortDescription: string;
+  sortType: number;
+  priority: number;
+  countOfSort: number;
+  status: number;
+  labels?: LabelItem[];
+}
+
+interface LabelItem {
+  id: number;
+  sortId: number;
+  labelName: string;
+  labelDescription: string;
+  countOfLabel?: number;
+}
+
+interface SortForHttp {
+  id: number | null;
+  sortName: string;
+  status: number | null;
+  sortDescription: string;
+  sortType: number | null;
+  priority: number | null;
+}
+
+interface LabelForHttp {
+  id: number | null;
+  sortId: number | null;
+  labelName: string;
+  labelDescription: string;
+}
+
+interface CommonUtils {
+  isEmpty: (value: any) => boolean;
+}
+
+interface ApiResponse<T> {
+  data: T;
+  [key: string]: any;
+}
 
 // 注入全局属性
-const $common = inject('$common')
+const $common = inject<CommonUtils>('$common')!
 
 // 响应式数据
-const sortDialog = ref(false)
-const labelDialog = ref(false)
-const sortInfo = ref([])
-const sort = reactive({})
-const sortForHttp = reactive({
+const sortDialog = ref<boolean>(false)
+const labelDialog = ref<boolean>(false)
+const sortInfo = ref<SortItem[]>([])
+const sort = reactive<SortItem>({} as SortItem)
+const sortForHttp = reactive<SortForHttp>({
   id: null,
   sortName: "",
   status: null,
@@ -153,7 +198,7 @@ const sortForHttp = reactive({
   sortType: null,
   priority: null
 })
-const labelForHttp = reactive({
+const labelForHttp = reactive<LabelForHttp>({
   id: null,
   sortId: null,
   labelName: "",
@@ -161,7 +206,7 @@ const labelForHttp = reactive({
 })
 
 // 删除处理
-const deleteHandle = async (id, flag) => {
+const deleteHandle = async (id: number, flag: number): Promise<void> => {
   try {
     await ElMessageBox.confirm('确认删除？', '提示', {
       confirmButtonText: '确定',
@@ -198,7 +243,7 @@ const deleteHandle = async (id, flag) => {
 }
 
 // 保存分类编辑
-const saveSortEdit = async () => {
+const saveSortEdit = async (): Promise<void> => {
   if ($common.isEmpty(sortForHttp.sortType) ||
     $common.isEmpty(sortForHttp.priority) ||
     $common.isEmpty(sortForHttp.sortName) ||
@@ -232,7 +277,7 @@ const saveSortEdit = async () => {
 }
 
 // 保存标签编辑
-const saveLabelEdit = async () => {
+const saveLabelEdit = async (): Promise<void> => {
   if ($common.isEmpty(labelForHttp.labelName) ||
     $common.isEmpty(labelForHttp.labelDescription)) {
     ElMessage({
@@ -265,7 +310,7 @@ const saveLabelEdit = async () => {
 }
 
 // 编辑分类
-const editSort = (item) => {
+const editSort = (item: SortItem): void => {
   sortDialog.value = true
   sortForHttp.id = item.id
   sortForHttp.sortName = item.sortName
@@ -276,7 +321,7 @@ const editSort = (item) => {
 }
 
 // 编辑标签
-const editLabel = (item) => {
+const editLabel = (item: LabelItem): void => {
   labelDialog.value = true
   labelForHttp.id = item.id
   labelForHttp.sortId = item.sortId
@@ -285,13 +330,13 @@ const editLabel = (item) => {
 }
 
 // 插入标签
-const insertLabel = (item) => {
+const insertLabel = (item: SortItem): void => {
   labelForHttp.sortId = item.id
   labelDialog.value = true
 }
 
 // 关闭对话框
-const handleClose = () => {
+const handleClose = (): void => {
   Object.assign(labelForHttp, {
     id: null,
     sortId: null,
@@ -311,14 +356,14 @@ const handleClose = () => {
 }
 
 // 查看标签
-const sayLabel = (item) => {
+const sayLabel = (item: SortItem): void => {
   Object.assign(sort, item)
 }
 
 // 获取分类信息
-const getSortInfo = async () => {
+const getSortInfo = async (): Promise<void> => {
   try {
-    const res = await webInfoApi.getSortInfo()
+    const res: ApiResponse<SortItem[]> = await webInfoApi.getSortInfo()
     if (!res.data) return
     
     if (!($common.isEmpty(res.data))) {
@@ -334,7 +379,7 @@ const getSortInfo = async () => {
 }
 
 // 改变分类状态
-const changeSortStatus = async (item) => {
+const changeSortStatus = async (item: SortItem): Promise<void> => {
   if (item.status !== null && item.id !== null) {
     try {
       await webInfoApi.updateSort(item)
@@ -354,7 +399,7 @@ const changeSortStatus = async (item) => {
 }
 
 // 组件挂载时获取数据
-onMounted(() => {
+onMounted((): void => {
   getSortInfo()
 })
 </script>

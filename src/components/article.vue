@@ -305,7 +305,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, onBeforeUnmount, watch, inject, computed, nextTick } from 'vue'
 import { defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
@@ -317,7 +317,7 @@ import { useUserStore, useWebInfoStore } from '@/stores'
 import MdEditor from 'md-editor-v3'
 
 // 导入API模块
-import { articleApi, userApi, weiYanApi } from '@/api'
+import { articleApi, userApi, weiYanApi } from '@/api/index.js'
 
 // 导入组件
 const myFooter = defineAsyncComponent(() => import('./common/myFooter.vue'))
@@ -327,9 +327,12 @@ const commentBox = defineAsyncComponent(() => import('./comment/commentBox.vue')
 const proButton = defineAsyncComponent(() => import('./common/proButton.vue'))
 const videoPlayer = defineAsyncComponent(() => import('./common/videoPlayer.vue'))
 
+// 导入类型
+import { CommonUtils, AppConstants, Article, Sort, Label, WeiYan } from '@/types'
+
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
 
 // 使用路由和状态管理
 const route = useRoute()
@@ -341,18 +344,18 @@ const currentUser = computed(() => userStore.currentUser)
 const webInfo = computed(() => webInfoStore.webInfo)
 
 // 响应式数据
-const id = ref(route.query.id)
-const subscribe = ref(false)
-const article = ref({})
-const articleContentHtml = ref("")
-const treeHoleList = ref([])
-const weiYanDialogVisible = ref(false)
-const copyrightDialogVisible = ref(false)
-const newsTime = ref("")
-const showPasswordDialog = ref(false)
-const password = ref("")
-const tips = ref("")
-const scrollTop = ref(0)
+const id = ref<string | string[]>(route.query.id as string | string[])
+const subscribe = ref<boolean>(false)
+const article = ref<Article>({} as Article)
+const articleContentHtml = ref<string>("")
+const treeHoleList = ref<WeiYan[]>([])
+const weiYanDialogVisible = ref<boolean>(false)
+const copyrightDialogVisible = ref<boolean>(false)
+const newsTime = ref<string>("")
+const showPasswordDialog = ref<boolean>(false)
+const password = ref<string>("")
+const tips = ref<string>("")
+const scrollTop = ref<number>(0)
 
 // DOM引用
 const tocButtonRef = ref(null)
@@ -403,7 +406,7 @@ const clickTocButton = () => {
 // 点击目录按钮已定义在上面
 
 // 订阅/取消订阅专栏
-const subscribeLabel = async () => {
+const subscribeLabel = async (): Promise<void> => {
   if ($common.isEmpty(currentUser.value)) {
     ElMessage({
       message: "请先登录！",
@@ -434,7 +437,7 @@ const subscribeLabel = async () => {
       })
     }
     subscribe.value = !subscribe.value
-  } catch (error) {
+  } catch (error: any) {
     if (error.name !== 'CanceledError') {
       ElMessage({
         message: error.message || '操作失败',
@@ -449,7 +452,7 @@ const subscribeLabel = async () => {
   }
 }
 // 提交密码
-const submitPassword = () => {
+const submitPassword = (): void => {
   if ($common.isEmpty(password.value)) {
     ElMessage({
       message: "请先输入密码！",
@@ -463,7 +466,7 @@ const submitPassword = () => {
   showPasswordDialog.value = false;
 }
 // 删除树洞消息
-const deleteTreeHole = async (holeId) => {
+const deleteTreeHole = async (holeId: string): Promise<void> => {
   if ($common.isEmpty(currentUser.value)) {
     ElMessage({
       message: "请先登录！",
@@ -491,7 +494,7 @@ const deleteTreeHole = async (holeId) => {
     });
     
     getNews();
-  } catch (error) {
+  } catch (error: any) {
     if (error.name !== 'CanceledError') {
       ElMessage({
         message: error.message || '操作失败',
@@ -506,8 +509,8 @@ const deleteTreeHole = async (holeId) => {
   }
 }
 // 提交微言
-const submitWeiYan = async (content) => {
-  let weiYan = {
+const submitWeiYan = async (content: string): Promise<void> => {
+  let weiYan: WeiYan = {
     content: content,
     createTime: newsTime.value,
     source: article.value.id
@@ -519,7 +522,7 @@ const submitWeiYan = async (content) => {
     weiYanDialogVisible.value = false;
     newsTime.value = "";
     getNews();
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '操作失败',
       type: "error"
@@ -527,7 +530,7 @@ const submitWeiYan = async (content) => {
   }
 }
 // 获取树洞消息列表
-const getNews = async () => {
+const getNews = async (): Promise<void> => {
   try {
     const res = await weiYanApi.listWeiYan({
       current: 1,
@@ -546,7 +549,7 @@ const getNews = async () => {
       c.content = $common.pictureReg(c.content);
     });
     treeHoleList.value = res.data.records;
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '获取消息失败',
       type: "error"
@@ -554,7 +557,7 @@ const getNews = async () => {
   }
 }
 // 监听页面滚动
-const onScrollPage = () => {
+const onScrollPage = (): void => {
   scrollTop.value = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
 }
 // 获取目录
@@ -585,18 +588,18 @@ const getTocbot = () => {
 }
 
 // 添加ID
-const addId = () => {
+const addId = (): void => {
   if (entryContentRef.value) {
-    const headings = entryContentRef.value.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    const headings = entryContentRef.value.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6");
     headings.forEach((heading, i) => {
       if (!heading.id) {
         heading.id = 'toc-' + i;
       }
     });
   }
-};
+}
 // 获取文章详情
-const getArticle = async (passwordVal) => {
+const getArticle = async (passwordVal?: string): Promise<void> => {
   try {
     const res = await articleApi.getArticleById({
       id: id.value,
@@ -607,6 +610,9 @@ const getArticle = async (passwordVal) => {
       article.value = res.data;
       
       // 检查是否点赞
+      const checkHasLike = (): void => {
+        // 检查是否点赞的实现
+      };
       checkHasLike();
       
       // 获取动态消息
@@ -641,7 +647,7 @@ const getArticle = async (passwordVal) => {
       }
       subscribe.value = JSON.parse(currentUser.value.subscribe).includes(article.value.labelId);
     }
-  } catch (error) {
+  } catch (error: any) {
     if (error.message && error.message.startsWith("密码错误")) {
       if (!password.value) {
         ElMessage({

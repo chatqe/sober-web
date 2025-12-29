@@ -38,33 +38,53 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, onMounted, Ref, inject } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { webInfoApi } from '@/api'
+import { webInfoApi } from '@/api/index.js'
 
-// 辅助函数
-const isEmpty = (obj) => {
-  return obj === null || obj === undefined || (typeof obj === 'object' && Object.keys(obj).length === 0);
+// 定义接口
+interface TreeHole {
+  id: number;
+  message: string;
+  createTime: string;
+  [key: string]: any;
 }
 
+interface Pagination {
+  current: number;
+  size: number;
+  total: number;
+}
+
+interface TreeHoleDeleteRequest {
+  id: number;
+}
+
+// 从全局注入获取公共工具函数
+interface CommonUtils {
+  isEmpty: (obj: any) => boolean;
+}
+
+const $common = inject<CommonUtils>('$common')!
+
 // 响应式数据
-const treeHoles = ref([])
-const pagination = reactive({
+const treeHoles: Ref<TreeHole[]> = ref([])
+const pagination: Pagination = reactive({
   current: 1,
   size: 10,
   total: 0
 })
 
 // 获取树洞列表
-const getTreeHoles = async () => {
+const getTreeHoles = async (): Promise<void> => {
   try {
     const res = await webInfoApi.getTreeHoleList(pagination)
-    if (!isEmpty(res.data)) {
+    if (!($common.isEmpty(res.data))) {
       treeHoles.value = res.data.records;
       pagination.total = res.data.total;
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '获取树洞列表失败',
       type: "error"
@@ -73,13 +93,13 @@ const getTreeHoles = async () => {
 }
 
 // 分页切换
-const handlePageChange = (val) => {
+const handlePageChange = (val: number): void => {
   pagination.current = val;
   getTreeHoles();
 }
 
 // 删除操作
-const handleDelete = async (item) => {
+const handleDelete = async (item: TreeHole): Promise<void> => {
   try {
     await ElMessageBox.confirm('确认删除？', '提示', {
       confirmButtonText: '确定',
@@ -88,14 +108,15 @@ const handleDelete = async (item) => {
       center: true
     })
     
-    await webInfoApi.deleteTreeHole({id: item.id})
+    const deleteRequest: TreeHoleDeleteRequest = {id: item.id};
+    await webInfoApi.deleteTreeHole(deleteRequest)
     pagination.current = 1;
     getTreeHoles();
     ElMessage({
       message: "删除成功！",
       type: "success"
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage({
         message: error.message || '删除失败',
@@ -111,7 +132,7 @@ const handleDelete = async (item) => {
 }
 
 // 组件挂载时获取数据
-onMounted(() => {
+onMounted((): void => {
   getTreeHoles()
 })
 </script>

@@ -27,7 +27,7 @@ __webpack_require__.d(__webpack_exports__, {
   "default": function() { return /* binding */ clipboard; }
 });
 
-// EXTERNAL MODULE: ./node_modules/tiny-emitter/index.js
+// EXTERNAL MODULE: ./node_modules/tiny-emitter/index.ts
 var tiny_emitter = __webpack_require__(279);
 var tiny_emitter_default = /*#__PURE__*/__webpack_require__.n(tiny_emitter);
 // EXTERNAL MODULE: ./node_modules/good-listener/src/listen.js

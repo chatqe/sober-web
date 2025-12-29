@@ -150,14 +150,15 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {inject} from 'vue'
 import router from '@/router'
 import {useUserStore, useWebInfoStore} from '@/stores'
+import {CommonUtils, AppConstants, Article} from '@/types'
 
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
 
 // 使用路由
 // ... existing code ...
@@ -168,7 +169,8 @@ const webInfoStore = useWebInfoStore()
 
 const props = defineProps({
   articleList: {
-    type: Array
+    type: Array as () => Article[],
+    default: () => []
   }
 })
 </script>

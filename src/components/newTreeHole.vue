@@ -29,27 +29,41 @@
 </template>
 
 
-<script setup>
-import {computed, inject, onMounted, ref} from 'vue'
+<script setup lang="ts">
+import {computed, inject, onMounted, ref, Ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
-import {articleApi, webInfoApi} from '@/api'
+import {articleApi, webInfoApi} from '@/api/index.js'
 import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
 
+// 从@/types导入所需类型
+import { CommonUtils, AppConstants, TreeHole, Article, SortItem, WebInfo } from '@/types'
+
 // 获取公共属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
+
+// 局部类型定义
+interface Pagination {
+  current: number
+  size: number
+  recommendStatus: boolean
+}
+
+interface ApiResponse {
+  data: any
+  [key: string]: any
+}
 
 const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
 const sortInfoStore = useSortInfoStore()
 
-const recommendArticles = ref([])
-const newTreeHoleList = ref([])
-const showAdmireDialog = ref(false)
-const articleSearch = ref("")
-
+const recommendArticles: Ref<Article[]> = ref([])
+const newTreeHoleList: Ref<TreeHole[]> = ref([])
+const showAdmireDialog: Ref<boolean> = ref(false)
+const articleSearch: Ref<string> = ref("")
 
 // let scrollAnimationId = null
 
@@ -57,31 +71,34 @@ onMounted(() => {
   getRecommendArticles()
   getLatestTreeHole()
 })
+
 // 定义emit
-const emit = defineEmits(['selectSort', 'selectArticle'])
+const emit = defineEmits<{
+  selectSort: [sort: SortItem]
+  selectArticle: [searchValue: string]
+}>()
+
 // 响应式数据
-const pagination = ref({
+const pagination: Ref<Pagination> = ref({
   current: 1,
   size: 5,
   recommendStatus: true
 })
 
-
 // 计算属性
-const webInfo = computed(() => webInfoStore.webInfo)
-const sortInfo = computed(() => sortInfoStore.sortInfo)
-
+const webInfo = computed<WebInfo>(() => webInfoStore.webInfo)
+const sortInfo = computed<SortItem[]>(() => sortInfoStore.sortInfo)
 
 // 方法
-const selectSort = (sort) => {
+const selectSort = (sort: SortItem): void => {
   emit("selectSort", sort)
 }
 
-const selectArticle = () => {
+const selectArticle = (): void => {
   emit("selectArticle", articleSearch.value)
 }
 
-const showAdmire = () => {
+const showAdmire = (): void => {
   if ($common.isEmpty(userStore.currentUser)) {
     ElMessage({
       message: "请先登录！",
@@ -93,13 +110,13 @@ const showAdmire = () => {
   showAdmireDialog.value = true
 }
 
-const getRecommendArticles = async () => {
+const getRecommendArticles = async (): Promise<void> => {
   try {
-    const res = await articleApi.getArticleList(pagination.value)
+    const res: ApiResponse = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(res.data)) {
       recommendArticles.value = res.data.records
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message,
       type: "error"
@@ -107,34 +124,30 @@ const getRecommendArticles = async () => {
   }
 }
 
-const showTip = () => {
+const showTip = (): void => {
   router.push({path: '/weiYan'})
 }
 
-const getLatestTreeHole = async () => {
+const getLatestTreeHole = async (): Promise<void> => {
   try {
-    const res = await webInfoApi.listTreeHole()
+    const res: ApiResponse = await webInfoApi.listTreeHole()
     if (!$common.isEmpty(res.data)) {
       try {
         newTreeHoleList.value = res.data
-      } catch (error) {
+      } catch (error: any) {
         ElMessage({
           message: error.message,
           type: "error"
         })
       }
-
-
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message,
       type: "error"
     })
   }
 }
-
-
 </script>
 
 <style scoped>

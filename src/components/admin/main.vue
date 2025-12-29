@@ -182,7 +182,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { webInfoApi } from '@/api/index';
+import { webInfoApi } from '@/api/index.js';
 
 // 响应式数据
 const historyInfo = ref({});

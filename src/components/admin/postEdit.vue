@@ -108,7 +108,7 @@ import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-import { commonApi, articleApi } from '@/api/index'
+import { commonApi, articleApi } from '@/api/index.js'
 
 // 组件导入
 import uploadPicture from '../common/uploadPicture.vue'

@@ -71,24 +71,59 @@
   </div>
 </template>
 
-<script setup>
-import {ref, onMounted} from 'vue'
+<script setup lang="ts">
+import {ref, onMounted, Ref} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Search, Delete} from '@element-plus/icons-vue'
-import {familyApi} from '@/api'
+import {familyApi} from '@/api/index.js'
+// 定义接口
+interface Love {
+  id: number;
+  userId: number;
+  manName: string;
+  womanName: string;
+  bgCover: string;
+  manCover: string;
+  womanCover: string;
+  status: boolean;
+  timing: string;
+  countdownTitle: string;
+  countdownTime: string;
+  familyInfo: string;
+  createTime: string;
+  updateTime: string;
+  [key: string]: any;
+}
+
+interface Pagination {
+  current: number;
+  size: number;
+  total: number;
+  status: boolean | null;
+}
+
+interface DeleteLoveRequest {
+  id: number;
+}
+
+interface ChangeStatusRequest {
+  id: number;
+  flag: boolean;
+}
+
 // 响应式数据
-const pagination = ref({
+const pagination: Ref<Pagination> = ref({
   current: 1,
   size: 10,
   total: 0,
   status: null
 })
 
-const loves = ref([])
-const loading = ref(false)
+const loves: Ref<Love[]> = ref([])
+const loading: Ref<boolean> = ref(false)
 
 // 方法
-const handleDelete = async (item) => {
+const handleDelete = async (item: Love): Promise<void> => {
   try {
     await ElMessageBox.confirm('确认删除资源？', '提示', {
       confirmButtonText: '确定',
@@ -97,57 +132,59 @@ const handleDelete = async (item) => {
       center: true
     })
 
-    await familyApi.deleteFamily({id: item.id})
+    const deleteRequest: DeleteLoveRequest = {id: item.id};
+    await familyApi.deleteFamily(deleteRequest)
     pagination.value.current = 1
     await getLoves()
     ElMessage.success('删除成功！')
-  } catch (error) {
+  } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error(error.message || '删除失败')
     }
   }
 }
 
-const search = () => {
+const search = (): void => {
   pagination.value.current = 1
   getLoves()
 }
 
-const getLoves = async () => {
+const getLoves = async (): Promise<void> => {
   try {
     loading.value = true
-    const res = await familyApi.listFamily(pagination)
+    const res = await familyApi.listFamily(pagination.value)
 
     if (res.data?.records) {
       loves.value = res.data.records
       pagination.value.total = res.data.total
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage.error(error.message || '获取数据失败')
   } finally {
     loading.value = false
   }
 }
 
-const changeStatus = async (item) => {
+const changeStatus = async (item: Love): Promise<void> => {
   try {
-    await familyApi.changeLoveStatus({
+    const statusRequest: ChangeStatusRequest = {
       id: item.id,
       flag: item.status
-    })
+    };
+    await familyApi.changeLoveStatus(statusRequest)
     ElMessage.success('修改成功！')
-  } catch (error) {
+  } catch (error: any) {
     ElMessage.error(error.message || '修改失败')
   }
 }
 
-const handlePageChange = (val) => {
+const handlePageChange = (val: number): void => {
   pagination.value.current = val
   getLoves()
 }
 
 // 生命周期
-onMounted(() => {
+onMounted((): void => {
   getLoves()
 })
 

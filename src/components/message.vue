@@ -61,7 +61,7 @@ import {computed, defineAsyncComponent, inject, onMounted, ref} from 'vue';
 import {useUserStore, useWebInfoStore} from '@/stores';
 import {ElMessage} from 'element-plus';
 import vueDanmaku from 'vue-danmaku'
-import {webInfoApi} from '@/api';
+import {webInfoApi} from '@/api/index.js';
 
 // 获取注入的全局属性
 const $common = inject('$common')

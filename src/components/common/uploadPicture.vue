@@ -48,15 +48,54 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, inject } from 'vue';
 import { ElMessage } from 'element-plus';
 import upload from '../../utils/ajaxUpload';
-import { uploadApi } from '@/api';
+import { uploadApi } from '@/api/index.js';
 import { useUserStore } from '@/stores';
 
+// 定义接口
+interface CommonUtils {
+  isEmpty: (value: any) => boolean;
+  saveResource: (prefix: string, url: string, size: number, type: string, name: string, storeType: string, isAdmin: boolean) => void;
+}
+
+interface AppConstants {
+  qiniuUrl: string;
+  qiniuDownload: string;
+  [key: string]: any;
+}
+
+interface UploadFile {
+  name: string;
+  size: number;
+  raw: File;
+  type: string;
+  [key: string]: any;
+}
+
+interface UploadOptions {
+  file: UploadFile;
+  name: string;
+  onSuccess: (response: any) => void;
+  onError: (error: any) => void;
+  data?: any;
+  [key: string]: any;
+}
+
+interface UploadProps {
+  isAdmin: boolean;
+  prefix: string;
+  listType: string;
+  storeType: string;
+  accept: string;
+  maxSize: number;
+  maxNumber: number;
+}
+
 // 定义props
-const props = defineProps({
+const props = defineProps<UploadProps>({
   isAdmin: {
     type: Boolean,
     default: false
@@ -88,23 +127,25 @@ const props = defineProps({
 });
 
 // 定义emits
-const emit = defineEmits(['addPicture']);
+const emit = defineEmits<{
+  (e: 'addPicture', url: string): void;
+}>();
 
 // 获取实例和全局属性
-const uploadRef = ref(null);
-const $common = inject('$common');
-const $constant = inject('$constant');
+const uploadRef = ref<any>(null);
+const $common = inject<CommonUtils>('$common')!;
+const $constant = inject<AppConstants>('$constant')!
 
 // 使用Pinia状态管理
 const userStore = useUserStore();
 
 // 提交上传
-function submitUpload() {
+function submitUpload(): void {
   uploadRef.value.submit();
 }
 
 // 自定义上传
-function customUpload(options) {
+function customUpload(options: UploadOptions): Promise<any> {
   let suffix = "";
   if (options.file.name.lastIndexOf('.') !== -1) {
     suffix = options.file.name.substring(options.file.name.lastIndexOf('.'));
@@ -140,7 +181,7 @@ function customUpload(options) {
 }
 
 // 文件上传成功时的钩子
-function handleSuccess(response, file, fileList) {
+function handleSuccess(response: any, file: UploadFile, fileList: UploadFile[]): void {
   let url;
   if (props.storeType === "local") {
     url = response.data;
@@ -152,7 +193,7 @@ function handleSuccess(response, file, fileList) {
 }
 
 // 处理错误
-function handleError(err, file, fileList) {
+function handleError(err: any, file: UploadFile, fileList: UploadFile[]): void {
   ElMessage({
     message: err,
     type: "error"
@@ -160,17 +201,17 @@ function handleError(err, file, fileList) {
 }
 
 // 上传文件之前的钩子
-function beforeUpload(file) {
+function beforeUpload(file: UploadFile): boolean | Promise<File> {
   // 可以添加逻辑，返回false或Promise.reject会停止上传
 }
 
 // 文件列表移除文件时的钩子
-function handleRemove(file, fileList) {
+function handleRemove(file: UploadFile, fileList: UploadFile[]): void {
   // 可以添加移除文件时的逻辑
 }
 
 // 添加文件、上传成功和上传失败时都会被调用
-function handleChange(file, fileList) {
+function handleChange(file: UploadFile, fileList: UploadFile[]): void {
   let flag = false;
 
   if (file.size > props.maxSize * 1024 * 1024) {
@@ -187,7 +228,7 @@ function handleChange(file, fileList) {
 }
 
 // 生命周期钩子
-onMounted(() => {
+onMounted((): void => {
   // 组件挂载后的逻辑
 });
 </script>

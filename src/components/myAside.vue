@@ -133,74 +133,120 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {computed, inject, onMounted, ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {Calendar, StarFilled} from '@element-plus/icons-vue'
 import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
-import {articleApi} from '@/api'
+import {articleApi} from '@/api/index.js'
 import newTreeHole from "./newTreeHole.vue"
 import TagCloud from 'TagCloud'
+
+// 定义注入的类型
+interface CommonUtils {
+  isEmpty: (value: any) => boolean
+  [key: string]: any
+}
+
+interface AppConstants {
+  sortColor?: string[]
+  [key: string]: any
+}
+
+// 定义数据接口
+interface Pagination {
+  current: number
+  size: number
+  recommendStatus: boolean
+}
+
+interface Article {
+  id: number
+  articleTitle: string
+  articleCover?: string
+  username: string
+  createTime: string
+  [key: string]: any
+}
+
+interface SortItem {
+  id: number
+  sortName: string
+  sortDescription: string
+  status: number
+  [key: string]: any
+}
+
+interface WebInfo {
+  avatar?: string
+  webName?: string
+  historyAllCount?: number
+  [key: string]: any
+}
+
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
 
 // 路由和状态管理
-// ... existing code ...
 const webInfoStore = useWebInfoStore()
 const userStore = useUserStore()
 const sortInfoStore = useSortInfoStore()
 
-
 // 响应式数据
-const pagination = ref({
+const pagination: Ref<Pagination> = ref({
   current: 1,
   size: 5,
   recommendStatus: true
 })
-const recommendArticles = ref([])
-const admires = ref([])
-const showAdmireDialog = ref(false)
-const articleSearch = ref("")
+const recommendArticles: Ref<Article[]> = ref([])
+const admires: Ref<any[]> = ref([])
+const showAdmireDialog: Ref<boolean> = ref(false)
+const articleSearch: Ref<string> = ref("")
 
-const cloudRef = ref()
-const tags = ref(sortInfoStore.labels || ['Vue3', 'Vite', 'TS', 'Pinia', '标签云'])
+const cloudRef = ref<HTMLElement | null>(null)
+const tags: Ref<string[]> = ref(sortInfoStore.labels || ['Vue3', 'Vite', 'TS', 'Pinia', '标签云'])
 
 // 生命周期
 onMounted(() => {
   getRecommendArticles()
-  TagCloud(cloudRef.value, tags.value, {
-    radius: 150,          // 标签云旋转半径（px）
-    maxSpeed: 'fast',     // 最大速度 'slow'/'normal'/'fast'）
-    initSpeed: 'normal',  // 初始速度
-    direction: 135,       // 旋转方向 （顺时针角度，如0=上，90=左）
-    keep: true            // 鼠标移出后是否继续旋转
-  })
+  if (cloudRef.value) {
+    TagCloud(cloudRef.value, tags.value, {
+      radius: 150,          // 标签云旋转半径（px）
+      maxSpeed: 'fast',     // 最大速度 'slow'/'normal'/'fast'）
+      initSpeed: 'normal',  // 初始速度
+      direction: 135,       // 旋转方向 （顺时针角度，如0=上，90=左）
+      keep: true            // 鼠标移出后是否继续旋转
+    })
+  }
 })
 
 // 计算属性
-const webInfo = computed(() => webInfoStore.webInfo)
-const sortInfo = computed(() => {
+const webInfo = computed<WebInfo>(() => webInfoStore.webInfo)
+const sortInfo = computed<SortItem[]>(() => {
   // 过滤不显示的sort列表
   return sortInfoStore.sortInfo.filter(item => item.status !== 0)
 })
-const articleTotal = computed(() => sortInfoStore.articleTotal)
+const articleTotal = computed<number>(() => sortInfoStore.articleTotal)
 const currentUser = computed(() => userStore.currentUser)
 
 // 定义emit
-const emit = defineEmits(['selectSort', 'selectArticle'])
+const emit = defineEmits<{
+  selectSort: [sort: SortItem]
+  selectArticle: [searchValue: string]
+}>()
 
 // 方法
-const selectSort = (sort) => {
+const selectSort = (sort: SortItem): void => {
   emit("selectSort", sort)
 }
 
-const selectArticle = () => {
+const selectArticle = (): void => {
   emit("selectArticle", articleSearch.value)
 }
 
-const showAdmire = () => {
+const showAdmire = (): void => {
   if ($common.isEmpty(currentUser.value)) {
     ElMessage({
       message: "请先登录！",
@@ -212,13 +258,13 @@ const showAdmire = () => {
   showAdmireDialog.value = true
 }
 
-const getRecommendArticles = async () => {
+const getRecommendArticles = async (): Promise<void> => {
   try {
     const res = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(res.data)) {
       recommendArticles.value = res.data.list
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '获取推荐文章失败',
       type: "error"
@@ -226,11 +272,9 @@ const getRecommendArticles = async () => {
   }
 }
 
-const showTip = () => {
+const showTip = (): void => {
   router.push({path: '/weiYan'})
 }
-
-
 </script>
 
 <style scoped>

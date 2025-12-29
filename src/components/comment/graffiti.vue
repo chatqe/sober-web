@@ -79,60 +79,107 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { ref, reactive, computed, onMounted, inject } from 'vue'
   import { ElMessage, ElIcon } from 'element-plus'
   import { Edit, ArrowLeft, ArrowRight, Refresh } from '@element-plus/icons-vue'
   import { useUserStore } from '../../store/index'
-  import { resourceApi, qiniuApi } from '@/api'
+  import { resourceApi, qiniuApi } from '@/api/index.js'
   import { defineAsyncComponent } from 'vue'
+
+  // 定义接口
+  interface CommonUtils {
+    isEmpty: (value: any) => boolean;
+    saveResource: (prefix: string | null, type: string, url: string, size: number, mimeType: string, originalName: string | null, storeType: string) => void;
+  }
+
+  interface AppConstants {
+    before_color_1: string;
+    after_color_1: string;
+    before_color_2: string;
+    after_color_2: string;
+    qiniuUrl: string;
+    qiniuDownload: string;
+    [key: string]: any;
+  }
+
+  interface User {
+    id: number;
+    username: string;
+    [key: string]: any;
+  }
+
+  interface Config {
+    lineWidth: number;
+    lineColor: string;
+    shadowBlur: number;
+  }
+
+  interface BrushSize {
+    className: string;
+    lineWidth: number;
+    icon: string;
+  }
+
+  interface Control {
+    title: string;
+    action: string;
+    icon: any;
+    className: string;
+  }
   
   // 动态导入组件
   const proButton = defineAsyncComponent(() => import("../common/proButton"))
   
   // 注入全局属性
-  const $common = inject('$common')
-  const $constant = inject('$constant')
+  const $common = inject<CommonUtils>('$common')!
+  const $constant = inject<AppConstants>('$constant')!
   
   // 定义事件
-  const emit = defineEmits(['showComment', 'addGraffitiComment'])
+  const emit = defineEmits<{
+    (e: 'showComment'): void;
+    (e: 'addGraffitiComment', img: string): void;
+  }>()
   
   // 状态管理
   const userStore = useUserStore()
   
   // 画布引用
-  const canvasRef = ref(null)
-  const canvasMoveUse = ref(false)
+  const canvasRef = ref<HTMLCanvasElement | null>(null)
+  const canvasMoveUse = ref<boolean>(false)
+  const context = ref<CanvasRenderingContext2D | null>(null)
   // 存储当前表面状态数组-上一步
-  const preDrawAry = ref([])
+  const preDrawAry = ref<ImageData[]>([])
   // 存储当前表面状态数组-下一步
-  const nextDrawAry = ref([])
+  const nextDrawAry = ref<ImageData[]>([])
   // 中间数组
-  const middleAry = ref([])
+  const middleAry = ref<ImageData[]>([])
   // 配置参数
-  const config = reactive({
+  const config = reactive<Config>({
     lineWidth: 5,
     lineColor: "#8154A3",
     shadowBlur: 2,
   })
   
   const colors = ["#8154A3", "#fef4ac", "#0018ba", "#ffc200", "#f32f15", "#cccccc", "#5ab639"]
-  const brushSize = [{
-    className: "small",
-    lineWidth: 5,
-    icon: 'Edit'
-  }, {
-    className: "middle",
-    lineWidth: 10,
-    icon: 'Edit'
-  }, {
-    className: "big",
-    lineWidth: 15,
-    icon: 'Edit'
-  }]
+  const brushSize = ref<BrushSize[]>([
+    {
+      className: "small",
+      lineWidth: 5,
+      icon: 'Edit'
+    }, {
+      className: "middle",
+      lineWidth: 10,
+      icon: 'Edit'
+    }, {
+      className: "big",
+      lineWidth: 15,
+      icon: 'Edit'
+    }
+  ])
   
   // 计算属性
-  const controls = computed(() => {
+  const controls = computed<Control[]>(() => {
     return [{
       title: "上一步",
       action: "prev",
@@ -158,7 +205,7 @@
     }]
   })
   
-  onMounted(() => {
+  onMounted((): void => {
     if (canvasRef.value) {
       context.value = canvasRef.value.getContext("2d", {willReadFrequently: true})
       initDraw()
@@ -166,19 +213,21 @@
     }
   })
     // 方法定义
-      function canvasOutMove(e) {
+      function canvasOutMove(e: MouseEvent | TouchEvent): void {
         if (canvasRef.value && e.target !== canvasRef.value) {
           canvasMoveUse.value = false
         }
       }
       
-      function initDraw() {
+      function initDraw(): void {
+        if (!context.value) return
         const preData = context.value.getImageData(0, 0, 1200, 600)
         // 空绘图表面进栈
         middleAry.value.push(preData)
       }
       
-      function canvasUp(e) {
+      function canvasUp(e: MouseEvent | TouchEvent): void {
+        if (!context.value) return
         const preData = context.value.getImageData(0, 0, 1200, 600)
         if (!nextDrawAry.value.length) {
           // 当前绘图表面进栈
@@ -193,12 +242,13 @@
         context.value.beginPath()
       }
       
-      function canvasDown(e) {
+      function canvasDown(e: MouseEvent | TouchEvent): void {
         canvasMoveUse.value = true
         // client是基于整个页面的坐标
         // offset是canvas距离顶部以及左边的距离
         setCanvasStyle()
         // 清除子路径
+        if (!context.value) return
         context.value.beginPath()
         context.value.moveTo(e.layerX, e.layerY)
         // 当前绘图表面状态
@@ -207,15 +257,16 @@
         preDrawAry.value.push(preData)
       }
       
-      function canvasMove(e) {
-        if (canvasMoveUse.value) {
+      function canvasMove(e: MouseEvent | TouchEvent): void {
+        if (canvasMoveUse.value && context.value) {
           context.value.lineTo(e.layerX, e.layerY)
           context.value.stroke()
         }
       }
       
       // 设置绘画配置
-      function setCanvasStyle() {
+      function setCanvasStyle(): void {
+        if (!context.value) return
         context.value.lineWidth = config.lineWidth
         context.value.shadowBlur = config.shadowBlur
         context.value.shadowColor = config.lineColor
@@ -223,16 +274,17 @@
       }
       
       // 设置颜色
-      function setColor(color) {
+      function setColor(color: string): void {
         config.lineColor = color
       }
       
       // 设置笔刷大小
-      function setBrush(pageSize) {
+      function setBrush(size: number): void {
         config.lineWidth = size
       }
       
-      function controlCanvas(action) {
+      function controlCanvas(action: string): void {
+        if (!context.value) return
         switch (action) {
           case "prev":
             if (preDrawAry.value.length) {
@@ -252,23 +304,26 @@
             break
           case "clear":
             clearContext()
-            middleAry.value = [middleAry.value[0]]
+            if (middleAry.value.length > 0) {
+              middleAry.value = [middleAry.value[0]]
+            }
             break
         }
       }
       
-      function clearContext() {
+      function clearContext(): void {
+        if (!context.value) return
         context.value.clearRect(0, 0, context.value.canvas.width, context.value.canvas.height)
         preDrawAry.value = []
         nextDrawAry.value = []
       }
       
-      function showComment() {
+      function showComment(): void {
         clearContext()
         emit("showComment")
       }
       
-      function getImage() {
+      function getImage(): void {
         if ($common.isEmpty(userStore.currentUser)) {
           ElMessage.error("请先登录！")
           return
@@ -308,7 +363,7 @@
         }
       }
       
-      async function saveLocal(fd) {
+      async function saveLocal(fd: FormData): Promise<void> {
         try {
           const res = await resourceApi.upload(fd)
           if (!res.data) return
@@ -317,12 +372,12 @@
           let url = res.data
           let img = "[你画我猜," + url + "]"
           emit("addGraffitiComment", img)
-        } catch (error) {
+        } catch (error: any) {
           ElMessage.error(error.message || '上传失败')
         }
       }
       
-      async function saveQiniu(fd) {
+      async function saveQiniu(fd: FormData): Promise<void> {
         try {
           const tokenRes = await qiniuApi.getUpToken({key: fd.get("key")})
           if (!tokenRes.data) return
@@ -334,11 +389,11 @@
           
           clearContext()
           let url = $constant.qiniuDownload + uploadRes.key
-          let file = fd.get("file")
+          let file = fd.get("file") as File
           $common.saveResource(null, "graffiti", url, file.size, file.type, null, "qiniu")
           let img = "[你画我猜," + url + "]"
           emit("addGraffitiComment", img)
-        } catch (error) {
+        } catch (error: any) {
           ElMessage.error(error.message || '上传失败')
         }
       }

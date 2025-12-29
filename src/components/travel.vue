@@ -64,15 +64,21 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, inject } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, inject, Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { defineAsyncComponent } from 'vue'
-import { webInfoApi } from '@/api'
+import { webInfoApi } from '@/api/index.js'
+
+// 定义注入的类型
+
+
+// 导入类型
+import { CommonUtils, AppConstants, PhotoTitle, PhotoPagination, ResourcePath, ApiResponse } from '@/types'
 
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
 
 const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 const photo = defineAsyncComponent(() => import("./common/photo.vue"))
@@ -80,20 +86,20 @@ const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
 const emptyState = defineAsyncComponent(() => import("./common/emptyState.vue"))
 
 // 响应式数据
-const photoPagination = ref({
+const photoPagination = ref<PhotoPagination>({
   current: 1,
   size: 10,
   total: 0,
   resourceType: "lovePhoto",
   classify: ""
 })
-const photoTitleList = ref([])
-const photoList = ref([])
+const photoTitleList = ref<PhotoTitle[]>([])
+const photoList = ref<ResourcePath[]>([])
 
 // 方法
-const getPhotoTitles = async () => {
+const getPhotoTitles = async (): Promise<void> => {
   try {
-    const res = await webInfoApi.listAdminLovePhoto()
+    const res: ApiResponse = await webInfoApi.listAdminLovePhoto()
     if (!$common.isEmpty(res.data)) {
       photoTitleList.value = res.data
       photoPagination.value = {
@@ -105,7 +111,7 @@ const getPhotoTitles = async () => {
       }
       changePhoto()
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message,
       type: "error"
@@ -113,11 +119,11 @@ const getPhotoTitles = async () => {
   }
 }
 
-const changePhotoTitle = (classify) => {
+const changePhotoTitle = (classify: string): void => {
   if (classify !== photoPagination.value.classify) {
     photoPagination.value = {
-      pageNum: 1,
-      pageSize: 10,
+      current: 1,
+      size: 10,
       total: 0,
       resourceType: "lovePhoto",
       classify: classify
@@ -127,19 +133,19 @@ const changePhotoTitle = (classify) => {
   }
 }
 
-const pagePhotos = () => {
+const pagePhotos = (): void => {
   photoPagination.value.current += 1
   changePhoto()
 }
 
-const changePhoto = async () => {
+const changePhoto = async (): Promise<void> => {
   try {
-    const res = await webInfoApi.listResourcePath(photoPagination.value)
+    const res: ApiResponse = await webInfoApi.listResourcePath(photoPagination.value)
     if (!$common.isEmpty(res.data)) {
       photoList.value = photoList.value.concat(res.data.records)
       photoPagination.value.total = res.data.total
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message,
       type: "error"

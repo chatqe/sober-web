@@ -50,7 +50,7 @@ import {computed, defineAsyncComponent, inject, nextTick, onMounted, ref, watch}
 import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {useSortInfoStore} from '@/stores'
-import {articleApi} from '@/api'
+import {articleApi} from '@/api/index.js'
 
 const route = useRoute()
 const router = useRouter()

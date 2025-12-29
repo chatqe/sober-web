@@ -1,21 +1,14 @@
-<script setup>
-import {computed, defineAsyncComponent, inject, onMounted, onUnmounted, ref, watch} from 'vue'
-import {ElMessage} from 'element-plus'
-import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
-import {authApi} from '@/api'
+<script setup lang="ts">
+import {inject, onMounted, onUnmounted, ref, watch} from 'vue'
 import LoginForm from './LoginForm.vue'
 import RegisterForm from './RegisterForm.vue'
 import ResetPwdForm from './ResetPwdForm.vue'
 import UnPwdLogin from './UnPwdLogin.vue'
 
-// 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+// 定义页面类型
+type AuthPage = 'login' | 'register' | 'reset' | 'passwordLess'
 
-// 异步导入组件
-const proButton = defineAsyncComponent(() => import("../common/proButton.vue"))
-
-// 组件对象映射（推荐，避免字符串查找）
+// 组件对象映射
 const forms = {
   login: LoginForm,
   register: RegisterForm,
@@ -24,27 +17,35 @@ const forms = {
 }
 
 // 状态管理
-const visible = defineModel()
-const page = ref('login')
-const captchaShow = ref(false)
-const captchaImg = ref('')
-const verifyuuid = ref('')
-const captcha = ref('')
+const visible = defineModel<boolean>()          // 只接收是否弹出
+const page = ref<AuthPage>('login')
+
+/* 登录子组件点击「注册/忘记密码/免密」→ 壳换页 */
+const onSwitch = (target: Exclude<AuthPage, 'login'>): void => {
+  page.value = target
+}
+
+/* 打开弹窗时永远回到登录页 */
+watch(visible, (v: boolean) => {
+  if (v) {
+    page.value = 'login'
+  }
+}, { immediate: true })
 
 // ESC键处理函数
-const handleKeydown = (event) => {
+const handleKeydown = (event: KeyboardEvent): void => {
   if (event.key === 'Escape') {
-    handleSuccess()
+    visible.value = false
   }
 }
 
 // 组件挂载时初始化
-onMounted(() => {
+onMounted((): void => {
   document.addEventListener('keydown', handleKeydown)
 })
 
 // 组件销毁时清理
-onUnmounted(() => {
+onUnmounted((): void => {
   document.removeEventListener('keydown', handleKeydown)
   toggleLock(false)
 })
@@ -52,7 +53,7 @@ onUnmounted(() => {
 // 滚动锁逻辑
 let oldScrollTop = 0;
 
-const toggleLock = (on) => {
+const toggleLock = (on: boolean): void => {
   if (on) {
     oldScrollTop = window.pageYOffset;
     document.body.style.top = `-${oldScrollTop}px`;
@@ -69,104 +70,33 @@ const toggleLock = (on) => {
 }
 
 // 监听可见性变化
-watch(() => visible.value, toggleLock, {immediate: true})
-
-// 处理成功事件
-function handleSuccess() {
-  // 可扩展：先校验、再提交、再关闭
-  visible.value = false
-}
-
-// 切换表单页面
-const switchForm = (formName) => {
-  page.value = formName
-}
-
-// 验证码相关
-const captchaClose = () => {
-  captchaShow.value = false
-}
-
-const captchaSubCancel = () => {
-  captchaClose()
-  captcha.value = ''
-}
-
-const captchaSubConfirm = async () => {
-  if ($common.isEmpty(captcha.value)) {
-    ElMessage.error("请输入图形验证码！")
-    return
-  }
-
-  const res = await authApi.captchaCheck({uuid: verifyuuid.value, code: captcha.value})
-  if (!res.data) {
-    ElMessage.error("验证码错误！")
-  } else {
-    captchaClose()
-    captcha.value = ''
-  }
-}
+watch(() => visible.value, toggleLock, { immediate: true })
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="visible" class="backdrop-overlay" @click.self="void 0">
+      <div v-if="visible" class="backdrop-overlay" @click.self="visible = false">
         <div class="auth-container">
-          <!-- 添加关闭按钮 -->
-          <div class="auth-close" @click="handleSuccess">×</div>
+          <!-- 顶部只有「返回登录」+ 叉号 -->
+          <div class="header">
+            <button v-if="page !== 'login'" @click="page = 'login'" class="back-btn">← 返回登录</button>
+            <button class="auth-close" @click="visible = false">×</button>
+          </div>
           <div class="sign-box">
             <div class="myCenter sign-box__header">
               <h2>青肆</h2>
             </div>
-
-            <!-- 需要保留状态时可包 KeepAlive -->
+            
+            <!-- 子表单按需渲染 -->
             <KeepAlive>
-              <component
-                  :is="forms[page]"
-                  @success="handleSuccess"
-                  @switchForm="switchForm"
+              <component 
+                :is="forms[page]" 
+                @success="visible = false"
+                @switch="onSwitch"
               />
             </KeepAlive>
           </div>
-
-          <!--图形验证码弹层-->
-          <el-dialog v-model="captchaShow"
-                     :modal="false"
-                     :modal-penetrable="true"
-                     width="25%"
-                     title="图形验证码"
-                     center
-                     align-center
-                     :before-close="captchaClose">
-
-            <div class="captcha-container myCenter ">
-              <div style="margin: 20px auto;">
-                <div>
-                  <el-image class="my-el-image captcha-image"
-                            lazy
-                            :src="captchaImg"
-                            fit="cover"/>
-                </div>
-                <div>
-                  <el-input v-model="captcha" size="large" autocomplete="off"/>
-                </div>
-              </div>
-
-              <!--底部按钮-->
-              <div class="myCenter">
-                <proButton style="margin-right: 20px;"
-                           :info="'取消'"
-                           @click="captchaSubCancel"
-                           :before="$constant.before_color_1"
-                           :after="$constant.after_color_2"/>
-                <proButton :info="'确定'"
-                           @click="captchaSubConfirm"
-                           :before="$constant.before_color_2"
-                           :after="$constant.after_color_2"/>
-              </div>
-            </div>
-          </el-dialog>
         </div>
       </div>
     </Transition>
@@ -213,16 +143,39 @@ const captchaSubConfirm = async () => {
   pointer-events: auto;
 }
 
+/* 顶部头部 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* 返回按钮 */
+.back-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.3s ease;
+}
+
+.back-btn:hover {
+  color: var(--accent-pink);
+}
+
 /* 关闭按钮 */
 .auth-close {
-  /* 绝对定位 */
-  position: absolute;
-  top: 15px;
-  right: 20px;
   /* 样式设置 */
   font-size: 24px;
   font-weight: bold;
   color: #999;
+  background: none;
+  border: none;
   cursor: pointer;
   /* 过渡效果 */
   transition: color 0.3s ease;

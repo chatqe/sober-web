@@ -55,7 +55,7 @@ import {defineAsyncComponent} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
-import {weiYanApi} from '@/api'
+import {weiYanApi} from '@/api/index.js'
 
 // 组件动态导入
 const twoPoem = defineAsyncComponent(() => import("./common/twoPoem.vue"))

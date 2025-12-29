@@ -385,9 +385,9 @@
   </div>
 </template>
 
-<script setup>
-import {computed, inject, onMounted, onUnmounted, ref, watch} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+<script setup lang="ts">
+import {computed, inject, onMounted, onUnmounted, ref, watch, WatchStopHandle} from 'vue'
+import {useRoute, useRouter, RouteLocationNormalizedLoaded, RouteLocationRaw} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {
   useAuthStore,
@@ -401,13 +401,17 @@ import {MagicStick, Menu, Moon, Sunny, SwitchButton, User} from '@element-plus/i
 import mousedown from '../utils/mousedown'
 import {authApi, systemApi, webApi} from '@/api'
 import MyFooter from "@/components/common/myFooter.vue";
-import {routeMeta} from "@/router/metaCfg.js";
+import {routeMeta} from "@/router/metaCfg";
 import AuthModal from "@/components/auth/AuthModal.vue";
+import {CommonUtils, AppConstants} from '@/types'
 
-const route = useRoute()
+// 路由和响应式数据
+const route: RouteLocationNormalizedLoaded = useRoute()
 const router = useRouter()
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common: CommonUtils = inject('$common')!
+const $constant: AppConstants = inject('$constant')!
+
+// Store
 const userStore = useUserStore()
 const authStore = useAuthStore()
 const webInfoStore = useWebInfoStore()
@@ -416,28 +420,36 @@ const sysConfigStore = useSysConfigStore()
 const sortInfoStore = useSortInfoStore()
 
 // 响应式数据
-const hoverEnter = ref(false)
-const mobile = ref(false)
-const scrollTop = ref(0)
-const isDark = ref(false)
-const toolbarDrawer = ref(false)
-const mouseAnimation = ref(false)
-const toolButton = ref(false)
-const adminLogin = authStore.isAdmin
-const currBgImg = ref('') // 当前背景
-const showAuthModal = ref(false)
+const hoverEnter: Ref<boolean> = ref(false)
+const mobile: Ref<boolean> = ref(false)
+const scrollTop: Ref<number> = ref(0)
+const isDark: Ref<boolean> = ref(false)
+const toolbarDrawer: Ref<boolean> = ref(false)
+const mouseAnimation: Ref<boolean> = ref(false)
+const toolButton: Ref<boolean> = ref(false)
+const adminLogin: boolean = authStore.isAdmin
+const currBgImg: Ref<string> = ref('') // 当前背景
+const showAuthModal: Ref<boolean> = ref(false)
 
+// 计算属性
 const footerCfg = computed(() => {
   for (let i = route.matched.length - 1; i >= 0; i--) {
     const key = route.matched[i].name
     if (key && routeMeta[key]) return routeMeta[key]
   }
-  return
+  return undefined
+})
+
+const toolbar = computed(() => {
+  return toolStore.toolbar
+})
+
+const sortInfo = computed(() => {
+  return sortInfoStore.sortInfo.filter(item => item.status !== 0)
 })
 
 // 初始化数据
 onMounted(() => {
-
   getBgImg()
   // 设置工具栏状态
   toolStore.changeToolbarStatus({enter: false, visible: true})
@@ -456,13 +468,12 @@ onMounted(() => {
   // 初始化鼠标动画
   if (mouseAnimation.value) mousedown()
 
-
   // 监听滚动条变化
-  unwatchScrollTop = watch(scrollTop, (newVal, oldVal) => {
+  unwatchScrollTop = watch(scrollTop, (newVal: number, oldVal: number) => {
     // 如果滑动距离超过屏幕高度三分之一视为进入页面，背景改为白色
-    let enter = newVal > window.innerHeight / 2
-    const top = newVal - oldVal < 0
-    let isShow = newVal - window.innerHeight > 30
+    let enter: boolean = newVal > window.innerHeight / 2
+    const top: boolean = newVal - oldVal < 0
+    let isShow: boolean = newVal - window.innerHeight > 30
     toolButton.value = isShow
 
     // 导航栏显示与颜色
@@ -472,36 +483,28 @@ onMounted(() => {
     }
     toolStore.changeToolbarStatus(toolbarStatus)
   })
-
 })
 
-const getBgImg = () => {
-  const src = webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]
-  currBgImg.value = `url(${src})`
+// 方法定义
+const getBgImg = (): void => {
+  if (webInfoStore.webInfo.randomCover && webInfoStore.webInfo.randomCover.length > 0) {
+    const src: string = webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]
+    currBgImg.value = `url(${src})`
+  }
 }
 
 // 处理窗口大小变化
-const handleResize = () => {
+const handleResize = (): void => {
   mobile.value = window.innerWidth < 1100
 }
 
 // 处理滚动
-const onScrollPage = () => {
+const onScrollPage = (): void => {
   scrollTop.value = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
 }
 
-
 // 监听滚动条变化
-let unwatchScrollTop = null
-
-// 计算属性
-const toolbar = computed(() => {
-  return toolStore.toolbar
-})
-
-const sortInfo = computed(() => {
-  return sortInfoStore.sortInfo.filter(item => item.status !== 0)
-})
+let unwatchScrollTop: WatchStopHandle | null = null
 
 // 清理
 onUnmounted(() => {
@@ -512,18 +515,18 @@ onUnmounted(() => {
     unwatchScrollTop()
   }
 })
-// 方法定义
-const smallMenu = (data) => {
+
+const smallMenu = (data: RouteLocationRaw): void => {
   router.push(data)
   toolbarDrawer.value = false
 }
 
-const smallMenuLogout = () => {
+const smallMenuLogout = (): void => {
   logout()
   toolbarDrawer.value = false
 }
 
-const goAdmin = (data) => {
+const goAdmin = (data: { path: string }): void => {
   if (!$constant || !$constant.webURL) {
     ElMessage.error('后台地址未配置')
     return
@@ -531,43 +534,44 @@ const goAdmin = (data) => {
   window.open($constant.webURL + data.path)
 }
 
-const goIm = () => {
+const goIm = (): void => {
   if ($common.isEmpty(userStore.currentUser)) {
     ElMessage.error('请先登录！')
   } else {
-    let userToken = $common.encrypt(localStorage.getItem('userToken'))
-    window.open($constant.imBaseURL + '?userToken=' + userToken + '&defaultStoreType=' + localStorage.getItem('defaultStoreType'))
-    console.log($constant.imBaseURL + '?userToken=' + userToken + '&defaultStoreType=' + localStorage.getItem('defaultStoreType'))
+    const userToken: string = $common.encrypt(localStorage.getItem('userToken') || '')
+    const defaultStoreType: string = localStorage.getItem('defaultStoreType') || ''
+    window.open($constant.imBaseURL + '?userToken=' + userToken + '&defaultStoreType=' + defaultStoreType)
+    console.log($constant.imBaseURL + '?userToken=' + userToken + '&defaultStoreType=' + defaultStoreType)
   }
 }
 
-const logout = async () => {
+const logout = async (): Promise<void> => {
   try {
     await authApi.logout()
     userStore.loadCurrentUser({})
     localStorage.removeItem('userToken')
     ElMessage.success('退出成功')
     await router.push({path: '/'})
-  } catch (error) {
+  } catch (error: any) {
     console.error('[logout error]', error)
     ElMessage.error(error?.message || '退出失败')
   }
 }
 
-const getWebInfo = async () => {
+const getWebInfo = async (): Promise<void> => {
   try {
     const res = await webApi.getWebInfo()
     if (res && res.data && !$common.isEmpty(res.data)) {
       webInfoStore.loadWebInfo(res.data)
       localStorage.setItem('defaultStoreType', res.data.defaultStoreType || '')
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('[getWebInfo error]', error)
     ElMessage.error(error?.message || '获取网站信息失败')
   }
 }
 
-const getSysConfig = async () => {
+const getSysConfig = async (): Promise<void> => {
   try {
     // const res = await systemApi.listSysConfig()
     const res = await systemApi.getSysConfig()
@@ -575,26 +579,26 @@ const getSysConfig = async () => {
       sysConfigStore.loadSysConfig(res.data)
       // buildCssPicture()
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('[getSysConfig error]', error)
     ElMessage.error(error?.message || '获取系统配置失败')
   }
 }
 
-const getSortInfo = async () => {
+const getSortInfo = async (): Promise<void> => {
   try {
     const res = await webApi.getSortInfo()
     if (res && res.data && !$common.isEmpty(res.data)) {
       sortInfoStore.loadSortInfo(res.data)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('[getSortInfo error]', error)
     ElMessage.error(error?.message || '获取分类信息失败')
   }
 }
-const buildCssPicture = () => {
+const buildCssPicture = (): void => {
   let root = document.querySelector(':root')
-  if (!$common.isEmpty(sysConfigStore.sysConfig)) {
+  if (root && !$common.isEmpty(sysConfigStore.sysConfig)) {
     if (!$common.isEmpty(sysConfigStore.sysConfig.styleBgColor)) {
       root.style.setProperty('--styleBgColor', sysConfigStore.sysConfig.styleBgColor)
     }
@@ -613,40 +617,41 @@ const buildCssPicture = () => {
   }
 }
 // 设置暗黑模式
-const changeColor = () => {
+const changeColor = (): void => {
   isDark.value = !isDark.value;
-  let root = document.querySelector(":root");
+  let root = document.querySelector<HTMLElement>(":root");
 
-  if (isDark.value) {
-    root.style.setProperty("--background", "#272727");
-    root.style.setProperty("--fontColor", "white");
-    root.style.setProperty("--borderColor", "#4F4F4F");
-    root.style.setProperty("--borderHoverColor", "black");
-    root.style.setProperty("--articleFontColor", "#E4E4E4");
-    root.style.setProperty("--articleGreyFontColor", "#D4D4D4");
-    root.style.setProperty("--commentContent", "#D4D4D4");
-    root.style.setProperty("--favoriteBg", "#1e1e1e");
-  } else {
-    root.style.setProperty("--background", "white");
-    root.style.setProperty("--fontColor", "black");
-    root.style.setProperty("--borderColor", "rgba(0, 0, 0, 0.5)");
-    root.style.setProperty("--borderHoverColor", "rgba(110, 110, 110, 0.4)");
-    root.style.setProperty("--articleFontColor", "#1F1F1F");
-    root.style.setProperty("--articleGreyFontColor", "#616161");
-    root.style.setProperty("--commentContent", "#F7F9FE");
-    root.style.setProperty("--favoriteBg", "#f7f9fe");
+  if (root) {
+    if (isDark.value) {
+      root.style.setProperty("--background", "#272727");
+      root.style.setProperty("--fontColor", "white");
+      root.style.setProperty("--borderColor", "#4F4F4F");
+      root.style.setProperty("--borderHoverColor", "black");
+      root.style.setProperty("--articleFontColor", "#E4E4E4");
+      root.style.setProperty("--articleGreyFontColor", "#D4D4D4");
+      root.style.setProperty("--commentContent", "#D4D4D4");
+      root.style.setProperty("--favoriteBg", "#1e1e1e");
+    } else {
+      root.style.setProperty("--background", "white");
+      root.style.setProperty("--fontColor", "black");
+      root.style.setProperty("--borderColor", "rgba(0, 0, 0, 0.5)");
+      root.style.setProperty("--borderHoverColor", "rgba(110, 110, 110, 0.4)");
+      root.style.setProperty("--articleFontColor", "#1F1F1F");
+      root.style.setProperty("--articleGreyFontColor", "#616161");
+      root.style.setProperty("--commentContent", "#F7F9FE");
+      root.style.setProperty("--favoriteBg", "#f7f9fe");
+    }
   }
-
 }
 
-const toTop = () => {
+const toTop = (): void => {
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
 }
 
-const isDaylight = () => {
+const isDaylight = (): boolean => {
   let currDate = new Date();
   if (currDate.getHours() > 22 || currDate.getHours() < 7) {
     // return true; 关闭自动切换为夜晚模式
@@ -656,7 +661,7 @@ const isDaylight = () => {
   }
 }
 
-const changeMouseAnimation = () => {
+const changeMouseAnimation = (): void => {
   console.log("changeMouseAnimation")
   mouseAnimation.value = !mouseAnimation.value;
   // if (mouseAnimation.value) {

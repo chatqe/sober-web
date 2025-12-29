@@ -374,7 +374,7 @@ import {computed, defineAsyncComponent, inject, onUnmounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {useAuthStore, useUserStore, useWebInfoStore} from '@/stores'
-import {authApi, userApi} from '@/api'
+import {authApi, userApi} from '@/api/index.js'
 import {EmailBizType} from "@/constant/index.js";
 
 const router = useRouter()

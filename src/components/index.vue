@@ -135,20 +135,23 @@
   </div>
 </template>
 
-<script setup>
-import {computed, defineAsyncComponent, inject, nextTick, onMounted, ref} from 'vue'
+<script setup lang="ts">
+import {computed, defineAsyncComponent, inject, nextTick, onMounted, Ref, ref} from 'vue'
 import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
-import {articleApi} from '@/api'
+import {articleApi} from '@/api/index.js'
+
+// 导入类型
+import { CommonUtils, AppConstants, SortItem, Article, Pagination, GuShi, ArticleApiResponse } from '@/types'
 
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
 
 // DOM 引用
-const announcementRef = ref(null)
-const recentPostsRef = ref(null)
+const announcementRef = ref<HTMLElement | null>(null)
+const recentPostsRef = ref<HTMLElement | null>(null)
 
 // 异步组件
 const Loader = defineAsyncComponent(() => import('./common/loader.vue'))
@@ -163,12 +166,12 @@ const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
 const sortInfoStore = useSortInfoStore()
 
-const loading = ref(false)
-const showAside = ref(true)
-const indexType = ref(1)
-const announcementMaxWidth = ref('auto')
-const printerInfo = ref("你看对面的青山多漂亮")
-const pagination = ref({
+const loading: Ref<boolean> = ref(false)
+const showAside: Ref<boolean> = ref(true)
+const indexType: Ref<number> = ref(1)
+const announcementMaxWidth: Ref<string> = ref('auto')
+const printerInfo: Ref<string> = ref("你看对面的青山多漂亮")
+const pagination: Ref<Pagination> = ref({
   pageNum: 1,
   pageSize: 10,
   total: 0,
@@ -176,14 +179,14 @@ const pagination = ref({
   sortId: null,
   articleSearch: ""
 })
-const guShi = ref({
+const guShi: Ref<GuShi> = ref({
   content: "",
   origin: "",
   author: "",
   category: ""
 })
-const articles = ref([])
-const sortArticles = ref({})
+const articles: Ref<Article[]> = ref([])
+const sortArticles: Ref<Record<number, Article[]>> = ref({})
 
 // 计算属性
 const backgroundImage = computed(() => {
@@ -196,7 +199,7 @@ const notices = computed(() => webInfoStore.webInfo?.notices || [])
 const sortInfo = computed(() => sortInfoStore.sortInfo || [])
 
 // 方法
-const selectSort = async (sort) => {
+const selectSort = async (sort: SortItem): Promise<void> => {
   pagination.value = {
     pageNum: 1,
     pageSize: 10,
@@ -221,7 +224,7 @@ const selectSort = async (sort) => {
   })
 }
 
-const selectArticle = async (articleSearch) => {
+const selectArticle = async (articleSearch: string): Promise<void> => {
   pagination.value = {
     pageNum: 1,
     pageSize: 10,
@@ -246,23 +249,24 @@ const selectArticle = async (articleSearch) => {
   })
 }
 
-const pageArticles = () => {
+const pageArticles = (): void => {
   pagination.value.pageNum += 1
   getArticles()
 }
 
-const handleCurrentChange = () => {
+const handleCurrentChange = (): void => {
   getArticles()
 }
-const getArticles = async () => {
+
+const getArticles = async (): Promise<void> => {
   try {
-    const response = await articleApi.getArticleList(pagination.value)
+    const response: ArticleApiResponse = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(response.data)) {
       // articles.value = articles.value.concat(response.data.list)
       articles.value = response.data.list
       pagination.value.total = response.data.total
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message,
       type: "error"
@@ -270,13 +274,13 @@ const getArticles = async () => {
   }
 }
 
-const getSortArticles = async () => {
+const getSortArticles = async (): Promise<void> => {
   try {
     const response = await articleApi.listSortArticle()
     if (!$common.isEmpty(response.data)) {
       sortArticles.value = response.data
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message,
       type: "error"
@@ -284,7 +288,7 @@ const getSortArticles = async () => {
   }
 }
 
-const navigation = (selector) => {
+const navigation = (selector: string): void => {
   const element = document.querySelector(selector)
   if (element) {
     window.scrollTo({
@@ -294,7 +298,7 @@ const navigation = (selector) => {
   }
 }
 
-const getGuShi = () => {
+const getGuShi = (): void => {
   const xhr = new XMLHttpRequest()
   xhr.open('get', $constant.jinrishici)
   xhr.onreadystatechange = function () {

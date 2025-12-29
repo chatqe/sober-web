@@ -1,16 +1,30 @@
-<script setup>
-import {defineAsyncComponent, inject, ref} from 'vue'
+<script setup lang="ts">
+import {defineAsyncComponent, inject, Ref, ref} from 'vue'
 import {ElMessage} from 'element-plus'
-import {webInfoApi} from '@/api';
+import {webInfoApi} from '@/api/index.js';
+import {CommonUtils, AppConstants} from '@/types'
 
 const emptyState = defineAsyncComponent(() => import("./common/emptyState.vue"))
 
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common: CommonUtils = inject('$common')!
+const $constant: AppConstants = inject('$constant')!
+
+// 定义收藏项类型
+interface CollectItem {
+  url: string
+  cover: string
+  title: string
+  introduction: string
+}
+
+// 定义收藏数据类型
+interface CollectData {
+  [key: string]: CollectItem[]
+}
 
 // 响应式数据
-const collects = ref({})
+const collects: Ref<CollectData> = ref({})
 
 // 方法
 defineExpose({
@@ -18,7 +32,7 @@ defineExpose({
   getCollect
 })
 
-function toUrl(url) {
+function toUrl(url: string): void {
   window.open(url)
 }
 
@@ -31,17 +45,16 @@ function toUrl(url) {
 //   card.value = newCard
 // }
 
-function getCollect() {
-  webInfoApi.listCollect()
-      .then((res) => {
-        if (!res.data) return
-        if (!res.data || $common.isEmpty(res.data)) return
-        if (!res.data || typeof res.data !== 'object') return
-        collects.value = res.data
-      })
-      .catch((error) => {
-        ElMessage.error(error.message || '获取收藏失败')
-      })
+async function getCollect(): Promise<void> {
+  try {
+    const res = await webInfoApi.listCollect()
+    if (!res.data) return
+    if ($common.isEmpty(res.data)) return
+    if (typeof res.data !== 'object') return
+    collects.value = res.data as CollectData
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取收藏失败')
+  }
 }
 </script>
 

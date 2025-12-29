@@ -44,19 +44,27 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {useAuthStore, useUserStore} from '@/stores'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
-import {House} from "@element-plus/icons-vue";
-import {authApi} from '@/api/index'
+import {House} from "@element-plus/icons-vue"
+import {authApi} from '@/api/index.js'
+
+// 定义接口
+interface AdminUser {
+  id?: number;
+  username?: string;
+  avatar?: string;
+  [key: string]: any;
+}
 
 const userStore = useUserStore()
 const authStore = useAuthStore()
 
-const currentAdmin = userStore.currentAdmin
+const currentAdmin = userStore.currentAdmin as AdminUser
 
-const logout = async () => {
+const logout = async (): Promise<void> => {
   try {
     // await $http.get(constant.baseURL + "/user/logout", {}, true)
     await authApi.logout()

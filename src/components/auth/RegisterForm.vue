@@ -1,38 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import {inject, ref} from 'vue'
-import {useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {useAuthStore, useUserStore} from '@/stores'
 import {authApi, userApi} from '@/api'
-import IconEpHide from '@/assets/svg/icon-ep-hide.svg?component'
-import IconEpView from '@/assets/svg/icon-ep-view.svg?component'
-
-const router = useRouter()
 
 // 获取注入的全局属性
-const $common = inject('$common')
+import { CommonUtils, RegisterParams } from '@/types'
+const $common = inject<CommonUtils>('$common')!
 
 // 状态管理
 const userStore = useUserStore()
 const authStore = useAuthStore()
 
 // 注册参数
-const username = ref("")
-const registPwd = ref("")
-const code = ref("")
-const email = ref("")
-const showPwd = ref(false)
+const username = ref<string>("")
+const registPwd = ref<string>("")
+const code = ref<string>("")
+const email = ref<string>("")
+const showPwd = ref<boolean>(false)
 
 // 事件触发
-const emit = defineEmits(['changeLoginCard', 'success'])
-
-// 切换到登录
-const changeLoginCard = () => {
-  emit('changeLoginCard')
-}
+const emit = defineEmits<{
+  success: []
+}>()
 
 // 验证邮箱
-const verifyEmail = () => {
+const verifyEmail = (): boolean => {
   if ($common.isEmpty(email.value)) {
     ElMessage({
       message: "请输入邮箱！",
@@ -51,7 +44,7 @@ const verifyEmail = () => {
 }
 
 // 验证验证码
-const verifyCode = () => {
+const verifyCode = (): boolean => {
   if ($common.isEmpty(code.value)) {
     ElMessage.error("请输入验证码！")
     return false
@@ -64,18 +57,19 @@ const verifyCode = () => {
 }
 
 // 获取验证码
-const getCode = async () => {
+const getCode = async (): Promise<void> => {
   if (!verifyEmail()) return
   try {
     const res = await authApi.getCaptchaCode({flag: true, email: email.value})
     ElMessage.success("验证码已发送，请注意查收！")
-  } catch (error) {
+  } catch (error: any) {
     ElMessage.error(error.message)
   }
 }
 
 // 注册
-const register = async () => {
+const register = async (): Promise<void> => {
+  // 验证用户名和密码
   if ($common.isEmpty(username.value) || $common.isEmpty(registPwd.value)) {
     ElMessage({
       message: "请输入用户名或密码！",
@@ -84,22 +78,13 @@ const register = async () => {
     return
   }
 
-  if ($common.isEmpty(email.value)) {
-    ElMessage({
-      message: "请输入邮箱！",
-      type: "error"
-    })
-    return
-  }
+  // 验证邮箱
+  if (!verifyEmail()) return
 
-  if ($common.isEmpty(code.value)) {
-    ElMessage({
-      message: "请输入验证码！",
-      type: "error"
-    })
-    return
-  }
+  // 验证验证码
+  if (!verifyCode()) return
 
+  // 检查用户名和密码是否包含空格
   if (username.value.indexOf(" ") !== -1 || registPwd.value.indexOf(" ") !== -1) {
     ElMessage({
       message: "用户名或密码不能包含空格！",
@@ -108,7 +93,8 @@ const register = async () => {
     return
   }
 
-  let user = {
+  // 构建注册用户对象
+  const user: RegisterParams = {
     username: username.value.trim(),
     code: code.value.trim(),
     password: $common.encrypt(registPwd.value.trim()),
@@ -120,13 +106,14 @@ const register = async () => {
     if (!$common.isEmpty(res.data)) {
       userStore.loadCurrentUser(res.data)
       authStore.setUserToken(res.data.accessToken)
+      // 清空表单
       username.value = ""
       registPwd.value = ""
       code.value = ""
       email.value = ""
       emit('success')
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage.error(error.message)
   }
 }
@@ -135,7 +122,6 @@ const register = async () => {
 <template>
   <div class="sign-box__body">
     <div class="sign-box__title">注册</div>
-    <div class="sign-box__button" @click="changeLoginCard">已有账号？立即登录 &gt;</div>
   </div>
   <div>
     <div>
@@ -201,21 +187,6 @@ const register = async () => {
 
   &:hover::before {
     width: 60px;
-  }
-}
-
-.sign-box__button {
-  margin: 10px 0;
-  color: #777;
-  font-size: 12px;
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: var(--accent-pink);
   }
 }
 

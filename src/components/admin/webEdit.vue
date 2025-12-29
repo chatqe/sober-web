@@ -254,7 +254,7 @@
 <script setup>
   import { ref, reactive, onMounted, nextTick, inject } from 'vue';
   import { ElMessage, ElMessageBox } from 'element-plus';
-  import { webInfoApi } from '@/api';
+  import { webInfoApi } from '@/api/index.js';
   const uploadPicture = () => import("../common/uploadPicture");
 
   // 注入全局属性

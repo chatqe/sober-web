@@ -120,41 +120,49 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, nextTick, inject } from 'vue'
 import { ElMessage, ElIcon } from 'element-plus'
 import { Edit } from '@element-plus/icons-vue'
-import { commentApi } from '@/api'
+import { commentApi } from '@/api/index.js'
 import commentBox from './commentBox.vue'
 import proPage from '../common/proPage.vue'
 import {getCommentTotal} from "@/api/modules/comment.js";
 
+// 导入类型
+import { CommonUtils, AppConstants, Comment } from '@/types'
+
 // 注入全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
 
 // Props定义
-const props = defineProps({
-  source: {
-    type: Number
-  },
-  type: {
-    type: String
-  },
-  userId: {
-    type: Number
-  }
-})
+const props = defineProps<{
+  source: number
+  type: string
+  userId: number
+}>()
 
 // 响应式数据
 const isGraffiti = ref(false)
-const total = ref(0)
+const total = ref<number>(0)
 const replyDialogVisible = ref(false)
-const floorComment = reactive({})
-const replyComment = reactive({})
-const comments = ref([])
-const commentContentRef = ref(null)
-const pagination = reactive({
+const floorComment = reactive<Comment>({}) 
+const replyComment = reactive<Comment>({})
+const comments = ref<Comment[]>([])
+const commentContentRef = ref<HTMLElement | null>(null)
+
+// 分页类型定义
+interface Pagination {
+  current: number
+  size: number
+  total: number
+  source: number
+  commentType: string
+  floorCommentId: number | null
+}
+
+const pagination = reactive<Pagination>({
   current: 1,
   size: 10,
   total: 0,
@@ -177,7 +185,7 @@ defineExpose({
   handleClose
 })
 
-function toPage(page) {
+function toPage(page: number): void {
   pagination.current = page
   window.scrollTo({
     top: commentContentRef.value?.offsetTop || 0
@@ -185,21 +193,21 @@ function toPage(page) {
   getComments(pagination)
 }
 
-function getTotal() {
+function getTotal(): void {
   commentApi.getCommentTotal({ source: props.source, type: props.type })
     .then((res) => {
       if (!res.data) return
       total.value = res.data
     })
-    .catch((error) => {
+    .catch((error: any) => {
       ElMessage.error(error.message || '获取评论数量失败')
     })
 }
 
-function toChildPage(comment) {
+function toChildPage(comment: Comment): void {
   if (!comment.childComments) comment.childComments = { current: 0 }
   comment.childComments.current += 1
-  const pageData = {
+  const pageData: Pagination = {
     current: comment.childComments.current,
     size: 5,
     total: 0,
@@ -210,7 +218,7 @@ function toChildPage(comment) {
   getComments(pageData, comment, true)
 }
 
-function emoji(commentsList, flag) {
+function emoji(commentsList: Comment[], flag: boolean): void {
   commentsList.forEach(c => {
     c.commentContent = c.commentContent.replace(/\n/g, '<br/>')
     c.commentContent = $common.faceReg(c.commentContent)
@@ -228,7 +236,7 @@ function emoji(commentsList, flag) {
   })
 }
 
-function getComments(pageData, comment = {}, isToPage = false) {
+function getComments(pageData: Pagination, comment: Comment = {}, isToPage: boolean = false): void {
   commentApi.listComment(pageData)
     .then((res) => {
       if (!res.data || !res.data.records) return
@@ -253,16 +261,16 @@ function getComments(pageData, comment = {}, isToPage = false) {
         $common.imgShow("#comment-content .pictureReg")
       })
     })
-    .catch((error) => {
+    .catch((error: any) => {
       ElMessage.error(error.message || '获取评论失败')
     })
 }
 
-function addGraffitiComment(graffitiComment) {
+function addGraffitiComment(graffitiComment: string): void {
   submitComment(graffitiComment)
 }
 
-function submitComment(commentContent) {
+function submitComment(commentContent: string): void {
   const comment = {
     source: props.source,
     type: props.type,
@@ -283,12 +291,12 @@ function submitComment(commentContent) {
       getComments(pagination)
       getTotal()
     })
-    .catch((error) => {
+    .catch((error: any) => {
       ElMessage.error(error.message || '保存评论失败')
     })
 }
 
-function submitReply(commentContent) {
+function submitReply(commentContent: string): void {
   const comment = {
     source: props.source,
     type: props.type,
@@ -302,7 +310,7 @@ function submitReply(commentContent) {
 
   commentApi.saveComment(comment)
     .then((res) => {
-      const pageData = {
+      const pageData: Pagination = {
         current: 1,
         size: 5,
         total: 0,
@@ -313,19 +321,19 @@ function submitReply(commentContent) {
       getComments(pageData, currentFloorComment)
       getTotal()
     })
-    .catch((error) => {
+    .catch((error: any) => {
       ElMessage.error(error.message || '保存回复失败')
     })
   handleClose()
 }
 
-function replyDialog(comment, floorCommentData) {
+function replyDialog(comment: Comment, floorCommentData: Comment): void {
   Object.assign(replyComment, comment)
   Object.assign(floorComment, floorCommentData)
   replyDialogVisible.value = true
 }
 
-function handleClose() {
+function handleClose(): void {
   replyDialogVisible.value = false
   Object.keys(floorComment).forEach(key => delete floorComment[key])
   Object.keys(replyComment).forEach(key => delete replyComment[key])

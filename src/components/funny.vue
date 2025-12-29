@@ -61,16 +61,27 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onBeforeUnmount, inject } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount, inject, Ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { webInfoApi } from '@/api'
+import { webInfoApi } from '@/api/index.js'
+import { CommonUtils } from '@/types'
 
 // 获取注入的全局属性
-const $common = inject('$common')
+const $common: CommonUtils = inject('$common')!
+
+// 定义分页类型
+interface Pagination {
+  current: number
+  size: number
+  order: string
+  desc: boolean
+  resourceType: string
+  classify: string
+}
 
 // 响应式数据
-const pagination = ref({
+const pagination: Ref<Pagination> = ref({
   current: 1,
   size: 9999,
   order: "title",
@@ -79,22 +90,27 @@ const pagination = ref({
   classify: ""
 })
 
-const activeName = ref(0)
-const audio = ref(null)
-const playList = ref(null)
-const index = ref(null)
-const funnys = ref([{
-  classify: "",
-  count: null,
-  data: [{
-    classify: "",
-    cover: "",
-    url: "",
-    title: ""
-  }]
-}])
+// 定义趣味数据类型
+interface FunnyItem {
+  classify: string
+  cover: string
+  url: string
+  title: string
+}
 
-const funny = ref({
+interface FunnyCategory {
+  classify: string
+  count: number | null
+  data: FunnyItem[]
+}
+
+// 响应式数据
+const activeName: Ref<number> = ref(0)
+const audio: Ref<HTMLAudioElement | null> = ref(null)
+const playList: Ref<FunnyItem[] | null> = ref(null)
+const index: Ref<number | null> = ref(null)
+const funnys: Ref<FunnyCategory[]> = ref([])
+const funny: Ref<FunnyItem> = ref({
   classify: "",
   title: "",
   cover: "",
@@ -113,39 +129,37 @@ onBeforeUnmount(() => {
 })
 
 // 方法
-function listFunny() {
-  webInfoApi.listFunny()
-    .then((res) => {
-      if (!res.data) return
-      if (!res.data || $common.isEmpty(res.data)) return
-      funnys.value = res.data
-      if (funnys.value.length > 0) {
-        changeFunny(funnys.value[0].classify)
+async function listFunny(): Promise<void> {
+  try {
+    const res = await webInfoApi.listFunny()
+    if (!res.data) return
+    if ($common.isEmpty(res.data)) return
+    funnys.value = res.data as FunnyCategory[]
+    if (funnys.value.length > 0) {
+      changeFunny(funnys.value[0].classify)
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取趣味内容失败')
+  }
+}
+
+async function listResourcePath(): Promise<void> {
+  try {
+    const res = await webInfoApi.listResourcePath(pagination.value)
+    if (!res.data) return
+    if ($common.isEmpty(res.data.records)) return
+    funnys.value.forEach(funny => {
+      if (funny.classify === pagination.value.classify) {
+        funny.data = res.data.records as FunnyItem[]
       }
     })
-    .catch((error) => {
-      ElMessage.error(error.message || '获取趣味内容失败')
-    })
+    pagination.value.classify = ""
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取资源路径失败')
+  }
 }
 
-function listResourcePath() {
-  webInfoApi.listResourcePath(pagination.value)
-    .then((res) => {
-      if (!res.data) return
-      if (!res.data || $common.isEmpty(res.data.records)) return
-      funnys.value.forEach(funny => {
-        if (funny.classify === pagination.value.classify) {
-          funny.data = res.data.records
-        }
-      })
-      pagination.value.classify = ""
-    })
-    .catch((error) => {
-      ElMessage.error(error.message || '获取资源路径失败')
-    })
-}
-
-function changeFunny(classify) {
+function changeFunny(classify: string): void {
   funnys.value.forEach(funny => {
     if (funny.classify === classify && $common.isEmpty(funny.data)) {
       pagination.value.classify = classify
@@ -154,7 +168,7 @@ function changeFunny(classify) {
   })
 }
 
-function playSound(src, list, idx) {
+function playSound(src: string, list: FunnyItem[], idx: number): void {
   playList.value = list
   index.value = idx
   if (audio.value != null) {
@@ -174,13 +188,16 @@ function playSound(src, list, idx) {
     audio.value = new Audio(src)
     audio.value.play()
     audio.value.onended = () => {
-      index.value = index.value + 1
-      if (index.value < playList.value.length) {
-        audio.value.src = playList.value[index.value].url
-        audio.value.load()
-        setTimeout(() => {
-          audio.value.play()
-        }, 3000)
+      if (index.value !== null) {
+        index.value += 1
+        if (index.value < (playList.value?.length || 0)) {
+          const currentIndex = index.value
+          audio.value!.src = playList.value![currentIndex].url
+          audio.value!.load()
+          setTimeout(() => {
+            audio.value!.play()
+          }, 3000)
+        }
       }
     }
   }

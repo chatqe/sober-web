@@ -70,40 +70,67 @@
   </div>
 </template>
 
-<script setup>
-import {onMounted, ref} from 'vue';
+<script setup lang="ts">
+import {onMounted, ref, Ref, inject} from 'vue';
 import {useUserStore} from '@/stores';
 import {Delete, Search} from '@element-plus/icons-vue';
 import {ElMessage, ElMessageBox} from "element-plus";
-import {commentApi} from "@/api";
+import {commentApi} from "@/api/index.js";
 
-// 辅助函数
-const isEmpty = (obj) => {
-  return obj === null || obj === undefined || (typeof obj === 'object' && Object.keys(obj).length === 0);
+// 定义接口
+interface Comment {
+  id: number;
+  source: number;
+  type: string;
+  userId: number;
+  likeCount: number;
+  commentContent: string;
+  commentInfo: string;
+  createTime: string;
+  [key: string]: any;
 }
+
+interface Pagination {
+  current: number;
+  size: number;
+  total: number;
+  source: number | null;
+  commentType: string;
+}
+
+interface CommentDeleteRequest {
+  id: number;
+}
+
+// 从全局注入获取公共工具函数
+interface CommonUtils {
+  isEmpty: (obj: any) => boolean;
+}
+
+const $common = inject<CommonUtils>('$common')!
 const userStore = useUserStore();
 
 // 响应式数据
-const isBoss = ref(userStore.currentAdmin.isBoss);
-const pagination = ref({
+const isBoss: Ref<boolean> = ref(userStore.currentAdmin.isBoss);
+const pagination: Ref<Pagination> = ref({
   current: 1,
   size: 10,
   total: 0,
   source: null,
   commentType: ""
 });
-const comments = ref([]);
+const comments: Ref<Comment[]> = ref([]);
 
 // 生命周期钩子
-onMounted(() => {
+onMounted((): void => {
   getComments();
 });
 
 // 方法
-const clearSearch = () => {
+const clearSearch = (): void => {
   pagination.value = {
-    pageNum: 1,
-    pageSize: 10,
+    current: 1,
+    size: 10,
     total: 0,
     source: null,
     commentType: ""
@@ -114,7 +141,7 @@ const clearSearch = () => {
 /**
  * 获取评论列表
  */
-const getComments = async () => {
+const getComments = async (): Promise<void> => {
   try {
     let res = {};
     if (isBoss.value) {
@@ -123,27 +150,27 @@ const getComments = async () => {
       res = await commentApi.userCommentList(pagination.value);
     }
 
-    if (!isEmpty(res.data)) {
+    if (!($common.isEmpty(res.data))) {
       comments.value = res.data.records;
       pagination.value.total = res.data.total;
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage.error(error.message || '获取评论列表失败');
   }
 };
 
-const handlePageChange = (val) => {
+const handlePageChange = (val: number): void => {
   pagination.value.current = val;
   getComments();
 };
 
-const searchComments = () => {
+const searchComments = (): void => {
   pagination.value.total = 0;
   pagination.value.current = 1;
   getComments();
 };
 
-const handleDelete = async (item) => {
+const handleDelete = async (item: Comment): Promise<void> => {
   try {
     await ElMessageBox.confirm(
       '删除评论后，所有该评论的回复均不可见。确认删除？',
@@ -156,10 +183,11 @@ const handleDelete = async (item) => {
       }
     );
     // 发送请求
+    const deleteRequest: CommentDeleteRequest = {id: item.id};
     if (isBoss.value) {
-      await commentApi.delAdminComment({id: item.id}, true);
+      await commentApi.delAdminComment(deleteRequest, true);
     } else {
-      await commentApi.delUserComment({id: item.id}, true);
+      await commentApi.delUserComment(deleteRequest, true);
     }
     ElMessage({
       message: "删除成功！",
@@ -167,12 +195,14 @@ const handleDelete = async (item) => {
     });
     // 重新获取评论列表
     getComments();
-  } catch (error) {
-    if (error !== 'cancel') {
+  } catch (error: any) {
+    if (error === 'cancel') {
       ElMessage({
         type: 'warning',
         message: '已取消删除!'
       });
+    } else {
+      ElMessage.error(error.message || '删除失败');
     }
   }
 };

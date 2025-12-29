@@ -86,19 +86,20 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, inject } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, inject, Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores'
-import { webApi } from '@/api'
+import { webApi } from '@/api/index.js'
 import card from './common/card.vue'
 import proButton from './common/proButton.vue'
-import Favorite from "@/components/favorite.vue";
-import MyFooter from "@/components/common/myFooter.vue";
+import Favorite from "@/components/favorite.vue"
+import MyFooter from "@/components/common/myFooter.vue"
+import { CommonUtils, AppConstants, ResourcePath } from '@/types';
 
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common: CommonUtils = inject('$common')!
+const $constant: AppConstants = inject('$constant')!
 
 // 状态管理
 const userStore = useUserStore()
@@ -109,17 +110,34 @@ const components = {
   proButton
 }
 
+// 定义数据类型
+interface Friend {
+  title: string
+  introduction: string
+  cover: string
+  url: string
+}
+
+interface FriendData {
+  [key: string]: ResourcePath[]
+}
+
 // 响应式数据
-const friendList = ref({})
-const friend = ref({
+const friendList: Ref<FriendData> = ref({})
+const friend: Ref<Friend> = ref({
   title: "",
   introduction: "",
   cover: "",
   url: ""
 })
-const formWrapRef = ref(null)
+const formWrapRef: Ref<HTMLElement | null> = ref(null)
 
-const clickLetter = () => {
+// 响应式数据
+const formHeight: Ref<string> = ref('447px')
+const formTop: Ref<string> = ref('0')
+const isMobile: Ref<boolean> = ref(window.innerWidth < 700)
+
+const clickLetter = (): void => {
   if (isMobile.value) {
     formHeight.value = '1000px'
   } else {
@@ -143,7 +161,7 @@ const isMobile = ref(window.innerWidth < 700)
 
 
 
-async function submitFriend() {
+async function submitFriend(): Promise<void> {
   if ($common.isEmpty(userStore.currentUser)) {
     ElMessage.error("请先登录！")
     return
@@ -175,23 +193,22 @@ async function submitFriend() {
     formHeight.value = '447px'
     formTop.value = '0'
     ElMessage.success('提交成功，待管理员审核！')
-  } catch (error) {
+  } catch (error: any) {
     ElMessage.error(error.message)
   }
 }
 
-function clickFriend(path) {
+function clickFriend(path: string): void {
   window.open(path)
 }
 
-async function getFriends() {
+async function getFriends(): Promise<void> {
   try {
     const res = await webApi.listFriend()
     if (!res.data) return
     if (!res.data.length) return
-    if (!res.data.length) return
-    friendList.value = res.data
-  } catch (error) {
+    friendList.value = res.data as FriendData
+  } catch (error: any) {
     ElMessage.error(error.message)
   }
 }

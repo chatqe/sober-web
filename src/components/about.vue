@@ -47,14 +47,15 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, inject } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, inject, Ref } from 'vue'
 import { defineAsyncComponent } from 'vue'
 import { useWebInfoStore } from '@/stores'
+import { CommonUtils, AppConstants } from '@/types'
 
 // 获取注入的全局属性
-const $common = inject('$common')
-const $constant = inject('$constant')
+const $common: CommonUtils = inject('$common')!
+const $constant: AppConstants = inject('$constant')!
 
 // 组件动态导入
 const twoPoem = defineAsyncComponent(() => import('./common/twoPoem.vue'))
@@ -64,15 +65,33 @@ const myFooter = defineAsyncComponent(() => import('./common/myFooter.vue'))
 const webInfoStore = useWebInfoStore()
 const webName = webInfoStore.webInfo?.webName || ''
 
-// 响应式数据
-const sayShow = ref(false)
-const sayIndex = ref(0)
-const messages = ref([])
-const showSelectButtons = ref(false)
-const selectOptions = ref([])
-const sayContainerRef = ref(null)
+// 定义消息类型
+interface Message {
+  type: 'left' | 'right'
+  content: string
+}
 
-const sayContent = ref([
+// 定义选择选项类型
+interface SelectOption {
+  label: string
+  value: string
+}
+
+// 响应式数据
+const sayShow: Ref<boolean> = ref(false)
+const sayIndex: Ref<number> = ref(0)
+const messages: Ref<Message[]> = ref([])
+const showSelectButtons: Ref<boolean> = ref(false)
+const selectOptions: Ref<SelectOption[]> = ref([])
+const sayContainerRef: Ref<HTMLElement | null> = ref(null)
+
+// 定义对话内容类型
+interface SayContentItem {
+  talk: string[]
+  reply: string[]
+}
+
+const sayContent: Ref<SayContentItem[]> = ref([
   {
     "talk": ["Hi, there👋", "这是一个 Vue2 Vue3 与 SpringBoot 结合的产物~"],
     "reply": ["然后呢？ 😃", "少废话！ 🙄"]
@@ -90,7 +109,7 @@ const sayContent = ref([
 ])
 
 // 处理选择选项
-const handleSelect = async (index, value) => {
+const handleSelect = async (index: number, value: string): Promise<void> => {
   // 添加用户回复消息
   messages.value.push({
     type: 'right',
@@ -117,7 +136,7 @@ const handleSelect = async (index, value) => {
 }
 
 // 对话函数
-const say = () => {
+const say = (): void => {
   if (!$common.isEmpty(sayContent.value[sayIndex.value]) && !$common.isEmpty(sayContent.value[sayIndex.value].talk)) {
     sayContent.value[sayIndex.value].talk.forEach((value, index, talk) => {
       setTimeout(() => {

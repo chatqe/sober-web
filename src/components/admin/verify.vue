@@ -25,33 +25,64 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, inject, computed } from 'vue';
 import { useRoute } from 'vue-router'
 import router from '@/router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores';
-import { authApi } from '@/api';
+import { authApi } from '@/api/index.js';
 
 // 异步导入组件
 const proButton = () => import("../common/proButton");
 
+// 定义接口
+interface CommonUtils {
+  isEmpty: (value: any) => boolean;
+  encrypt: (value: string) => string;
+}
+
+interface AppConstants {
+  before_color_2: string;
+  after_color_2: string;
+  [key: string]: any;
+}
+
+interface LoginRequest {
+  account: string;
+  password: string;
+  isAdmin: boolean;
+}
+
+interface LoginResponse {
+  accessToken: string;
+  id: number;
+  username: string;
+  avatar: string;
+  [key: string]: any;
+}
+
+interface ApiResponse<T> {
+  data: T;
+  [key: string]: any;
+}
+
 // 注入全局属性
-const $constant = inject('$constant');
-const $common = inject('$common');
+const $constant = inject<AppConstants>('$constant')!;
+const $common = inject<CommonUtils>('$common')!;
 const userStore = useUserStore();
 const route = useRoute();
 
 // 响应式数据
-const account = ref('');
-const password = ref('');
+const account = ref<string>('');
+const password = ref<string>('');
 const redirect = computed(() => route.query.redirect || '/welcome');
 const webInfoAvatar = computed(() => userStore.webInfo?.avatar || '');
 const beforeColor = computed(() => $constant?.before_color_2 || '');
 const afterColor = computed(() => $constant?.after_color_2 || '');
 
 // 登录方法
-const login = async () => {
+const login = async (): Promise<void> => {
   if ($common.isEmpty(account.value) || $common.isEmpty(password.value)) {
     ElMessage({
       message: "请输入账号或密码！",
@@ -61,13 +92,13 @@ const login = async () => {
   }
 
   try {
-    let user = {
+    const user: LoginRequest = {
       account: account.value.trim(),
       password: $common.encrypt(password.value.trim()),
       isAdmin: true
     };
 
-    const res = await authApi.login(user)
+    const res: ApiResponse<LoginResponse> = await authApi.login(user)
     
     if (!res.data) {
       ElMessage({

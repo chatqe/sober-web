@@ -79,20 +79,76 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import router from '@/src/router'
-import { articleApi } from '@/api/index'
+import { articleApi } from '@/api/index.js'
 import { useUserStore } from '@/stores'
+
+// 定义接口
+interface Sort {
+  id: number;
+  sortName: string;
+}
+
+interface Label {
+  id: number;
+  labelName: string;
+  sortId: number;
+}
+
+interface Article {
+  id: number;
+  username: string;
+  articleTitle: string;
+  articleCover: string;
+  sort: Sort;
+  label: Label;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  viewStatus: boolean;
+  commentStatus: boolean;
+  recommendStatus: boolean;
+  createTime: string;
+  updateTime: string;
+  [key: string]: any;
+}
+
+interface Pagination {
+  current: number;
+  size: number;
+  total: number;
+  searchKey: string;
+  recommendStatus: boolean | null;
+  sortId: number | null;
+  labelId: number | null;
+}
+
+interface ApiResponse<T> {
+  data: T;
+  [key: string]: any;
+}
+
+interface ArticleListResponse {
+  records: Article[];
+  total: number;
+}
+
+interface ChangeStatusParam {
+  articleId: number;
+  viewStatus?: boolean;
+  commentStatus?: boolean;
+  recommendStatus?: boolean;
+}
 
 // 使用store和router
 const userStore = useUserStore()
 
-
 // 响应式数据
 const isBoss = computed(() => userStore.currentAdmin?.isBoss || false)
-const pagination = reactive({
+const pagination = reactive<Pagination>({
   current: 1,
   size: 10,
   total: 0,
@@ -101,10 +157,10 @@ const pagination = reactive({
   sortId: null,
   labelId: null
 })
-const articles = ref([])
-const sorts = ref([])
-const labels = ref([])
-const labelsTemp = ref([])
+const articles = ref<Article[]>([])
+const sorts = ref<Sort[]>([])
+const labels = ref<Label[]>([])
+const labelsTemp = ref<Label[]>([])
 
 // 监听分类变化，更新标签列表
 watch(() => pagination.sortId, (newVal) => {
@@ -115,7 +171,7 @@ watch(() => pagination.sortId, (newVal) => {
 })
 
 // 获取分类和标签
-const getSortAndLabel = async () => {
+const getSortAndLabel = async (): Promise<void> => {
   try {
     const res = await articleApi.getSortAndLabel()
     if (res.data && Object.keys(res.data).length > 0) {
@@ -131,7 +187,7 @@ const getSortAndLabel = async () => {
 }
 
 // 清除搜索参数
-const clearSearch = () => {
+const clearSearch = (): void => {
   Object.assign(pagination, {
     current: 1,
     size: 10,
@@ -145,9 +201,9 @@ const clearSearch = () => {
 }
 
 // 获取文章列表
-const getArticles = async () => {
+const getArticles = async (): Promise<void> => {
   try {
-    const res = await articleApi.getArticleList({
+    const res: ApiResponse<ArticleListResponse> = await articleApi.getArticleList({
       ...pagination,
       isBoss: isBoss.value
     })
@@ -164,20 +220,20 @@ const getArticles = async () => {
 }
 
 // 分页变化处理
-const handlePageChange = (val) => {
+const handlePageChange = (val: number): void => {
   pagination.current = val
   getArticles()
 }
 
 // 搜索文章
-const searchArticles = () => {
+const searchArticles = (): void => {
   pagination.total = 0
   pagination.current = 1
   getArticles()
 }
 
 // 修改文章状态
-const changeStatus = async (article, flag) => {
+const changeStatus = async (article: Article, flag: number): Promise<void> => {
   let param
   if (flag === 1) {
     param = {
@@ -219,7 +275,7 @@ const changeStatus = async (article, flag) => {
 }
 
 // 删除文章
-const handleDelete = async (item) => {
+const handleDelete = async (item: Article): Promise<void> => {
   try {
     await ElMessageBox.confirm('确认删除？', '提示', {
       confirmButtonText: '确定',
@@ -250,12 +306,12 @@ const handleDelete = async (item) => {
 }
 
 // 编辑文章
-const handleEdit = (item) => {
+const handleEdit = (item: Article): void => {
   router.push({ path: '/postEdit', query: { id: item.id } })
 }
 
 // 组件挂载时获取数据
-onMounted(() => {
+onMounted((): void => {
   getArticles()
   getSortAndLabel()
 })

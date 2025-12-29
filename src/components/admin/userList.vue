@@ -123,18 +123,67 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, onMounted, Ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { userApi } from '@/api'
+import { userApi } from '@/api/index.js'
 
-// 辅助函数
-const isEmpty = (obj) => {
-  return obj === null || obj === undefined || (typeof obj === 'object' && Object.keys(obj).length === 0);
-};
+// 定义数据接口
+interface User {
+  id: number
+  username: string
+  phoneNum: string
+  email: string
+  admire: string
+  userStatus: boolean
+  avatar: string
+  gender: number
+  introduction: string
+  userType: number
+  createTime: string
+  [key: string]: any
+}
+
+interface Pagination {
+  current: number
+  size: number
+  total: number
+  searchKey: string
+  userStatus: boolean | null
+  userType: number | null
+}
+
+interface ChangeUser {
+  id: number | null
+  userType: number | null
+}
+
+interface UserStatusRequest {
+  userId: number
+  flag: boolean
+}
+
+interface UserAdmireRequest {
+  userId: number
+  admire: string
+}
+
+interface UserTypeRequest {
+  userId: number
+  userType: number
+}
+
+// 从全局注入获取公共工具函数
+import { inject } from 'vue'
+
+interface CommonUtils {
+  isEmpty: (obj: any) => boolean
+}
+
+const $common = inject<CommonUtils>('$common')!
 
 // 响应式数据
-const pagination = reactive({
+const pagination: Pagination = reactive({
   current: 1,
   size: 10,
   total: 0,
@@ -142,15 +191,15 @@ const pagination = reactive({
   userStatus: null,
   userType: null
 })
-const users = ref([])
-const changeUser = reactive({
+const users: Ref<User[]> = ref([])
+const changeUser: ChangeUser = reactive({
   id: null,
   userType: null
 })
-const editVisible = ref(false)
+const editVisible: Ref<boolean> = ref(false)
 
 // 清除搜索参数
-const clearSearch = () => {
+const clearSearch = (): void => {
   Object.assign(pagination, {
     current: 1,
     size: 10,
@@ -163,14 +212,14 @@ const clearSearch = () => {
 }
 
 // 获取用户列表
-const getUsers = async () => {
+const getUsers = async (): Promise<void> => {
   try {
-    const res = await userApi.listUsers(pagination)
+    const res: any = await userApi.listUsers(pagination)
     if (!isEmpty(res.data)) {
       users.value = res.data.records
       pagination.total = res.data.total
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '获取用户列表失败',
       type: "error"
@@ -179,14 +228,15 @@ const getUsers = async () => {
 }
 
 // 改变用户状态
-const changeUserStatus = async (user) => {
+const changeUserStatus = async (user: User): Promise<void> => {
   try {
-    await userApi.changeUserStatus({ userId: user.id, flag: user.userStatus })
+    const request: UserStatusRequest = { userId: user.id, flag: user.userStatus }
+    await userApi.changeUserStatus(request)
     ElMessage({
       message: "修改成功！",
       type: "success"
     })
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '修改失败',
       type: "error"
@@ -195,7 +245,7 @@ const changeUserStatus = async (user) => {
 }
 
 // 修改用户赞赏信息
-const changeUserAdmire = async (user) => {
+const changeUserAdmire = async (user: User): Promise<void> => {
   if (!isEmpty(user.admire)) {
     try {
       await ElMessageBox.confirm('确认保存？', '提示', {
@@ -205,13 +255,14 @@ const changeUserAdmire = async (user) => {
         center: true
       })
       
-      await userApi.changeUserAdmire({ userId: user.id, admire: user.admire })
+      const request: UserAdmireRequest = { userId: user.id, admire: user.admire }
+      await userApi.changeUserAdmire(request)
       
       ElMessage({
         message: "修改成功！",
         type: "success"
       })
-    } catch (error) {
+    } catch (error: any) {
       if (error !== 'cancel') {
         ElMessage({
           message: error.message || '修改失败',
@@ -228,27 +279,27 @@ const changeUserAdmire = async (user) => {
 }
 
 // 编辑用户
-const editUser = (user) => {
+const editUser = (user: User): void => {
   changeUser.id = user.id
   changeUser.userType = user.userType
   editVisible.value = true
 }
 
 // 分页变化处理
-const handlePageChange = (val) => {
+const handlePageChange = (val: number): void => {
   pagination.current = val
   getUsers()
 }
 
 // 搜索用户
-const searchUser = () => {
+const searchUser = (): void => {
   pagination.total = 0
   pagination.current = 1
   getUsers()
 }
 
 // 关闭对话框
-const handleClose = () => {
+const handleClose = (): void => {
   Object.assign(changeUser, {
     id: null,
     userType: null
@@ -257,16 +308,21 @@ const handleClose = () => {
 }
 
 // 保存编辑
-const saveEdit = async () => {
+const saveEdit = async (): Promise<void> => {
   try {
-    await userApi.changeUserType({ userId: changeUser.id, userType: changeUser.userType })
+    if (!changeUser.id || changeUser.userType === null) return
+    
+    const request: UserTypeRequest = { userId: changeUser.id, userType: changeUser.userType }
+    await userApi.changeUserType(request)
+    
     handleClose()
     getUsers()
+    
     ElMessage({
       message: "修改成功！",
       type: "success"
     })
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: error.message || '修改失败',
       type: "error"
