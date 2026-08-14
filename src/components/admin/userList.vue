@@ -124,7 +124,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, Ref } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import type { Ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { userApi } from '@/api/index.js'
 

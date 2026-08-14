@@ -62,10 +62,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, inject, Ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount, inject } from 'vue'
+import type { Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { webInfoApi } from '@/api/index.js'
-import { CommonUtils } from '@/types'
+import type { CommonUtils } from '@/types'
 
 // 获取注入的全局属性
 const $common: CommonUtils = inject('$common')!

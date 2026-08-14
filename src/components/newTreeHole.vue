@@ -30,7 +30,8 @@
 
 
 <script setup lang="ts">
-import {computed, inject, onMounted, ref, Ref} from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
+import type { Ref } from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
@@ -38,7 +39,7 @@ import {articleApi, webInfoApi} from '@/api/index.js'
 import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
 
 // 从@/types导入所需类型
-import { CommonUtils, AppConstants, TreeHole, Article, SortItem, WebInfo } from '@/types'
+import type { CommonUtils, AppConstants, TreeHole, Article, SortItem, WebInfo } from '@/types'
 
 // 获取公共属性
 const $common = inject<CommonUtils>('$common')!

@@ -6,7 +6,7 @@ import {authApi} from '@/api'
 
 
 // 获取注入的全局属性
-import { CommonUtils, CaptchaReq } from '@/types'
+import type { CommonUtils, CaptchaReq } from '@/types'
 const $common = inject<CommonUtils>('$common')! 
 
 // 局部类型定义

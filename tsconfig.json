@@ -1,0 +1,72 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    // "rootDir": "./src",
+    // "outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+//    "types": [],
+    // For nodejs:
+    // "lib": ["esnext"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    /* 1. 让 TS 知道是 ES 模块 */
+    "module": "ESNext",
+    "target": "ESNext",
+    /* 2. 交给 Vite 打包，模块解析用 bundler 模式 */
+    "moduleResolution": "bundler",
+    /* 3. Vue 单文件组件需要 */
+    "jsx": "preserve",
+    /* 4. 路径别名（保持和 vite.config.ts 一致） */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    /* 5. 类型检查强度：先不开 strict，后续逐步加 */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    /* 6. 跳过三方库声明文件检查，提速 */
+    "skipLibCheck": true,
+    /* 7. 只编译，不输出（Vite 负责打包） */
+    "noEmit": true,
+    // ① 添加这一行
+    "types": ["unplugin-icons/types/vue"]
+  },
+  /* 明确告诉 TS 需要编译哪些文件 */
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
+

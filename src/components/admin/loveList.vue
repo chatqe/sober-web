@@ -72,7 +72,8 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, Ref} from 'vue'
+import { ref, onMounted } from 'vue'
+import type { Ref } from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Search, Delete} from '@element-plus/icons-vue'
 import {familyApi} from '@/api/index.js'

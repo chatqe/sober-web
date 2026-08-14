@@ -1,13 +1,10 @@
-export * as authApi from './modules/auth'
-export * as userApi from './modules/user'
-export * as commentApi from './modules/comment'
-export * as familyApi from './modules/family'
-export * as webInfoApi from './modules/webInfo'
-export * as resourceApi from './modules/resourceApi'
-export * as articleApi from './modules/articleApi'
-export * as weiYanApi from './modules/weiYanApi'
-export * as qiniuApi from './modules/qiniuApi'
-export * as webApi from './modules/web'
-export * as systemApi from './modules/system'
-export * as uploadApi from './modules/upload'
-export * as commonApi from './modules/common'
+/**
+ * API 入口文件
+ *
+ * 重新导出各业务模块的 API，供组件通过 @/api/index.js 导入使用。
+ *
+ * @author Joy
+ * @since 2026-08-15
+ */
+
+export * from './modules/index';

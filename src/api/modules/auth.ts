@@ -6,76 +6,57 @@
  */
 
 import request from '@/utils/request';
+import type {
+  LoginParams,
+  LoginResponse,
+  UserInfo,
+  RefreshTokenParams,
+  RefreshTokenResponse,
+  CaptchaParams,
+  CaptchaResponse,
+  CaptchaCheckParams,
+  EmailCodeParams
+} from '../types';
 
-
-/** 登录入参 */
-export interface LoginReq {
-    account: string
-    password: string
-}
-
-/** 登录出参 */
-export interface LoginResp {
-    accessToken: string
-    refreshToken: string
-    expireAt: number
-}
-
-/** 刷新 token 入参 */
-export interface RefreshTokenReq {
-    refreshToken: string
-}
-
-/** 图形验证码入参 */
-export interface CaptchaReq {
-    flag: boolean
-    email: string
-}
-
-/** 图形验证码校验入参 */
-export interface CaptchaCheckReq {
-    uuid: string
-    code: string
-}
-
-/** 邮箱验证码入参 */
-export interface EmailCodeReq {
-    flag: number
-    place: string
-}
-
-/* ===================== 接口实现 ===================== */
 
 // 用户登录
-export const login = (data: LoginReq) => {
-    return request.post('/user/login', data, false, false);
+export const login = async (params: LoginParams): Promise<LoginResponse> => {
+    const res = await request.post<LoginResponse>('/user/login', params, false, false);
+    return res.data;
 };
 
 // 用户退出
-export const logout = () => {
-    return request.get<null>('/user/logout');
+export const logout = async (): Promise<void> => {
+    await request.get('/user/logout');
 };
 
-// 刷新 token
-export const refreshToken = (body: RefreshTokenReq) => {
-    return request.post('/auth/refresh', body);
+// 刷新 token（后端无此接口，保留原实现供后续对接）
+export const refreshToken = async (refreshToken: string): Promise<RefreshTokenResponse> => {
+    // TODO: 后端暂无 /auth/refresh 接口，待确认
+    const res = await request.post<RefreshTokenResponse>('/user/token', {userToken: refreshToken}, false, false);
+    return res.data;
 };
 
-// 获取当前用户信息
-export const getCurrentUser = () => {
-    return request.get('/auth/me');
+// 获取当前用户信息（后端无 /auth/me 接口，使用 /user/me 或其他方式获取）
+export const getCurrentUser = async (): Promise<UserInfo> => {
+    // TODO: 后端暂无 /auth/me 接口，待确认实际路径
+    const res = await request.get<UserInfo>('/user/me');
+    return res.data;
 };
+
 // 获取图形验证码
-export const getCaptchaCode = (params: CaptchaReq) => {
-    return request.get('/user/captcha', params, false);
+export const getCaptchaCode = async (params: CaptchaParams): Promise<CaptchaResponse> => {
+    const res = await request.get<CaptchaResponse>('/user/captcha', params, false);
+    return res.data;
 };
+
 // 图形验证码校验
-export const captchaCheck = (data: CaptchaCheckReq) => {
-    return request.post('/user/captchaCheck', data, false, false);
+export const captchaCheck = async (params: CaptchaCheckParams): Promise<boolean> => {
+    const res = await request.post<boolean>('/user/captchaCheck', params, false, false);
+    return res.data;
 };
 
 // 邮箱验证码
-export const emailCode = (params: EmailCodeReq) => {
-    return request.get('/user/mailCode', params, false);
+export const emailCode = async (params: EmailCodeParams): Promise<void> => {
+    await request.get('/user/mailCode', params, false);
 };
-

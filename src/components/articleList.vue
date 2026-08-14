@@ -154,7 +154,7 @@
 import {inject} from 'vue'
 import router from '@/router'
 import {useUserStore, useWebInfoStore} from '@/stores'
-import {CommonUtils, AppConstants, Article} from '@/types'
+import type { CommonUtils, AppConstants, Article } from '@/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!

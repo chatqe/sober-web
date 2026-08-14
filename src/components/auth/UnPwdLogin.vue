@@ -5,7 +5,7 @@ import {useAuthStore, useUserStore} from '@/stores'
 import {authApi} from '@/api'
 
 // 获取注入的全局属性
-import { CommonUtils } from '@/types'
+import type { CommonUtils } from '@/types'
 const $common = inject<CommonUtils>('$common')!
 
 // 状态管理

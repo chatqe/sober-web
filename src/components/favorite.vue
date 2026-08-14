@@ -33,11 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import {inject, onMounted, Ref, ref} from 'vue'
+import { inject, onMounted, ref } from 'vue'
+import type { Ref } from 'vue'
 import {ElMessage} from 'element-plus'
 import {webInfoApi} from '@/api/index.js';
 import myFooter from './common/myFooter.vue'
-import {CommonUtils, AppConstants} from '@/types'
+import type { CommonUtils, AppConstants } from '@/types'
 
 // 获取注入的全局属性
 const $common: CommonUtils = inject('$common')!

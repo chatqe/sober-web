@@ -48,10 +48,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, Ref } from 'vue'
+import { ref, onMounted, inject } from 'vue'
+import type { Ref } from 'vue'
 import { defineAsyncComponent } from 'vue'
 import { useWebInfoStore } from '@/stores'
-import { CommonUtils, AppConstants } from '@/types'
+import type { CommonUtils, AppConstants } from '@/types'
 
 // 获取注入的全局属性
 const $common: CommonUtils = inject('$common')!

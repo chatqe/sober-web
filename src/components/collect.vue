@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import {defineAsyncComponent, inject, Ref, ref} from 'vue'
+import { defineAsyncComponent, inject, ref } from 'vue'
+import type { Ref } from 'vue'
 import {ElMessage} from 'element-plus'
 import {webInfoApi} from '@/api/index.js';
-import {CommonUtils, AppConstants} from '@/types'
+import type { CommonUtils, AppConstants } from '@/types'
 
 const emptyState = defineAsyncComponent(() => import("./common/emptyState.vue"))
 

@@ -11,7 +11,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "type-split-check": "ts-node scripts/typeSplitCheck.ts",
-    "gen-api": "orval --project=qs && pnpm type-split-check"
+    "api-gen": "node scripts/api-gen.js",
+    "api-gen-t": "node scripts/api-gen.js",
+    "orval": "orval --config orval.config.ts",
+    "orval:watch": "orval --config orval.config.ts --watch"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^0.0.7",
@@ -22,6 +25,7 @@
     "TagCloud": "^2.5.0",
     "animejs": "^4.2.2",
     "axios": "^1.12.2",
+    "change-case": "^5.4.4",
     "crypto-js": "^4.2.0",
     "dplayer": "^1.26.0",
     "element-plus": "^2.11.5",
@@ -32,6 +36,7 @@
     "plyr": "^3.8.3",
     "qs": "^6.14.0",
     "sockjs-client": "^1.6.1",
+    "swagger-typescript-api": "^13.2.16",
     "swiper": "^8.4.7",
     "uuid": "^9.0.1",
     "v-viewer": "^3.0.0",
@@ -50,9 +55,11 @@
   },
   "devDependencies": {
     "@iconify-json/ep": "^1.2.3",
+    "@types/node": "^25.0.3",
     "@vitejs/plugin-vue": "^6.0.1",
     "orval": "^7.17.2",
     "sass": "^1.77.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "unplugin-auto-import": "^20.2.0",
     "unplugin-icons": "^22.5.0",

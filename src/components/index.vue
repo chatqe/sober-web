@@ -136,14 +136,15 @@
 </template>
 
 <script setup lang="ts">
-import {computed, defineAsyncComponent, inject, nextTick, onMounted, Ref, ref} from 'vue'
+import { computed, defineAsyncComponent, inject, nextTick, onMounted, ref } from 'vue'
+import type { Ref } from 'vue'
 import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {articleApi} from '@/api/index.js'
 
 // 导入类型
-import { CommonUtils, AppConstants, SortItem, Article, Pagination, GuShi, ArticleApiResponse } from '@/types'
+import type { CommonUtils, AppConstants, SortItem, Article, Pagination, GuShi, ArticleApiResponse } from '@/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!

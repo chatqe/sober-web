@@ -65,7 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, Ref } from 'vue'
+import { ref, onMounted, inject } from 'vue'
+import type { Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { defineAsyncComponent } from 'vue'
 import { webInfoApi } from '@/api/index.js'
@@ -74,7 +75,7 @@ import { webInfoApi } from '@/api/index.js'
 
 
 // 导入类型
-import { CommonUtils, AppConstants, PhotoTitle, PhotoPagination, ResourcePath, ApiResponse } from '@/types'
+import type { CommonUtils, AppConstants, PhotoTitle, PhotoPagination, ResourcePath, ApiResponse } from '@/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!

@@ -328,7 +328,7 @@ const proButton = defineAsyncComponent(() => import('./common/proButton.vue'))
 const videoPlayer = defineAsyncComponent(() => import('./common/videoPlayer.vue'))
 
 // 导入类型
-import { CommonUtils, AppConstants, Article, Sort, Label, WeiYan } from '@/types'
+import type { CommonUtils, AppConstants, Article, Sort, Label, WeiYan } from '@/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!

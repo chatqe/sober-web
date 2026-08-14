@@ -110,7 +110,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, Ref, inject } from 'vue';
+import { ref, reactive, onMounted, inject } from 'vue';
+import type { Ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import uploadPicture from '../common/uploadPicture.vue';
 import { resourceApi } from '@/api/index.js';

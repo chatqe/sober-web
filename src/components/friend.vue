@@ -87,7 +87,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, Ref } from 'vue'
+import { ref, onMounted, inject } from 'vue'
+import type { Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores'
 import { webApi } from '@/api/index.js'
@@ -95,7 +96,7 @@ import card from './common/card.vue'
 import proButton from './common/proButton.vue'
 import Favorite from "@/components/favorite.vue"
 import MyFooter from "@/components/common/myFooter.vue"
-import { CommonUtils, AppConstants, ResourcePath } from '@/types';
+import type { CommonUtils, AppConstants, ResourcePath } from '@/types';
 
 // 获取注入的全局属性
 const $common: CommonUtils = inject('$common')!
@@ -153,11 +154,6 @@ defineExpose({
   clickFriend,
   getFriends
 })
-
-// 响应式数据
-const formHeight = ref('447px')
-const formTop = ref('0')
-const isMobile = ref(window.innerWidth < 700)
 
 
 

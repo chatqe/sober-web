@@ -69,3 +69,26 @@ out/
 
 # Optional: add your own specific file extensions or folders to ignore
 
+# AI / IDE 临时文件
+.claude/
+.workbuddy/
+CLAUDE.md
+memory/
+
+# 项目审计临时文件
+project-audit.html
+project-audit.md
+
+# unplugin-vue-components 自动生成
+auto-imports.d.ts
+components.d.ts
+
+# Shell 错误 dump
+*.stackdump
+
+# pnpm 锁文件已在版本控制中，此处不忽略
+# pnpm-lock.yaml
+
+# Vite 预构建缓存目录
+node_modules/.vite/
+

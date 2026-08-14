@@ -8,15 +8,17 @@ import 'element-plus/dist/index.css'
 import '@/style/el-custom.scss'
 import App from './App.vue'
 import router from "./router/index"
+import {commonUtils} from './utils/common'
+import {APP_CONSTANTS} from './utils/constant'
 
-// 入口或公共父组件提供（可选，若已在 main.ts 挂到 globalProperties，则组件内可直接 inject）
-import common from '@/utils/common'
-import constant from '@/utils/constant'
+const app = createApp(App)
 
-const app =createApp(App)
+// 注入全局属性 $common 和 $constant，供组件模板和 inject 使用
+app.config.globalProperties.$common = commonUtils
+app.config.globalProperties.$constant = APP_CONSTANTS
+app.provide('$common', commonUtils)
+app.provide('$constant', APP_CONSTANTS)
 
-app.provide('$common', common)
-app.provide('$constant', constant)
 app.use(pinia)
     .use(router)
     .mount('#app')

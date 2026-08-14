@@ -130,7 +130,7 @@ import proPage from '../common/proPage.vue'
 import {getCommentTotal} from "@/api/modules/comment.js";
 
 // 导入类型
-import { CommonUtils, AppConstants, Comment } from '@/types'
+import type { CommonUtils, AppConstants, Comment } from '@/types'
 
 // 注入全局属性
 const $common = inject<CommonUtils>('$common')!

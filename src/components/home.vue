@@ -386,8 +386,10 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onMounted, onUnmounted, ref, watch, WatchStopHandle} from 'vue'
-import {useRoute, useRouter, RouteLocationNormalizedLoaded, RouteLocationRaw} from 'vue-router'
+import {computed, inject, onMounted, onUnmounted, ref, watch} from 'vue'
+import type {WatchStopHandle} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import type {RouteLocationNormalizedLoaded, RouteLocationRaw} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {
   useAuthStore,
@@ -403,7 +405,7 @@ import {authApi, systemApi, webApi} from '@/api'
 import MyFooter from "@/components/common/myFooter.vue";
 import {routeMeta} from "@/router/metaCfg";
 import AuthModal from "@/components/auth/AuthModal.vue";
-import {CommonUtils, AppConstants} from '@/types'
+import type { CommonUtils, AppConstants } from '@/types'
 
 // 路由和响应式数据
 const route: RouteLocationNormalizedLoaded = useRoute()

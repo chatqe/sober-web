@@ -3,7 +3,7 @@ import {inject, ref} from 'vue'
 import {ElMessage} from 'element-plus'
 import {useAuthStore, useUserStore} from '@/stores'
 import {authApi} from '@/api'
-import {CommonUtils} from '@/types'
+import type { CommonUtils } from '@/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!

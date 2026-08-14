@@ -71,7 +71,8 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, Ref, inject} from 'vue';
+import { onMounted, ref, inject } from 'vue';
+import type { Ref } from 'vue';
 import {useUserStore} from '@/stores';
 import {Delete, Search} from '@element-plus/icons-vue';
 import {ElMessage, ElMessageBox} from "element-plus";
