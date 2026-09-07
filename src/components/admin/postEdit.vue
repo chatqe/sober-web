@@ -75,22 +75,22 @@
                        :maxSize="8"
                        :maxNumber="1"></uploadPicture>
       </el-form-item>
-      <el-form-item label="分类" prop="sortId">
-        <el-select v-model="article.sortId" placeholder="请选择分类">
+      <el-form-item label="分类" prop="categoryId">
+        <el-select v-model="article.categoryId" placeholder="请选择分类">
           <el-option
             v-for="item in sorts"
             :key="item.id"
-            :label="item.sortName"
+            :label="item.name"
             :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="标签" prop="labelId">
-        <el-select v-model="article.labelId" placeholder="请选择标签">
+      <el-form-item label="标签" prop="tagId">
+        <el-select v-model="article.tagId" placeholder="请选择标签">
           <el-option
             v-for="item in labelsTemp"
             :key="item.id"
-            :label="item.labelName"
+            :label="item.name"
             :value="item.id">
           </el-option>
         </el-select>
@@ -112,7 +112,7 @@ import { commonApi, articleApi } from '@/api/index.js'
 
 // 组件导入
 import uploadPicture from '../common/uploadPicture.vue'
-import MdEditor from 'md-editor-v3'
+import {MdEditor} from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 
 // 使用store
@@ -138,8 +138,8 @@ const article = reactive({
   tips: "",
   articleCover: "",
   videoUrl: "",
-  sortId: null,
-  labelId: null
+  categoryId: null,
+  tagId: null
 })
 const sorts = ref([])
 const labels = ref([])
@@ -163,21 +163,21 @@ const rules = {
   articleCover: [
     {required: true, message: '封面', trigger: 'change'}
   ],
-  sortId: [
+  categoryId: [
     {required: true, message: '分类', trigger: 'change'}
   ],
-  labelId: [
+  tagId: [
     {required: true, message: '标签', trigger: 'blur'}
   ]
 }
 
 // 监听分类ID变化
-watch(() => article.sortId, (newVal, oldVal) => {
+watch(() => article.categoryId, (newVal, oldVal) => {
   if (oldVal !== null) {
-    article.labelId = null;
+    article.tagId = null;
   }
   if (newVal && labels.value.length > 0) {
-    labelsTemp.value = labels.value.filter(l => l.sortId === newVal);
+    labelsTemp.value = labels.value.filter(l => l.categoryId === newVal);
   }
 }, { immediate: false })
 
@@ -250,8 +250,8 @@ const getSortAndLabel = async () => {
   try {
     const res = await articleApi.getSortAndLabel()
     if (res.data && Object.keys(res.data).length > 0) {
-      sorts.value = res.data.sorts;
-      labels.value = res.data.labels;
+      sorts.value = res.data.categories;
+      labels.value = res.data.tags;
       if (id.value) {
         getArticle();
       }
@@ -267,9 +267,9 @@ const getSortAndLabel = async () => {
 // 获取文章详情
 const getArticle = async () => {
   try {
-    const res = await articleApi.getArticleById(id.value)
-    if (res.data) {
-      Object.assign(article, res.data);
+    const res = await articleApi.getArticleById({ id: Number(id.value) })
+    if (res) {
+      Object.assign(article, res);
     }
   } catch (error) {
     ElMessage({

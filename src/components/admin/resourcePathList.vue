@@ -160,8 +160,8 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import * as resourceApi from '../../api/modules/resourceApi';
 
 // 引入组件
-const uploadPicture = () => import("../common/uploadPicture");
-const proButton = () => import("../common/proButton");
+const uploadPicture = () => import("../common/uploadPicture.vue");
+const proButton = () => import("../common/proButton.vue");
 
 // 响应式数据
 const resourceTypes = ref([

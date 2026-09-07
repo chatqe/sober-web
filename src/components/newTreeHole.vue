@@ -39,7 +39,7 @@ import {articleApi, webInfoApi} from '@/api/index.js'
 import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
 
 // 从@/types导入所需类型
-import type { CommonUtils, AppConstants, TreeHole, Article, SortItem, WebInfo } from '@/types'
+import type { CommonUtils, AppConstants, TreeHole, Article, CategoryItem, WebInfo } from '@/types'
 
 // 获取公共属性
 const $common = inject<CommonUtils>('$common')!
@@ -75,7 +75,7 @@ onMounted(() => {
 
 // 定义emit
 const emit = defineEmits<{
-  selectSort: [sort: SortItem]
+  selectSort: [sort: CategoryItem]
   selectArticle: [searchValue: string]
 }>()
 
@@ -88,10 +88,10 @@ const pagination: Ref<Pagination> = ref({
 
 // 计算属性
 const webInfo = computed<WebInfo>(() => webInfoStore.webInfo)
-const sortInfo = computed<SortItem[]>(() => sortInfoStore.sortInfo)
+const sortInfo = computed<CategoryItem[]>(() => sortInfoStore.sortInfo)
 
 // 方法
-const selectSort = (sort: SortItem): void => {
+const selectSort = (sort: CategoryItem): void => {
   emit("selectSort", sort)
 }
 

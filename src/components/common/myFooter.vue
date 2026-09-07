@@ -62,7 +62,7 @@ const webInfo = computed(() => webInfoStore.webInfo);
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('https://cdn.youngwanton.top/qingsi/static/backgroundImg/173184198345798169878.jpg');
+  background-image: url('https://img.soberup.top/qingsi/static/backgroundImg/173184198345798169878.jpg');
   background-size: cover;
   /*background-position: center bottom;*/
   background-position: center calc(100% + 200px); /* 居中底部对齐的情况下 向上挪动200px */

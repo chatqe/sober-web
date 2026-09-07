@@ -34,7 +34,7 @@ import { useUserStore } from '@/stores';
 import { authApi } from '@/api/index.js';
 
 // 异步导入组件
-const proButton = () => import("../common/proButton");
+const proButton = () => import("../common/proButton.vue");
 
 // 定义接口
 interface CommonUtils {

@@ -10,7 +10,7 @@ import type {
   FamilyListResponse,
   FamilyDeleteParams,
   FamilyBase
-} from '../types';
+} from '../types/family';
 
 
 /**

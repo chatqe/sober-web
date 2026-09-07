@@ -16,7 +16,7 @@ import type {
   TreeHoleDetail,
   FunnyContent,
   CollectContent
-} from '../types';
+} from '../types/webInfo';
 
 
 // 获取网站信息（管理后台）
@@ -57,13 +57,13 @@ export const getHistoryInfo = async (): Promise<HistoryInfo> => {
 
 // 获取最新树洞
 export const listTreeHole = async (): Promise<TreeHoleDetail[]> => {
-    const res = await request.get<TreeHoleDetail[]>('/treeHole/list');
+    const res = await request.get<TreeHoleDetail[]>('/danmaku/list');
     return res.data;
 };
 
 // 添加树洞
 export const saveTreeHole = async (params: TreeHoleBase): Promise<TreeHoleDetail> => {
-    const res = await request.post<TreeHoleDetail>('/treeHole/save', params);
+    const res = await request.post<TreeHoleDetail>('/danmaku/save', params);
     return res.data;
 };
 

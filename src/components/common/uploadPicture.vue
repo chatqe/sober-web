@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject, type PropType } from 'vue';
 import { ElMessage } from 'element-plus';
 import upload from '../../utils/ajaxUpload';
 import { uploadApi } from '@/api/index.js';
@@ -84,18 +84,8 @@ interface UploadOptions {
   [key: string]: any;
 }
 
-interface UploadProps {
-  isAdmin: boolean;
-  prefix: string;
-  listType: string;
-  storeType: string;
-  accept: string;
-  maxSize: number;
-  maxNumber: number;
-}
-
-// 定义props
-const props = defineProps<UploadProps>({
+// 定义props（运行时声明，含默认值；defineProps 泛型与默认值对象不能同时使用）
+const props = defineProps({
   isAdmin: {
     type: Boolean,
     default: false
@@ -109,8 +99,8 @@ const props = defineProps<UploadProps>({
     default: "picture"
   },
   storeType: {
-    type: String,
-    default: localStorage.getItem("defaultStoreType")
+    type: String as PropType<string>,
+    default: () => localStorage.getItem("defaultStoreType") || "local"
   },
   accept: {
     type: String,
@@ -201,8 +191,9 @@ function handleError(err: any, file: UploadFile, fileList: UploadFile[]): void {
 }
 
 // 上传文件之前的钩子
-function beforeUpload(file: UploadFile): boolean | Promise<File> {
-  // 可以添加逻辑，返回false或Promise.reject会停止上传
+function beforeUpload(file: UploadFile): boolean {
+  // 返回 false 或 Promise.reject 会停止上传；此处放行
+  return true;
 }
 
 // 文件列表移除文件时的钩子

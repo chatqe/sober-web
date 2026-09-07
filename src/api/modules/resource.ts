@@ -11,7 +11,7 @@ import type {
   ResourcePathBase,
   ResourcePathDetail,
   ResourcePathDeleteParams
-} from '../types';
+} from '../types/resource';
 
 
 // 获取资源路径列表

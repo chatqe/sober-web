@@ -5,8 +5,8 @@
     </div>
     <el-table :data="sortInfo" border class="table" header-cell-class-name="table-header">
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-      <el-table-column prop="sortName" label="分类名称" align="center"></el-table-column>
-      <el-table-column prop="sortDescription" label="分类描述" align="center"></el-table-column>
+      <el-table-column prop="name" label="分类名称" align="center"></el-table-column>
+      <el-table-column prop="description" label="分类描述" align="center"></el-table-column>
       <el-table-column label="分类类型" align="center">
         <template #default="scope">
           <span v-if="scope.row.sortType === 0">导航栏分类</span>
@@ -48,16 +48,16 @@
       </el-table-column>
     </el-table>
 
-    <el-table v-if="!$common.isEmpty(sort)" :data="sort.labels" border class="table"
+    <el-table v-if="!$common.isEmpty(sort)" :data="sort.tags" border class="table"
               style="margin-top: 40px"
               header-cell-class-name="table-header">
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
       <el-table-column label="分类名称" align="center">
-        <span>{{ sort.sortName }}</span>
+        <span>{{ sort.name }}</span>
       </el-table-column>
-      <el-table-column prop="labelName" label="标签名称" align="center"></el-table-column>
-      <el-table-column prop="labelDescription" label="标签描述" align="center"></el-table-column>
-      <el-table-column prop="countOfLabel" label="文章总数" align="center"></el-table-column>
+      <el-table-column prop="name" label="标签名称" align="center"></el-table-column>
+      <el-table-column prop="description" label="标签描述" align="center"></el-table-column>
+      <el-table-column prop="countOfTag" label="文章总数" align="center"></el-table-column>
 
       <el-table-column label="操作" width="320" align="center">
         <template #default="scope">
@@ -86,10 +86,10 @@
             <el-radio-button :label="1">普通分类</el-radio-button>
           </el-radio-group>
         </div>
-        <el-input placeholder="请输入分类名称" v-model="sortForHttp.sortName">
+        <el-input placeholder="请输入分类名称" v-model="sortForHttp.name">
           <template #prepend>分类名称</template>
         </el-input>
-        <el-input placeholder="请输入分类描述" v-model="sortForHttp.sortDescription">
+        <el-input placeholder="请输入分类描述" v-model="sortForHttp.description">
           <template #prepend>分类描述</template>
         </el-input>
         <el-input type="number" placeholder="请输入整数，数字小的在前面"
@@ -114,10 +114,10 @@
                destroy-on-close
                center>
       <div class="my-dialog">
-        <el-input placeholder="请输入标签名称" v-model="labelForHttp.labelName">
+        <el-input placeholder="请输入标签名称" v-model="labelForHttp.name">
           <template #prepend>标签名称</template>
         </el-input>
-        <el-input placeholder="请输入标签描述" v-model="labelForHttp.labelDescription">
+        <el-input placeholder="请输入标签描述" v-model="labelForHttp.description">
           <template #prepend>标签描述</template>
         </el-input>
       </div>
@@ -138,39 +138,39 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { webInfoApi } from '@/api/index.js'
 
 // 定义接口
-interface SortItem {
+interface CategoryItem {
   id: number;
-  sortName: string;
-  sortDescription: string;
+  name: string;
+  description: string;
   sortType: number;
   priority: number;
   countOfSort: number;
   status: number;
-  labels?: LabelItem[];
+  tags?: TagItem[];
 }
 
-interface LabelItem {
+interface TagItem {
   id: number;
-  sortId: number;
-  labelName: string;
-  labelDescription: string;
-  countOfLabel?: number;
+  categoryId: number;
+  name: string;
+  description: string;
+  countOfTag?: number;
 }
 
 interface SortForHttp {
   id: number | null;
-  sortName: string;
+  name: string;
   status: number | null;
-  sortDescription: string;
+  description: string;
   sortType: number | null;
   priority: number | null;
 }
 
 interface LabelForHttp {
   id: number | null;
-  sortId: number | null;
-  labelName: string;
-  labelDescription: string;
+  categoryId: number | null;
+  name: string;
+  description: string;
 }
 
 interface CommonUtils {
@@ -188,21 +188,21 @@ const $common = inject<CommonUtils>('$common')!
 // 响应式数据
 const sortDialog = ref<boolean>(false)
 const labelDialog = ref<boolean>(false)
-const sortInfo = ref<SortItem[]>([])
-const sort = reactive<SortItem>({} as SortItem)
+const sortInfo = ref<CategoryItem[]>([])
+const sort = reactive<CategoryItem>({} as CategoryItem)
 const sortForHttp = reactive<SortForHttp>({
   id: null,
-  sortName: "",
+  name: "",
   status: null,
-  sortDescription: "",
+  description: "",
   sortType: null,
   priority: null
 })
 const labelForHttp = reactive<LabelForHttp>({
   id: null,
-  sortId: null,
-  labelName: "",
-  labelDescription: ""
+  categoryId: null,
+  name: "",
+  description: ""
 })
 
 // 删除处理
@@ -246,8 +246,8 @@ const deleteHandle = async (id: number, flag: number): Promise<void> => {
 const saveSortEdit = async (): Promise<void> => {
   if ($common.isEmpty(sortForHttp.sortType) ||
     $common.isEmpty(sortForHttp.priority) ||
-    $common.isEmpty(sortForHttp.sortName) ||
-    $common.isEmpty(sortForHttp.sortDescription)) {
+    $common.isEmpty(sortForHttp.name) ||
+    $common.isEmpty(sortForHttp.description)) {
     ElMessage({
       message: "请完善所有分类信息！",
       type: "error"
@@ -278,8 +278,8 @@ const saveSortEdit = async (): Promise<void> => {
 
 // 保存标签编辑
 const saveLabelEdit = async (): Promise<void> => {
-  if ($common.isEmpty(labelForHttp.labelName) ||
-    $common.isEmpty(labelForHttp.labelDescription)) {
+  if ($common.isEmpty(labelForHttp.name) ||
+    $common.isEmpty(labelForHttp.description)) {
     ElMessage({
       message: "请完善所有标签信息！",
       type: "error"
@@ -310,28 +310,28 @@ const saveLabelEdit = async (): Promise<void> => {
 }
 
 // 编辑分类
-const editSort = (item: SortItem): void => {
+const editSort = (item: CategoryItem): void => {
   sortDialog.value = true
   sortForHttp.id = item.id
-  sortForHttp.sortName = item.sortName
-  sortForHttp.sortDescription = item.sortDescription
+  sortForHttp.name = item.name
+  sortForHttp.description = item.description
   sortForHttp.sortType = item.sortType
   sortForHttp.priority = item.priority
   sortForHttp.status = item.status
 }
 
 // 编辑标签
-const editLabel = (item: LabelItem): void => {
+const editLabel = (item: TagItem): void => {
   labelDialog.value = true
   labelForHttp.id = item.id
-  labelForHttp.sortId = item.sortId
-  labelForHttp.labelName = item.labelName
-  labelForHttp.labelDescription = item.labelDescription
+  labelForHttp.categoryId = item.categoryId
+  labelForHttp.name = item.name
+  labelForHttp.description = item.description
 }
 
 // 插入标签
-const insertLabel = (item: SortItem): void => {
-  labelForHttp.sortId = item.id
+const insertLabel = (item: CategoryItem): void => {
+  labelForHttp.categoryId = item.id
   labelDialog.value = true
 }
 
@@ -339,14 +339,14 @@ const insertLabel = (item: SortItem): void => {
 const handleClose = (): void => {
   Object.assign(labelForHttp, {
     id: null,
-    sortId: null,
-    labelName: "",
-    labelDescription: ""
+    categoryId: null,
+    name: "",
+    description: ""
   })
   Object.assign(sortForHttp, {
     id: null,
-    sortName: "",
-    sortDescription: "",
+    name: "",
+    description: "",
     sortType: null,
     priority: null,
     status: null,
@@ -356,14 +356,14 @@ const handleClose = (): void => {
 }
 
 // 查看标签
-const sayLabel = (item: SortItem): void => {
+const sayLabel = (item: CategoryItem): void => {
   Object.assign(sort, item)
 }
 
 // 获取分类信息
 const getSortInfo = async (): Promise<void> => {
   try {
-    const res: ApiResponse<SortItem[]> = await webInfoApi.getSortInfo()
+    const res: ApiResponse<CategoryItem[]> = await webInfoApi.getSortInfo()
     if (!res.data) return
     
     if (!($common.isEmpty(res.data))) {
@@ -379,7 +379,7 @@ const getSortInfo = async (): Promise<void> => {
 }
 
 // 改变分类状态
-const changeSortStatus = async (item: SortItem): Promise<void> => {
+const changeSortStatus = async (item: CategoryItem): Promise<void> => {
   if (item.status !== null && item.id !== null) {
     try {
       await webInfoApi.updateSort(item)

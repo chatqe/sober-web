@@ -146,11 +146,13 @@ import TagCloud from 'TagCloud'
 // 定义注入的类型
 interface CommonUtils {
   isEmpty: (value: any) => boolean
+
   [key: string]: any
 }
 
 interface AppConstants {
   sortColor?: string[]
+
   [key: string]: any
 }
 
@@ -167,14 +169,16 @@ interface Article {
   articleCover?: string
   username: string
   createTime: string
+
   [key: string]: any
 }
 
-interface SortItem {
+interface CategoryItem {
   id: number
-  sortName: string
-  sortDescription: string
+  name: string
+  description: string
   status: number
+
   [key: string]: any
 }
 
@@ -182,6 +186,7 @@ interface WebInfo {
   avatar?: string
   webName?: string
   historyAllCount?: number
+
   [key: string]: any
 }
 
@@ -206,7 +211,7 @@ const showAdmireDialog: Ref<boolean> = ref(false)
 const articleSearch: Ref<string> = ref("")
 
 const cloudRef = ref<HTMLElement | null>(null)
-const tags: Ref<string[]> = ref(sortInfoStore.labels || ['Vue3', 'Vite', 'TS', 'Pinia', '标签云'])
+const tags: Ref<string[]> = ref(sortInfoStore.tags || ['Vue3', 'Vite', 'TS', 'Pinia', '标签云'])
 
 // 生命周期
 onMounted(() => {
@@ -224,7 +229,7 @@ onMounted(() => {
 
 // 计算属性
 const webInfo = computed<WebInfo>(() => webInfoStore.webInfo)
-const sortInfo = computed<SortItem[]>(() => {
+const sortInfo = computed<CategoryItem[]>(() => {
   // 过滤不显示的sort列表
   return sortInfoStore.sortInfo.filter(item => item.status !== 0)
 })
@@ -233,12 +238,12 @@ const currentUser = computed(() => userStore.currentUser)
 
 // 定义emit
 const emit = defineEmits<{
-  selectSort: [sort: SortItem]
+  selectSort: [sort: CategoryItem]
   selectArticle: [searchValue: string]
 }>()
 
 // 方法
-const selectSort = (sort: SortItem): void => {
+const selectSort = (sort: CategoryItem): void => {
   emit("selectSort", sort)
 }
 
@@ -544,7 +549,7 @@ const showTip = (): void => {
   color: var(--lightGreen) !important;
   font-size: 16px !important;
   font-weight: bold;
-/*  text-shadow: 0 0 8px rgba(57,197,187,1);*/
+  /*  text-shadow: 0 0 8px rgba(57,197,187,1);*/
 }
 
 </style>

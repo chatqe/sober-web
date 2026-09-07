@@ -91,7 +91,7 @@ import { ref, onMounted, inject } from 'vue'
 import type { Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores'
-import { webApi } from '@/api/index.js'
+import { weblinksApi } from '@/api/index.js'
 import card from './common/card.vue'
 import proButton from './common/proButton.vue'
 import Favorite from "@/components/favorite.vue"
@@ -184,7 +184,7 @@ async function submitFriend(): Promise<void> {
   }
 
   try {
-    await webApi.saveFriend(friend.value)
+    await weblinksApi.saveFriend(friend.value)
     // 恢复默认样式
     formHeight.value = '447px'
     formTop.value = '0'
@@ -200,7 +200,7 @@ function clickFriend(path: string): void {
 
 async function getFriends(): Promise<void> {
   try {
-    const res = await webApi.listFriend()
+    const res = await weblinksApi.listFriend()
     if (!res.data) return
     if (!res.data.length) return
     friendList.value = res.data as FriendData

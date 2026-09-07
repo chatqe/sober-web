@@ -11,9 +11,9 @@ import type {
   FriendLinkDetail,
   WebInfo,
   SortInfo
-} from '../types';
+} from '../types/weblinks';
 
-import type { ResourcePathListResponse } from '../types';
+import type { ResourcePathListResponse } from '../types/resource';
 
 
 /**

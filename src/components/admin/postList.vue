@@ -5,12 +5,12 @@
         <el-option key="1" label="是" :value="true"></el-option>
         <el-option key="2" label="否" :value="false"></el-option>
       </el-select>
-      <el-select style="width: 140px" class="mrb10" v-model="pagination.sortId" placeholder="请选择分类">
-        <el-option v-for="item in sorts" :key="item.id" :label="item.sortName" :value="item.id">
+      <el-select style="width: 140px" class="mrb10" v-model="pagination.categoryId" placeholder="请选择分类">
+        <el-option v-for="item in sorts" :key="item.id" :label="item.name" :value="item.id">
         </el-option>
       </el-select>
-      <el-select style="width: 140px" class="mrb10" v-model="pagination.labelId" placeholder="请选择标签">
-        <el-option v-for="item in labelsTemp" :key="item.id" :label="item.labelName" :value="item.id">
+      <el-select style="width: 140px" class="mrb10" v-model="pagination.tagId" placeholder="请选择标签">
+        <el-option v-for="item in labelsTemp" :key="item.id" :label="item.name" :value="item.id">
         </el-option>
       </el-select>
       <el-input v-model="pagination.searchKey" placeholder="文章标题" class="handle-input mrb10"></el-input>
@@ -22,8 +22,8 @@
       <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
       <el-table-column prop="username" label="作者" width="100" align="center"></el-table-column>
       <el-table-column prop="articleTitle" label="文章标题" align="center"></el-table-column>
-      <el-table-column prop="sort.sortName" label="分类" align="center"></el-table-column>
-      <el-table-column prop="label.labelName" label="标签" align="center"></el-table-column>
+      <el-table-column prop="category.name" label="分类" align="center"></el-table-column>
+      <el-table-column prop="tag.name" label="标签" align="center"></el-table-column>
       <el-table-column prop="viewCount" label="浏览量" width="80" align="center"></el-table-column>
       <el-table-column prop="likeCount" label="点赞数" width="80" align="center"></el-table-column>
       <el-table-column prop="commentCount" label="评论数" width="80" align="center"></el-table-column>
@@ -87,15 +87,15 @@ import { articleApi } from '@/api/index.js'
 import { useUserStore } from '@/stores'
 
 // 定义接口
-interface Sort {
+interface Category {
   id: number;
-  sortName: string;
+  name: string;
 }
 
-interface Label {
+interface Tag {
   id: number;
-  labelName: string;
-  sortId: number;
+  name: string;
+  categoryId: number;
 }
 
 interface Article {
@@ -103,8 +103,8 @@ interface Article {
   username: string;
   articleTitle: string;
   articleCover: string;
-  sort: Sort;
-  label: Label;
+  category: Category;
+  tag: Tag;
   viewCount: number;
   likeCount: number;
   commentCount: number;
@@ -122,8 +122,8 @@ interface Pagination {
   total: number;
   searchKey: string;
   recommendStatus: boolean | null;
-  sortId: number | null;
-  labelId: number | null;
+  categoryId: number | null;
+  tagId: number | null;
 }
 
 interface ApiResponse<T> {
@@ -154,19 +154,19 @@ const pagination = reactive<Pagination>({
   total: 0,
   searchKey: "",
   recommendStatus: null,
-  sortId: null,
-  labelId: null
+  categoryId: null,
+  tagId: null
 })
 const articles = ref<Article[]>([])
-const sorts = ref<Sort[]>([])
-const labels = ref<Label[]>([])
-const labelsTemp = ref<Label[]>([])
+const sorts = ref<Category[]>([])
+const labels = ref<Tag[]>([])
+const labelsTemp = ref<Tag[]>([])
 
 // 监听分类变化，更新标签列表
-watch(() => pagination.sortId, (newVal) => {
-  pagination.labelId = null
+watch(() => pagination.categoryId, (newVal) => {
+  pagination.tagId = null
   if (newVal && labels.value && labels.value.length > 0) {
-    labelsTemp.value = labels.value.filter(l => l.sortId === newVal)
+    labelsTemp.value = labels.value.filter(l => l.categoryId === newVal)
   }
 })
 
@@ -175,8 +175,8 @@ const getSortAndLabel = async (): Promise<void> => {
   try {
     const res = await articleApi.getSortAndLabel()
     if (res.data && Object.keys(res.data).length > 0) {
-      sorts.value = res.data.sorts
-      labels.value = res.data.labels
+      sorts.value = res.data.categories
+      labels.value = res.data.tags
     }
   } catch (error) {
     ElMessage({
@@ -194,8 +194,8 @@ const clearSearch = (): void => {
     total: 0,
     searchKey: "",
     recommendStatus: null,
-    sortId: null,
-    labelId: null
+    categoryId: null,
+    tagId: null
   })
   getArticles()
 }

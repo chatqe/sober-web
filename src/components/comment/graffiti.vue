@@ -83,7 +83,7 @@
   import { ref, reactive, computed, onMounted, inject } from 'vue'
   import { ElMessage, ElIcon } from 'element-plus'
   import { Edit, ArrowLeft, ArrowRight, Refresh } from '@element-plus/icons-vue'
-  import { useUserStore } from '../../store/index'
+  import { useUserStore } from '@/stores'
   import { resourceApi, qiniuApi } from '@/api/index.js'
   import { defineAsyncComponent } from 'vue'
 
@@ -129,7 +129,7 @@
   }
   
   // 动态导入组件
-  const proButton = defineAsyncComponent(() => import("../common/proButton"))
+  const proButton = defineAsyncComponent(() => import("../common/proButton.vue"))
   
   // 注入全局属性
   const $common = inject<CommonUtils>('$common')!

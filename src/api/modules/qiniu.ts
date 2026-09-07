@@ -12,7 +12,7 @@ import type {
   QiniuFileListResponse,
   QiniuFileListParams,
   QiniuFileDeleteParams
-} from '../types';
+} from '../types/qiniu';
 
 
 /**

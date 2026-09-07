@@ -16,7 +16,7 @@ import type {
   QiniuTokenResponse,
   UploadResponse,
   ResourceInfo
-} from '../types';
+} from '../types/article';
 
 
 /**
@@ -30,11 +30,13 @@ export const getSortAndLabel = async (): Promise<SortAndLabelResponse> => {
 
 /**
  * 根据ID获取文章详情
- * @param {number} id - 文章ID
- * @returns {Promise<ArticleDetail>} 文章详情
+ * @param {Object} params - 查询参数
+ * @param {number} params.id - 文章ID
+ * @param {string} [params.password] - 文章密码（加密文章时必填）
+ * @returns {Promise<ArticleDetail>} 文章详情（裸业务数据，R<T> 信封已在 request 封装层剥离）
  */
-export const getArticleById = async (id: number): Promise<ArticleDetail> => {
-    const res = await request.get<ArticleDetail>('/article/getArticleById', {id});
+export const getArticleById = async (params: { id: number; password?: string }): Promise<ArticleDetail> => {
+    const res = await request.get<ArticleDetail>('/article/getArticleById', params);
     return res.data;
 };
 
@@ -49,12 +51,18 @@ export const getArticleList = async (params: ArticleListParams): Promise<Article
 };
 
 /**
+ * 按分类分组的文章列表响应
+ * 对应后端 Map<Long, List<ArticleVO>>，JSON 序列化后 key 为分类 id 字符串
+ */
+export type SortArticleGroupResponse = Record<string, ArticleDetail[]>;
+
+/**
  * 获取文章列表带 sort
  * @param {ArticleListParams} params - 查询参数
- * @returns {Promise<ArticleListResponse>} 文章列表
+ * @returns {Promise<SortArticleGroupResponse>} 按分类 id 分组的文章列表（裸业务数据，R<T> 信封已在 request 封装层剥离）
  */
-export const listSortArticle = async (params: ArticleListParams): Promise<ArticleListResponse> => {
-    const res = await request.get<ArticleListResponse>('/article/listSortArticle', params);
+export const listSortArticle = async (params: ArticleListParams): Promise<SortArticleGroupResponse> => {
+    const res = await request.get<SortArticleGroupResponse>('/article/listSortArticle', params);
     return res.data;
 };
 

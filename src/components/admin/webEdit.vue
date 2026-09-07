@@ -255,7 +255,7 @@
   import { ref, reactive, onMounted, nextTick, inject } from 'vue';
   import { ElMessage, ElMessageBox } from 'element-plus';
   import { webInfoApi } from '@/api/index.js';
-  const uploadPicture = () => import("../common/uploadPicture");
+  const uploadPicture = () => import("../common/uploadPicture.vue");
 
   // 注入全局属性
   const $constant = inject('$constant');
