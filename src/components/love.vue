@@ -422,7 +422,7 @@
 import {defineAsyncComponent, inject, onMounted, onUnmounted, reactive, ref} from 'vue'
 import {ElMessage} from 'element-plus'
 import {useUserStore, useWebInfoStore} from '@/stores'
-import {familyApi, webInfoApi} from '@/api/index.js'
+import {familyApi, webApi, webInfoApi} from '@/api/index.js'
 import ProButton from "@/components/common/proButton.vue";
 
 // 获取注入的全局属性

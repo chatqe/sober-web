@@ -7,7 +7,7 @@
  */
 
 import axios from "axios";
-import type {AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig} from "axios";
+import type {AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError} from "axios";
 // 处理url参数
 import qs from "qs";
 import {useAuthStore, useUserStore} from "@/stores/index.js";
@@ -51,13 +51,6 @@ const request: AxiosInstance = axios.create({
     withCredentials: true
 });
 
-/**
- * 导出原始 axios 实例
- * 供 orval 生成层（src/api/client/responseHandler.ts）复用，
- * 共享拦截器链（认证头附加、业务码校验、错误提示）
- */
-export const axiosInstance: AxiosInstance = request;
-
 // axios.defaults.baseURL = constant.baseURL;
 
 /**
@@ -99,13 +92,8 @@ const createReqConfig = ({isAdmin = false, contentType, timeout, onProgress}: Re
 };
 
 // 请求拦截器
-request.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    // 为未显式携带 Authorization 的请求自动附加认证头（orval 生成层使用）
-    // orval 生成的管理端接口 URL 均以 /admin 开头，其余视为用户端接口
-    if (!config.headers.Authorization) {
-        const isAdmin = !!config.url && config.url.startsWith('/admin');
-        config.headers.Authorization = isAdmin ? authStore.adminToken : authStore.userToken;
-    }
+request.interceptors.request.use((config: AxiosRequestConfig) => {
+    // 在发送请求之前做些什么
     return config;
 }, (error: AxiosError) => {
     // 对请求错误做些什么

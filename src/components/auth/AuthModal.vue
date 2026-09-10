@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {inject, onMounted, onUnmounted, ref, watch} from 'vue'
-import {useRouter} from 'vue-router'
 import LoginForm from './LoginForm.vue'
 import RegisterForm from './RegisterForm.vue'
 import ResetPwdForm from './ResetPwdForm.vue'
@@ -20,15 +19,8 @@ const forms = {
 // 状态管理
 const visible = defineModel<boolean>()          // 只接收是否弹出
 const page = ref<AuthPage>('login')
-const router = useRouter()
 
-/* 登录/注册成功 → 关闭弹框并跳转首页 */
-const onSuccess = (): void => {
-  visible.value = false
-  router.push('/')
-}
-
-/* 子组件切换页（注册/忘记密码/免密）→ 壳换页 */
+/* 登录子组件点击「注册/忘记密码/免密」→ 壳换页 */
 const onSwitch = (target: Exclude<AuthPage, 'login'>): void => {
   page.value = target
 }
@@ -98,9 +90,9 @@ watch(() => visible.value, toggleLock, { immediate: true })
             
             <!-- 子表单按需渲染 -->
             <KeepAlive>
-              <component
-                :is="forms[page]"
-                @success="onSuccess"
+              <component 
+                :is="forms[page]" 
+                @success="visible = false"
                 @switch="onSwitch"
               />
             </KeepAlive>

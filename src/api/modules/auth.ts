@@ -16,7 +16,7 @@ import type {
   CaptchaResponse,
   CaptchaCheckParams,
   EmailCodeParams
-} from '../types/auth';
+} from '../types';
 
 
 // 用户登录

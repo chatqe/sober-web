@@ -43,7 +43,7 @@ export interface Pagination {
   total?: number;
   recommendStatus?: boolean;
   searchKey?: string;
-  categoryId?: number | null;
+  sortId?: number | null;
   articleSearch?: string;
   [key: string]: any;
 }
@@ -118,19 +118,19 @@ export interface WebInfo {
 /**
  * 分类信息
  */
-export interface Category {
+export interface Sort {
   id: number;
-  name: string;
+  sortName: string;
   [key: string]: any;
 }
 
 /**
  * 标签信息
  */
-export interface Tag {
+export interface Label {
   id: number;
-  name: string;
-  categoryId: number;
+  labelName: string;
+  sortId: number;
   [key: string]: any;
 }
 
@@ -147,55 +147,27 @@ export interface WeiYan {
 }
 
 /**
- * 评论分页对象（后端 childComments 为 MyBatis-Plus Page 结构）
- */
-export interface CommentPage {
-  records?: Comment[];
-  total?: number;
-  current?: number;
-  size?: number;
-  pages?: number;
-  [key: string]: any;
-}
-
-/**
- * 评论信息（对应后端 CommentVO）
+ * 评论信息
  */
 export interface Comment {
-  id?: number;
-  /** 业务主键ID，如文章ID、树洞ID等 */
-  bizId?: number;
-  /** 业务类型：1-文章 2-树洞留言 3-表白墙留言 */
-  bizType?: number;
-  /** 父评论ID，0=根评论 */
-  parentId?: number;
-  /** 顶级祖先评论ID，0=自身为根 */
-  rootId?: number;
-  /** 回复目标用户ID */
-  replyToUserId?: number;
-  /** 评论人ID */
-  authorId?: number;
-  /** 点赞数 */
-  likeCnt?: number;
-  /** 评论内容 */
-  content?: string;
-  createTime?: string;
-  username?: string;
-  avatar?: string;
-  /** 父评论用户名（回复他人时返回） */
-  parentUsername?: string;
-  /** 子评论分页 */
-  childComments?: CommentPage;
+  id: number;
+  source: number;
+  type: string;
+  userId: number;
+  likeCount: number;
+  commentContent: string;
+  commentInfo: string;
+  createTime: string;
   [key: string]: any;
 }
 
 /**
- * 分类项（组件业务层，对应后端 CategoryVO）
+ * 排序项（组件业务层，区别于 orval 生成的 API 类型 SortItem）
  */
-export interface CategoryItem {
+export interface SortItem {
   id: number;
-  name: string;
-  description: string;
+  sortName: string;
+  sortDescription: string;
   status: number;
   [key: string]: any;
 }

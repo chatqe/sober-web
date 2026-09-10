@@ -69,17 +69,9 @@
                 </div>
               </div>
 
-              <!-- 分类视图：按分类分组展示文章（首页默认状态） -->
               <div v-show="indexType === 1">
-                <!-- 无分类（必然无分组文章）：整体显示空状态 -->
-                <EmptyState
-                    v-if="!sortInfo.length"
-                    description="暂无分类和文章，快去添加吧~"
-                />
-                <template v-else>
-                <div v-for="category in sortInfo" :key="category.id">
-                  <!-- 分类容器按 sortInfo 个数展示，标题行始终渲染 -->
-                  <div>
+                <div v-for="sort in sortInfo" :key="sort.id">
+                  <div v-if="sortArticles[sort.id]?.length">
                     <div class="sort-article-first">
                       <div>
                         <svg viewBox="0 0 1024 1024" width="20" height="20"
@@ -88,10 +80,10 @@
                               d="M367.36 482.304H195.9936c-63.3344 0-114.6368-51.3536-114.6368-114.6368V196.2496c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368V367.616c0 63.3344-51.3536 114.688-114.688 114.688zM367.36 938.752H195.9936c-63.3344 0-114.6368-51.3536-114.6368-114.6368v-171.4176c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368v171.4176c0 63.3344-51.3536 114.6368-114.688 114.6368zM828.672 938.752h-171.4176c-63.3344 0-114.6368-51.3536-114.6368-114.6368v-171.4176c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368v171.4176c0 63.3344-51.3024 114.6368-114.6368 114.6368zM828.672 482.304h-171.4176c-63.3344 0-114.6368-51.3536-114.6368-114.6368V196.2496c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368V367.616c0 63.3344-51.3024 114.688-114.6368 114.688z"
                               fill="#FF623E"></path>
                         </svg>
-                        {{ category.name }}
+                        {{ sort.sortName }}
                       </div>
 
-                      <div class="article-more" @click="router.push({path: '/sort', query: {categoryId: category.id}})">
+                      <div class="article-more" @click="router.push({path: '/sort', query: {sortId: sort.id}})">
                         <svg viewBox="0 0 1024 1024" width="20" height="20"
                              style="vertical-align: -2px;margin-bottom: -2px">
                           <path
@@ -104,15 +96,11 @@
                         MORE
                       </div>
                     </div>
-                    <!-- 分类下有文章 → 文章列表；无文章（且数据已加载完成）→ 空状态 -->
-                    <SortArticle v-if="sortArticles[category.id]?.length" :articleList="sortArticles[category.id]"/>
-                    <EmptyState v-else-if="sortArticlesLoaded" description="该分类下暂无文章~"/>
+                    <SortArticle :articleList="sortArticles[sort.id]"/>
                   </div>
                 </div>
-                </template>
               </div>
 
-              <!-- 列表视图：分类筛选/搜索结果的分页文章列表（点击侧边栏分类或搜索后进入） -->
               <div v-show="indexType === 2">
                 <ArticleList :articleList="articles"/>
                 <div class="pagination-wrap">
@@ -153,10 +141,10 @@ import type { Ref } from 'vue'
 import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
-import {articleApi, homeApi} from '@/api/index.js'
+import {articleApi} from '@/api/index.js'
 
 // 导入类型
-import type { CommonUtils, AppConstants, CategoryItem, Article, Pagination, GuShi } from '@/types'
+import type { CommonUtils, AppConstants, SortItem, Article, Pagination, GuShi, ArticleApiResponse } from '@/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!
@@ -172,7 +160,6 @@ const Zombie = defineAsyncComponent(() => import('./common/zombie.vue'))
 const Printer = defineAsyncComponent(() => import('./common/printer.vue'))
 const ArticleList = defineAsyncComponent(() => import('./articleList.vue'))
 const SortArticle = defineAsyncComponent(() => import('./common/sortArticle.vue'))
-const EmptyState = defineAsyncComponent(() => import('./common/emptyState.vue'))
 const MyFooter = defineAsyncComponent(() => import('./common/myFooter.vue'))
 const MyAside = defineAsyncComponent(() => import('./myAside.vue'))
 
@@ -182,12 +169,6 @@ const sortInfoStore = useSortInfoStore()
 
 const loading: Ref<boolean> = ref(false)
 const showAside: Ref<boolean> = ref(true)
-/**
- * 首页内容区视图切换开关
- * 1 - 分类视图（默认）：按分类分组展示各分类下的文章
- * 2 - 列表视图：展示侧边栏分类筛选/搜索结果的分页文章列表
- * 由 selectSort() 或 selectArticle() 触发切换（1 → 2），刷新页面后恢复默认
- */
 const indexType: Ref<number> = ref(1)
 const announcementMaxWidth: Ref<string> = ref('auto')
 const printerInfo: Ref<string> = ref("你看对面的青山多漂亮")
@@ -196,7 +177,7 @@ const pagination: Ref<Pagination> = ref({
   pageSize: 10,
   total: 0,
   searchKey: "",
-  categoryId: null,
+  sortId: null,
   articleSearch: ""
 })
 const guShi: Ref<GuShi> = ref({
@@ -207,8 +188,6 @@ const guShi: Ref<GuShi> = ref({
 })
 const articles: Ref<Article[]> = ref([])
 const sortArticles: Ref<Record<number, Article[]>> = ref({})
-// 分组文章数据是否已加载完成（用于区分"加载中"与"分类下确实无文章"，避免空状态闪烁）
-const sortArticlesLoaded: Ref<boolean> = ref(false)
 
 // 计算属性
 const backgroundImage = computed(() => {
@@ -221,13 +200,13 @@ const notices = computed(() => webInfoStore.webInfo?.notices || [])
 const sortInfo = computed(() => sortInfoStore.sortInfo || [])
 
 // 方法
-const selectSort = async (sort: CategoryItem): Promise<void> => {
+const selectSort = async (sort: SortItem): Promise<void> => {
   pagination.value = {
     pageNum: 1,
     pageSize: 10,
     total: 0,
     searchKey: "",
-    categoryId: sort.id,
+    sortId: sort.id,
     articleSearch: ""
   }
   articles.value = []
@@ -252,7 +231,7 @@ const selectArticle = async (articleSearch: string): Promise<void> => {
     pageSize: 10,
     total: 0,
     searchKey: "",
-    categoryId: null,
+    sortId: null,
     articleSearch: articleSearch
   }
   articles.value = []
@@ -282,12 +261,11 @@ const handleCurrentChange = (): void => {
 
 const getArticles = async (): Promise<void> => {
   try {
-    // 注意：articleApi 返回的是裸业务数据（R<T> 信封已在 request 封装层剥离），即 {list, total}
-    const response = await articleApi.getArticleList(pagination.value)
-    if (!$common.isEmpty(response)) {
-      // articles.value = articles.value.concat(response.list)
-      articles.value = response.list as Article[]
-      pagination.value.total = response.total
+    const response: ArticleApiResponse = await articleApi.getArticleList(pagination.value)
+    if (!$common.isEmpty(response.data)) {
+      // articles.value = articles.value.concat(response.data.list)
+      articles.value = response.data.list
+      pagination.value.total = response.data.total
     }
   } catch (error: any) {
     ElMessage({
@@ -299,30 +277,15 @@ const getArticles = async (): Promise<void> => {
 
 const getSortArticles = async (): Promise<void> => {
   try {
-    // 注意：返回的是按分类 id 分组的文章 Map（如 {1: [...]...}），信封已剥离
     const response = await articleApi.listSortArticle()
-    if (!$common.isEmpty(response)) {
-      sortArticles.value = response as Record<number, Article[]>
+    if (!$common.isEmpty(response.data)) {
+      sortArticles.value = response.data
     }
   } catch (error: any) {
     ElMessage({
       message: error.message,
       type: "error"
     })
-  } finally {
-    // 无论成功失败均标记加载完成，供空状态判断使用
-    sortArticlesLoaded.value = true
-  }
-}
-
-const getSortInfo = async (): Promise<void> => {
-  try {
-    const res = await homeApi.getHomeStats()
-    if (res && !$common.isEmpty(res.categories)) {
-      sortInfoStore.loadHomeStats(res.categories)
-    }
-  } catch (error: any) {
-    console.error('[getSortInfo error]', error)
   }
 }
 
@@ -352,7 +315,6 @@ const getGuShi = (): void => {
 onMounted(() => {
   getGuShi()
   getSortArticles()
-  getSortInfo()
 })
 </script>
 

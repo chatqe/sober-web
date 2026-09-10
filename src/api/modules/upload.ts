@@ -12,7 +12,7 @@ import type {
   UploadOptions,
   ResourceInfo,
   UploadResponse
-} from '../types/upload';
+} from '../types';
 
 
 /**

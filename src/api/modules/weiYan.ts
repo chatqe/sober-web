@@ -12,7 +12,7 @@ import type {
   WeiYanBase,
   WeiYanDetail,
   WeiYanDeleteParams
-} from '../types/weiYan';
+} from '../types';
 
 
 // 获取微言列表

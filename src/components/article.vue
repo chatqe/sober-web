@@ -135,16 +135,18 @@
             <hr>
           </div>
 
-          <!-- 文章内容：md-editor-v3 纯预览组件，仅将 Markdown 渲染为文章 HTML，无编辑工具栏与分栏 -->
-          <MdPreview
-            :modelValue="articleContentHtml"
+          <!-- 文章内容 -->
+          <MdEditor
+            v-model="articleContentHtml"
             class="entry-content"
-            :editorId="'article-preview-' + article.id"
-            :noHighlight="true"
-            :noKatex="true"
-            :noMermaid="true"
+            :modelValue="articleContentHtml"
+            :previewOnly="true"
+            :toolbars="{}"
+            :editorId="'article-editor-' + article.id"
             ref="entryContentRef"
           />
+          <!-- 为了向后兼容，保留原有的引用方式 -->
+          <div style="display: none;" ref="entryContentRefOld"></div>
           <!-- 最后更新时间 -->
           <div class="article-update-time">
             <span>文章最后更新于 {{ article.updateTime }}</span>
@@ -152,8 +154,8 @@
           <!-- 分类 -->
           <div class="article-sort">
             <span
-              @click="$router.push({path: '/sort', query: {categoryId: article.categoryId, tagId: article.tagId}})">{{
-                article.category?.name + " ▶ " + article.tag?.name
+              @click="$router.push({path: '/sort', query: {sortId: article.sortId, labelId: article.labelId}})">{{
+                article.sort.sortName + " ▶ " + article.label.labelName
               }}</span>
           </div>
           <!-- 作者信息 -->
@@ -173,7 +175,7 @@
           <!--          <div class="myCenter" id="article-like" @click="subscribeLabel()">-->
           <div class="myCenter" id="article-like">
             <el-icon class="article-like-icon" :class="{'article-like': subscribe}"
-               @click="subscribeLabel()"><Star /></el-icon>
+               @click="subscribeLabel()"><Thumb /></el-icon>
             <div class="class">
               <img class="article-newlike-img" :src="$constant.newLike" alt="点赞"
                    @click="addArticleLikeCount()">
@@ -309,11 +311,10 @@ import { defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
 import { ElMessage, ElMessageBox, ElNotification, ElIcon } from 'element-plus'
-import { Star } from '@element-plus/icons-vue'
+import { Thumb } from '@element-plus/icons-vue'
 // 导入状态管理
 import { useUserStore, useWebInfoStore } from '@/stores'
-import {MdPreview} from 'md-editor-v3'
-import 'md-editor-v3/lib/preview.css'
+import MdEditor from 'md-editor-v3'
 
 // 导入API模块
 import { articleApi, userApi, weiYanApi } from '@/api/index.js'
@@ -327,7 +328,7 @@ const proButton = defineAsyncComponent(() => import('./common/proButton.vue'))
 const videoPlayer = defineAsyncComponent(() => import('./common/videoPlayer.vue'))
 
 // 导入类型
-import type { CommonUtils, AppConstants, Article, Category, Tag, WeiYan } from '@/types'
+import type { CommonUtils, AppConstants, Article, Sort, Label, WeiYan } from '@/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!
@@ -416,7 +417,7 @@ const subscribeLabel = async (): Promise<void> => {
 
   try {
     await ElMessageBox.confirm(
-      '确认' + (subscribe.value ? '取消订阅' : '订阅') + '专栏【' + article.value.tag?.name + '】？' + 
+      '确认' + (subscribe.value ? '取消订阅' : '订阅') + '专栏【' + article.value.label.labelName + '】？' + 
       (subscribe.value ? "" : "订阅专栏后，该专栏发布新文章将通过邮件通知订阅用户。"), 
       subscribe.value ? "取消订阅" : "文章订阅", {
       confirmButtonText: '确定',
@@ -425,7 +426,7 @@ const subscribeLabel = async (): Promise<void> => {
     })
     
     const res = await userApi.subscribe({
-      tagId: article.value.tagId,
+      labelId: article.value.labelId,
       flag: !subscribe.value
     })
     
@@ -574,8 +575,8 @@ const getTocbot = () => {
     if (typeof tocbot !== 'undefined') {
       tocbot.init({
         tocSelector: '.toc',
-        // 文章正文容器（MdPreview 根节点挂载 entry-content 类）
-        contentSelector: '.entry-content',
+        // 使用预览区域作为内容选择器
+        contentSelector: `.md-editor-preview`,
         headingSelector: 'h1, h2, h3, h4, h5',
         scrollSmooth: true,
         fixedSidebarOffset: 'auto',
@@ -601,12 +602,12 @@ const addId = (): void => {
 const getArticle = async (passwordVal?: string): Promise<void> => {
   try {
     const res = await articleApi.getArticleById({
-      id: Number(id.value),
+      id: id.value,
       password: passwordVal
     })
-
-    if (!$common.isEmpty(res)) {
-      article.value = res;
+    
+    if (!$common.isEmpty(res.data)) {
+      article.value = res.data;
       
       // 检查是否点赞
       const checkHasLike = (): void => {
@@ -617,15 +618,17 @@ const getArticle = async (passwordVal?: string): Promise<void> => {
       // 获取动态消息
       getNews();
       
-      // 文章正文为 Markdown 原文，交由 MdPreview 纯预览组件渲染为 HTML
+      // 使用md-editor-v3渲染文章内容（仅预览模式）
       articleContentHtml.value = article.value.articleContent;
-
+      
       nextTick(() => {
-        // MdPreview 根节点透传了 entry-content 类，渲染后的文章 HTML 均在其内部
-        $common.imgShow(".entry-content img");
-        // 模板 ref 绑定的是组件实例，此处取其根 DOM 元素供代码高亮/目录等后处理使用
-        entryContentRef.value = document.querySelector('.entry-content');
-        if (entryContentRef.value) {
+        // 使用MdEditor时，imgShow直接针对整个预览区域
+        $common.imgShow(".md-editor-preview img");
+        // 对于MdEditor，我们需要获取预览区域的DOM元素
+        const previewElement = document.querySelector(`#article-editor-${article.value.id}-preview`);
+        if (previewElement) {
+          // 将ref设置为预览元素，以便后续函数使用
+          entryContentRef.value = previewElement;
           highlight();
           addId();
           getTocbot();
@@ -642,7 +645,7 @@ const getArticle = async (passwordVal?: string): Promise<void> => {
       if (!currentUser.value || !currentUser.value.subscribe) {
         return;
       }
-      subscribe.value = JSON.parse(currentUser.value.subscribe).includes(article.value.tagId);
+      subscribe.value = JSON.parse(currentUser.value.subscribe).includes(article.value.labelId);
     }
   } catch (error: any) {
     if (error.message && error.message.startsWith("密码错误")) {
@@ -754,7 +757,7 @@ const addArticleLikeCount = async () => {
     let loginFlag = $common.isEmpty(currentUser.value)
 
     await articleApi.addArticleLikeCount({
-      articleId: Number(id.value),
+      articleId: id.value,
       userId: loginFlag ? null : currentUser.value.id,
       operation: 0
     })
@@ -779,7 +782,7 @@ const checkHasLike = async () => {
   
   // 已登录 查看是否被当前登录用户点赞
   try {
-    const res = await articleApi.checkHasLike({articleId: Number(id.value)})
+    const res = await articleApi.checkHasLike({articleId: id.value})
     console.log(res.data)
   } catch (error) {
     console.error('检查点赞状态失败:', error)

@@ -13,7 +13,7 @@ import type {
   UserDetail,
   UserBase,
   ResetPasswordParams
-} from '../types/user';
+} from '../types';
 
 
 // 注册用户

@@ -21,8 +21,8 @@ export interface LabelInfo {
 
 // 分类和标签列表响应
 export interface SortAndLabelResponse {
-  categories: SortInfo[];
-  tags: LabelInfo[];
+  sorts: SortInfo[];
+  labels: LabelInfo[];
   [key: string]: any;
 }
 
@@ -43,8 +43,8 @@ export interface ArticleBase {
   tips?: string;
   viewStatus?: boolean;
   hasVideo?: boolean;
-  categoryId?: string;
-  tagId?: number;
+  sortId?: string;
+  labelId?: number;
   commentCount?: number;
   username?: string;
   category?: Category;
@@ -61,6 +61,8 @@ export interface ArticleDetail extends ArticleBase {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+  sortName?: string;
+  labels?: LabelInfo[];
   [key: string]: any;
 }
 
@@ -85,9 +87,9 @@ export interface ArticleListParams {
   pageSize?: number;
   desc?: boolean;
   searchKey?: string;
-  categoryId?: string;
+  sortId?: string;
   recommendStatus?: boolean;
-  tagId?: number;
+  labelId?: number;
   articleSearch?: string;
   [key: string]: any;
 }

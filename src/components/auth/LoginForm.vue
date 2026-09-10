@@ -39,11 +39,11 @@ const login = async (): Promise<void> => {
   }
 
   try {
-    const res = await authApi.login(user)
-    if (!$common.isEmpty(res)) {
-      userStore.loadCurrentUser(res)
-      authStore.setUserToken(res.accessToken)
-      if (res.isAdmin) {
+    const res = await authApi.login(user, false, false)
+    if (!$common.isEmpty(res.data)) {
+      userStore.loadCurrentUser(res.data)
+      authStore.setUserToken(res.data.accessToken)
+      if (res.data.isAdmin) {
         authStore.setIsAdmin(true)
       }
       account.value = ""

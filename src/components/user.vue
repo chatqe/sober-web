@@ -260,9 +260,9 @@
               </div>
               <div>
                 <el-radio-group v-model="currentUser.gender">
-                  <el-radio value="0" style="margin-right: 10px">薛定谔的猫</el-radio>
-                  <el-radio value="1" style="margin-right: 10px">男</el-radio>
-                  <el-radio value="2">女</el-radio>
+                  <el-radio :label="0" style="margin-right: 10px">薛定谔的猫</el-radio>
+                  <el-radio :label="1" style="margin-right: 10px">男</el-radio>
+                  <el-radio :label="2">女</el-radio>
                 </el-radio-group>
               </div>
               <div>
@@ -320,8 +320,8 @@
           <div v-else-if="dialogTitle === '找回密码'">
             <div class="myCenter" style="margin-bottom: 12px">
               <el-radio-group v-model="pwdFlag">
-                <el-radio value="1" style="margin-right: 10px">手机号</el-radio>
-                <el-radio value="2">邮箱</el-radio>
+                <el-radio :label="1" style="margin-right: 10px">手机号</el-radio>
+                <el-radio :label="2">邮箱</el-radio>
               </el-radio-group>
             </div>
             <div v-if="pwdFlag === 1">

@@ -7,11 +7,11 @@
 
     <div class="my-animation-slide-bottom sort-container">
       <!-- 标签 -->
-      <div class="sort-warp shadow-box" v-if="!$common.isEmpty(sort) && !$common.isEmpty(sort.tags)">
-        <div v-for="(tag, index) in sort.tags" :key="index"
-             :class="{isActive: !$common.isEmpty(tagId) && parseInt(tagId) === tag.id}"
-             @click="listArticle(tag)">
-          <proTag :info="tag.name+' '+tag.countOfTag"
+      <div class="sort-warp shadow-box" v-if="!$common.isEmpty(sort) && !$common.isEmpty(sort.labels)">
+        <div v-for="(label, index) in sort.labels" :key="index"
+             :class="{isActive: !$common.isEmpty(labelId) && parseInt(labelId) === label.id}"
+             @click="listArticle(label)">
+          <proTag :info="label.labelName+' '+label.countOfLabel"
                   :color="$constant.before_color_list[Math.floor(Math.random() * 6)]"
                   style="margin: 12px">
           </proTag>
@@ -65,21 +65,19 @@ const proTag = defineAsyncComponent(() => import("./common/proTag.vue"))
 const articleList = defineAsyncComponent(() => import("./articleList.vue"))
 const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 
-// 当前分类ID / 标签ID（来自路由 query，统一为字符串，比较时做 Number 转换）
-const categoryId = computed(() => route.query.categoryId)
-const tagId = computed(() => route.query.tagId)
-const sort = ref(null)
 
-// 分页参数（字段名与后端 ArticlePageDTO 对齐：pageNum/pageSize/categoryId/tagId）
-const buildPagination = () => ({
+
+const sortId = computed(() => router.currentRoute.value.query.sortId)
+const labelId = computed(() => router.currentRoute.value.query.labelId)
+const sort = ref(null)
+const pagination = ref({
   pageNum: 1,
   pageSize: 10,
   total: 0,
   searchKey: "",
-  categoryId: route.query.categoryId,
-  tagId: route.query.tagId ? Number(route.query.tagId) : undefined
+  sortId: sortId.value,
+  labelId: labelId.value
 })
-const pagination = ref(buildPagination())
 const articles = ref([])
 
 // 计算属性
@@ -89,10 +87,19 @@ const handleCurrentChange = () => {
   getArticles()
 }
 
-// 监听路由变化（切换分类/标签时重建分页并重新加载）
+// 监听路由变化
 watch(() => route.query, () => {
-  pagination.value = buildPagination()
+  pagination.value = {
+    current: 1,
+    size: 10,
+    total: 0,
+    searchKey: "",
+    sortId: route.query.sortId,
+    labelId: route.query.labelId
+  }
   articles.value = []
+  sortId.value = route.query.sortId
+  labelId.value = route.query.labelId
   getSort()
   getArticles()
 })
@@ -104,38 +111,45 @@ const pageArticles = () => {
 }
 
 const getSort = () => {
-  sort.value = null
   if (!$common.isEmpty(sortInfo.value)) {
-    // 路由 query 的 categoryId 为字符串，store 中 id 为数字，用宽松比较
-    let sortArray = sortInfo.value.filter(f => String(f.id) === String(categoryId.value))
+    // let sortArray = sortInfo.value.filter(f => {
+    //   return f.id === parseInt(sortId.value)
+    // })
+    let sortArray = sortInfo.value.filter(f => f.id === sortId.value)
     if (!$common.isEmpty(sortArray)) {
       sort.value = sortArray[0]
     }
   }
 }
 
-// 点击标签：通过路由跳转驱动 watch 统一刷新（保证 URL 与页面状态一致）
-const listArticle = (tag) => {
-  router.push({
-    path: '/sort',
-    query: { categoryId: route.query.categoryId, tagId: tag.id }
+const listArticle = (label) => {
+  labelId.value = label.id
+  pagination.value = {
+    current: 1,
+    size: 10,
+    total: 0,
+    searchKey: "",
+    sortId: route.query.sortId,
+    labelId: label.id
+  }
+  articles.value = []
+  nextTick(() => {
+    getArticles()
   })
 }
 
 const getArticles = async () => {
   try {
-    // modules 层已剥离 R<T> 信封，res 即分页对象 { list, total, ... }
     const res = await articleApi.getArticleList(pagination.value)
-    if (res && !$common.isEmpty(res.list)) {
-      articles.value = res.list
-      pagination.value.total = res.total
-    } else {
-      articles.value = []
-      pagination.value.total = 0
+    if (!$common.isEmpty(res.data)) {
+      // console.log(res.data)
+      // articles.value = articles.value.concat(res.data.list)
+      articles.value = res.data.list
+      pagination.value.total = res.data.total
     }
   } catch (error) {
     ElMessage({
-      message: error.message || '获取文章列表失败',
+      message: error.message,
       type: "error"
     })
   }

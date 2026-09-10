@@ -1,5 +1,5 @@
-import type {AxiosRequestConfig, AxiosError} from 'axios';
-import {axiosInstance} from '@/utils/request';
+import type { AxiosRequestConfig, AxiosError } from 'axios';
+import { axiosInstance } from './axios';
 
 /**
  * 自定义请求函数
@@ -9,7 +9,7 @@ import {axiosInstance} from '@/utils/request';
  * @returns 响应数据
  */
 export const handleResponse = <T>(config: AxiosRequestConfig): Promise<T> => {
-    return axiosInstance.request(config).then(({data}) => data as T);
+  return axiosInstance.request(config).then(({ data }) => data as T);
 };
 
 /**
@@ -30,27 +30,27 @@ export type BodyType<BodyData> = BodyData;
  * @param error - 错误对象
  */
 export function handleError(error: unknown): never {
-    if (error instanceof Error) {
-        const axiosError = error as AxiosError;
+  if (error instanceof Error) {
+    const axiosError = error as AxiosError;
 
-        if (axiosError.response) {
-            const {status, data, config} = axiosError.response;
-            console.error(`[API Error] ${status}`, {
-                url: config?.url,
-                method: config?.method,
-                data,
-            });
-        } else if (axiosError.request) {
-            console.error('[API Error] 无响应', {
-                url: axiosError.config?.url,
-                method: axiosError.config?.method,
-            });
-        } else {
-            console.error('[API Error] 请求配置错误:', axiosError.message);
-        }
+    if (axiosError.response) {
+      const { status, data, config } = axiosError.response;
+      console.error(`[API Error] ${status}`, {
+        url: config?.url,
+        method: config?.method,
+        data,
+      });
+    } else if (axiosError.request) {
+      console.error('[API Error] 无响应', {
+        url: axiosError.config?.url,
+        method: axiosError.config?.method,
+      });
     } else {
-        console.error('[API Error] 未知错误:', error);
+      console.error('[API Error] 请求配置错误:', axiosError.message);
     }
+  } else {
+    console.error('[API Error] 未知错误:', error);
+  }
 
-    throw error;
+  throw error;
 }

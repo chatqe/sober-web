@@ -59,8 +59,8 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item v-for="(sort, index) in sortInfo" :key="index">
-                    <div @click="router.push({path: '/sort', query: {categoryId: sort.id}})">
-                      {{ sort.name }}
+                    <div @click="router.push({path: '/sort', query: {sortId: sort.id}})">
+                      {{ sort.sortName }}
                     </div>
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -291,8 +291,8 @@
               <div v-for="(menu, index) in sortInfo"
                    :key="index"
                    class="sortMenu"
-                   @click="smallMenu({path: '/sort', query: {categoryId: menu.id}})">
-                {{ menu.name }}
+                   @click="smallMenu({path: '/sort', query: {sortId: menu.id}})">
+                {{ menu.sortName }}
               </div>
             </div>
           </li>
@@ -401,7 +401,7 @@ import {
 } from '@/stores'
 import {MagicStick, Menu, Moon, Sunny, SwitchButton, User} from '@element-plus/icons-vue'
 import mousedown from '../utils/mousedown'
-import {authApi, systemApi, homeApi} from '@/api'
+import {authApi, systemApi, webApi} from '@/api'
 import MyFooter from "@/components/common/myFooter.vue";
 import {routeMeta} from "@/router/metaCfg";
 import AuthModal from "@/components/auth/AuthModal.vue";
@@ -429,7 +429,7 @@ const isDark: Ref<boolean> = ref(false)
 const toolbarDrawer: Ref<boolean> = ref(false)
 const mouseAnimation: Ref<boolean> = ref(false)
 const toolButton: Ref<boolean> = ref(false)
-const adminLogin = computed(() => authStore.isAdmin)
+const adminLogin: boolean = authStore.isAdmin
 const currBgImg: Ref<string> = ref('') // 当前背景
 const showAuthModal: Ref<boolean> = ref(false)
 
@@ -562,7 +562,7 @@ const logout = async (): Promise<void> => {
 
 const getWebInfo = async (): Promise<void> => {
   try {
-    const res = await homeApi.getWebInfo()
+    const res = await webApi.getWebInfo()
     if (res && res.data && !$common.isEmpty(res.data)) {
       webInfoStore.loadWebInfo(res.data)
       localStorage.setItem('defaultStoreType', res.data.defaultStoreType || '')
@@ -589,9 +589,9 @@ const getSysConfig = async (): Promise<void> => {
 
 const getSortInfo = async (): Promise<void> => {
   try {
-    const res = await homeApi.getHomeStats()
-    if (res && !$common.isEmpty(res.categories)) {
-      sortInfoStore.loadHomeStats(res.categories)
+    const res = await webApi.getSortInfo()
+    if (res && res.data && !$common.isEmpty(res.data)) {
+      sortInfoStore.loadSortInfo(res.data)
     }
   } catch (error: any) {
     console.error('[getSortInfo error]', error)
