@@ -1,155 +1,107 @@
 <template>
-  <div class="myCenter verify-container">
-    <div class="verify-content">
-      <div>
-        <el-avatar :size="50" :src="webInfoAvatar"></el-avatar>
+  <div class="verify-page">
+    <div class="verify-card">
+      <div class="avatar-wrap">
+        <el-avatar :size="50" :src="webInfoAvatar" />
       </div>
-      <div>
-        <el-input v-model="account">
-          <template #prepend>账号</template>
+      <div class="form-item">
+        <el-input v-model="account" placeholder="请输入账号">
+          <template #prefix><el-icon><User /></el-icon></template>
         </el-input>
       </div>
-      <div>
-        <el-input v-model="password" type="password">
-          <template #prepend>密码</template>
+      <div class="form-item">
+        <el-input v-model="password" type="password" placeholder="请输入密码" show-password>
+          <template #prefix><el-icon><Lock /></el-icon></template>
         </el-input>
       </div>
-      <div>
-        <proButton :info="'提交'"
-                   @click="login()"
-                   :before="beforeColor"
-                   :after="afterColor">
-        </proButton>
+      <div class="form-item">
+        <el-button type="primary" class="login-btn" @click="login">登录</el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject, computed } from 'vue';
+import { ref, inject, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import router from '@/router';
-import { ElMessage } from 'element-plus';
-import { useUserStore } from '@/stores';
-import { authApi } from '@/api/index.js';
+import router from '@/router'
+import { ElMessage } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
+import { useAuthStore, useUserStore } from '@/stores'
+import { authApi } from '@/api/modules'
 
-// 异步导入组件
-const proButton = () => import("../common/proButton");
-
-// 定义接口
 interface CommonUtils {
-  isEmpty: (value: any) => boolean;
-  encrypt: (value: string) => string;
+  isEmpty: (value: any) => boolean
+  encrypt: (value: string) => string
 }
-
 interface AppConstants {
-  before_color_2: string;
-  after_color_2: string;
-  [key: string]: any;
+  [key: string]: any
 }
 
-interface LoginRequest {
-  account: string;
-  password: string;
-  isAdmin: boolean;
-}
+const $constant = inject<AppConstants>('$constant')!
+const $common = inject<CommonUtils>('$common')!
+const userStore = useUserStore()
+const authStore = useAuthStore()
+const route = useRoute()
 
-interface LoginResponse {
-  accessToken: string;
-  id: number;
-  username: string;
-  avatar: string;
-  [key: string]: any;
-}
+const account = ref<string>('')
+const password = ref<string>('')
+const redirect = computed(() => route.query.redirect || '/welcome')
+const webInfoAvatar = computed(() => userStore.webInfo?.avatar || '')
 
-interface ApiResponse<T> {
-  data: T;
-  [key: string]: any;
-}
-
-// 注入全局属性
-const $constant = inject<AppConstants>('$constant')!;
-const $common = inject<CommonUtils>('$common')!;
-const userStore = useUserStore();
-const route = useRoute();
-
-// 响应式数据
-const account = ref<string>('');
-const password = ref<string>('');
-const redirect = computed(() => route.query.redirect || '/welcome');
-const webInfoAvatar = computed(() => userStore.webInfo?.avatar || '');
-const beforeColor = computed(() => $constant?.before_color_2 || '');
-const afterColor = computed(() => $constant?.after_color_2 || '');
-
-// 登录方法
-const login = async (): Promise<void> => {
+const login = async () => {
   if ($common.isEmpty(account.value) || $common.isEmpty(password.value)) {
-    ElMessage({
-      message: "请输入账号或密码！",
-      type: "error"
-    });
-    return;
+    ElMessage.error('请输入账号或密码！')
+    return
   }
-
   try {
-    const user: LoginRequest = {
+    const user = {
       account: account.value.trim(),
       password: $common.encrypt(password.value.trim()),
       isAdmin: true
-    };
-
-    const res: ApiResponse<LoginResponse> = await authApi.login(user)
-    
-    if (!res.data) {
-      ElMessage({
-        message: '登录失败，无返回数据',
-        type: "error"
-      });
-      return;
     }
-    
-    if (!($common.isEmpty(res.data))) {
-      localStorage.setItem("adminToken", res.data.accessToken);
-      userStore.loadCurrentAdmin(res.data);
-      account.value = "";
-      password.value = "";
-      router.push({path: redirect.value});
+    const res: any = await authApi.login(user)
+    if (!res) { ElMessage.error('登录失败，无返回数据'); return }
+    if (!$common.isEmpty(res.data)) {
+      authStore.setAdminToken(res.data.accessToken)
+      authStore.setIsAdmin(true)
+      userStore.loadCurrentAdmin(res.data)
+      account.value = ''
+      password.value = ''
+      router.push({ path: redirect.value })
     }
-  } catch (error) {
-    ElMessage({
-      message: error.message || '登录失败',
-      type: "error"
-    });
+  } catch (error: any) {
+    ElMessage.error(error.message || '登录失败')
   }
-};
+}
 </script>
 
 <style scoped>
-
-  .verify-container {
-    height: 100vh;
-    background: var(--verifyImage) center center / cover repeat;
-  }
-
-  .verify-content {
-    background: var(--maxWhiteMask);
-    padding: 30px 40px 5px;
-    position: relative;
-  }
-
-  .verify-content > div:first-child {
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%);
-    top: -25px;
-  }
-
-  .verify-content > div:not(:first-child) {
-    margin: 25px 0;
-  }
-
-  .verify-content > div:last-child > div {
-    margin: 0 auto;
-  }
-
+.verify-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f2f5;
+}
+.verify-card {
+  width: 380px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 32px 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+.avatar-wrap {
+  margin-bottom: 20px;
+}
+.form-item {
+  margin: 16px 0;
+}
+.login-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 15px;
+}
 </style>
