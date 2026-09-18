@@ -183,19 +183,21 @@ const getIconComponent = (iconComponent) => {
 }
 
 .sidebar-el-menu .el-menu-item.is-active {
-  background-color: #eef2ff;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
   color: #4f46e5;
   font-weight: 500;
 }
 
 .sidebar-el-menu .el-sub-menu__title.is-active {
-  background-color: #eef2ff;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
   color: #4f46e5;
   font-weight: 500;
 }
 
 .sidebar-el-menu .el-menu-item:hover,
-.sidebar-el-menu .el-sub-menu__title:hover {
-  background-color: #f1f5f9;
+.sidebar-el-menu .el-menu-item:focus,
+.sidebar-el-menu .el-sub-menu__title:hover,
+.sidebar-el-menu .el-sub-menu__title:focus {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
 }
 </style>

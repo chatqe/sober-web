@@ -5,22 +5,22 @@
     <!-- KPI 卡片行 -->
     <div class="kpi-row">
       <div class="kpi-card">
-        <div class="kpi-label">总访问量</div>
+        <div class="kpi-label">📊 总访问量</div>
         <div class="kpi-value">{{ formatCount(historyInfo.ip_history_count) }}</div>
         <div class="kpi-sub">每个IP每天记一次</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">今日访问</div>
+        <div class="kpi-label">☀️ 今日访问</div>
         <div class="kpi-value kpi-today">{{ formatCount(historyInfo.ip_count_today) }}</div>
         <div class="kpi-sub">今日独立IP数</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">昨日访问</div>
+        <div class="kpi-label">🌙 昨日访问</div>
         <div class="kpi-value kpi-yest">{{ formatCount(historyInfo.ip_count_yest) }}</div>
         <div class="kpi-sub">昨日独立IP数</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">省份分布</div>
+        <div class="kpi-label">🗺️ 省份分布</div>
         <div class="kpi-value kpi-province">{{ (historyInfo.ip_history_province || []).length }}</div>
         <div class="kpi-sub">访问省份总数</div>
       </div>
