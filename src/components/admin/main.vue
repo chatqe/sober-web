@@ -183,7 +183,10 @@ onMounted(() => {
 <style scoped>
 .dashboard {
   min-height: 100%;
-  background: #f1f5f9;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
+    linear-gradient(180deg, #f0f4ff 0%, #f1f5f9 100%);
   padding: 0;
 }
 
