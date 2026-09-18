@@ -69,31 +69,22 @@ const currentRoutePath = computed(() => router.currentRoute.value.path)
 // 按功能分组的菜单数据
 const menuGroups = computed(() => {
   const base = [
-    { icon: House,  index: 'main',       title: '报表管理', isAdmin: true  },
-    { icon: Document, index: 'postList',  title: '文章管理', isAdmin: false },
-    { icon: EditPen, index: 'commentList',title: '评论管理', isAdmin: false },
-    { icon: Notebook, index: 'categoryList', title: '分类管理', isAdmin: true },
-    { icon: Sugar, index: 'loveList',    title: '表白墙',   isAdmin: true  },
+    { icon: House,     index: 'main',         title: '报表管理', isAdmin: true  },
+    { icon: Document,  index: 'postList',     title: '文章管理', isAdmin: false },
+    { icon: EditPen,   index: 'commentList',  title: '评论管理', isAdmin: false },
+    { icon: Notebook,  index: 'categoryList', title: '分类管理', isAdmin: true  },
+    { icon: Sugar,     index: 'loveList',     title: '表白墙',   isAdmin: true  },
     { icon: ChatDotRound, index: 'treeHoleList', title: '弹幕管理', isAdmin: true },
-    { icon: Paperclip, index: 'resourceList', title: '资源管理', isAdmin: true },
+    { icon: Paperclip, index: 'resourceList', title: '资源管理', isAdmin: true  },
     { icon: CreditCard, index: 'resourcePathList', title: '资源聚合', isAdmin: true },
-    { icon: Setting, index: 'webEdit',   title: '网站设置', isAdmin: true  },
-    { icon: User,    index: 'userList',  title: '用户管理', isAdmin: true  },
+    { icon: Setting,   index: 'webEdit',     title: '网站设置', isAdmin: true  },
+    { icon: User,      index: 'userList',    title: '用户管理', isAdmin: true  },
   ].filter(item => isAdmin.value || !item.isAdmin)
 
   return [
-    {
-      label: '概览',
-      items: [base[0]],
-    },
-    {
-      label: '内容管理',
-      items: base.slice(1, 6),
-    },
-    {
-      label: '系统管理',
-      items: base.slice(6),
-    },
+    { label: '概览',     items: [base[0]] },
+    { label: '内容管理', items: base.slice(1, 6) },
+    { label: '系统管理', items: base.slice(6) },
   ]
 })
 </script>
@@ -108,7 +99,8 @@ const menuGroups = computed(() => {
   width: 200px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
   z-index: 1000;
   overflow: hidden;
 }
@@ -121,7 +113,7 @@ const menuGroups = computed(() => {
   align-items: center;
   gap: 10px;
   padding: 16px 16px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
 .logo-icon {
@@ -134,12 +126,12 @@ const menuGroups = computed(() => {
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 .logo-text {
   font-size: 15px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #1e293b;
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
@@ -158,14 +150,14 @@ const menuGroups = computed(() => {
 /* 自定义滚动条 */
 .sidebar-menu::-webkit-scrollbar { width: 4px; }
 .sidebar-menu::-webkit-scrollbar-track { background: transparent; }
-.sidebar-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.sidebar-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
 /* ── 分组标题 ── */
 .menu-group-label {
   padding: 16px 20px 6px;
   font-size: 11px;
   font-weight: 600;
-  color: rgba(148, 163, 184, 0.6);
+  color: #94a3b8;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -176,13 +168,13 @@ const menuGroups = computed(() => {
 .sidebar-menu .el-menu-item,
 .sidebar-menu .el-sub-menu__title {
   position: relative;
-  margin: 1px 8px !important;
+  margin: 2px 8px !important;
   border-radius: 8px !important;
   height: 42px !important;
   line-height: 42px !important;
   padding: 0 12px !important;
   font-size: 13.5px;
-  color: rgba(203, 213, 225, 0.85);
+  color: #475467;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -208,17 +200,17 @@ const menuGroups = computed(() => {
 
 .sidebar-menu .el-menu-item:hover,
 .sidebar-menu .el-sub-menu__title:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #f1f5f9;
+  background: #f1f5f9;
+  color: #1e293b;
 }
 
 /* 激活状态 */
 .sidebar-menu .el-menu-item.is-active,
 .sidebar-menu .el-sub-menu__title.is-active {
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: #4f46e5;
   font-weight: 500;
-  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.1);
 }
 
 .sidebar-menu .el-menu-item.is-active::before,
@@ -243,7 +235,7 @@ const menuGroups = computed(() => {
 .sidebar-menu .el-menu-item.is-active .el-icon,
 .sidebar-menu .el-sub-menu__title.is-active .el-icon {
   opacity: 1;
-  color: #a5b4fc;
+  color: #4f46e5;
 }
 
 /* 子菜单箭头 */
@@ -251,12 +243,16 @@ const menuGroups = computed(() => {
   margin-right: 4px;
   font-size: 12px;
   opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.sidebar-menu .el-sub-menu__title:hover .el-sub-menu__icon-arrow {
+  opacity: 0.8;
 }
 
 /* 子菜单展开时父级高亮 */
 .sidebar-menu .el-sub-menu.is-opened > .el-sub-menu__title {
-  color: rgba(203, 213, 225, 0.95);
-  background: rgba(255, 255, 255, 0.04);
+  color: #334155;
+  background: rgba(99, 102, 241, 0.04);
 }
 .sidebar-menu .el-sub-menu.is-opened > .el-sub-menu__title .el-icon {
   opacity: 1;
