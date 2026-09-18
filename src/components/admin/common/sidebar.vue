@@ -1,24 +1,13 @@
 <template>
   <div class="sidebar">
-    <div
-        @click="toggleCollapse"
-        class="collapse-trigger"
-    >
-      <el-icon>
-        <Menu/>
-      </el-icon>
-      <span>折叠</span>
-    </div>
-
     <el-menu
         class="sidebar-el-menu"
-        background-color="#ebf1f6"
-        text-color="#606266"
-        active-text-color="#20a0ff"
+        background-color="#f8fafc"
+        text-color="#475569"
+        active-text-color="#4f46e5"
         :unique-opened="true"
         :default-active="currentRoutePath"
         :router="true"
-        :collapse="isCollapse"
     >
       <template v-for="item in filteredItems" :key="item.index">
         <template v-if="item.subs">
@@ -64,11 +53,10 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted} from 'vue'
+import {computed} from 'vue'
 import router from '@/router'
 import {useUserStore} from '@/stores'
 import {
-  Menu,
   House,
   Setting,
   User,
@@ -83,89 +71,70 @@ import {
 
 const userStore = useUserStore()
 
-// 响应式数据
-const isCollapse = ref(false)
-
-// 计算属性
-const isBoss = computed(() => userStore.currentAdmin?.isBoss || false)
+const isAdmin = computed(() => userStore.currentAdmin?.isAdmin || false)
 const currentRoutePath = computed(() => router.currentRoute.value.path)
 
-
-// 菜单配置数据
-const items = ref([
+const items = [
   {
     icon: House,
-    index: '/main',
-    title: '系统首页',
-    isBoss: true
+    index: 'main',
+    title: '报表管理',
+    isAdmin: true
   }, {
     icon: Setting,
-    index: '/webEdit',
+    index: 'webEdit',
     title: '网站设置',
-    isBoss: true
+    isAdmin: true
   }, {
     icon: User,
-    index: '/userList',
+    index: 'userList',
     title: '用户管理',
-    isBoss: true
+    isAdmin: true
   }, {
     icon: Document,
-    index: '/postList',
+    index: 'postList',
     title: '文章管理',
-    isBoss: false
+    isAdmin: false
   }, {
     icon: Notebook,
-    index: '/sortList',
+    index: 'sortList',
     title: '分类管理',
-    isBoss: true
+    isAdmin: true
   }, {
     icon: EditPen,
-    index: '/commentList',
+    index: 'commentList',
     title: '评论管理',
-    isBoss: false
+    isAdmin: false
   }, {
     icon: ChatDotRound,
-    index: '/treeHoleList',
-    title: '留言管理',
-    isBoss: true
+    index: 'treeHoleList',
+    title: '弹幕管理',
+    isAdmin: true
   }, {
     icon: Paperclip,
-    index: '/resourceList',
+    index: 'resourceList',
     title: '资源管理',
-    isBoss: true
+    isAdmin: true
   }, {
     icon: CreditCard,
-    index: '/resourcePathList',
+    index: 'resourcePathList',
     title: '资源聚合',
-    isBoss: true
+    isAdmin: true
   }, {
     icon: Sugar,
-    index: '/loveList',
+    index: 'loveList',
     title: '表白墙',
-    isBoss: true
+    isAdmin: true
   }
-])
+]
 
-
-// 过滤菜单项（根据权限）
 const filteredItems = computed(() => {
-  return items.filter(item => isBoss.value || !item.isBoss)
+  return items.filter(item => isAdmin.value || !item.isAdmin)
 })
 
-// 图标映射函数
 const getIconComponent = (iconComponent) => {
-  return iconComponent || Menu
+  return iconComponent
 }
-
-// 折叠/展开侧边栏
-const toggleCollapse = () => {
-  isCollapse.value = !isCollapse.value
-}
-
-// 生命周期
-onMounted(() => {
-  // 可以在这里添加初始化逻辑
-})
 </script>
 
 <style scoped>
@@ -175,10 +144,10 @@ onMounted(() => {
   left: 0;
   top: 70px;
   bottom: 0;
+  width: 200px;
   overflow-y: auto;
-  width: v-bind('isCollapse ? "64px" : "200px"');
-  user-select: none;
-  transition: width 0.3s ease;
+  background-color: #f8fafc;
+  border-right: 1px solid #e2e8f0;
   z-index: 1000;
 }
 
@@ -186,60 +155,47 @@ onMounted(() => {
   width: 0;
 }
 
-.collapse-trigger {
-  color: #606266;
-  cursor: pointer;
-  background-color: #ebf1f6;
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #d1dbe5;
-  transition: all 0.3s ease;
-}
-
-.collapse-trigger:hover {
-  background-color: #d1dbe5;
-}
-
-.collapse-trigger .el-icon {
-  margin-right: 8px;
-  font-size: 17px;
-}
-
-.collapse-trigger span {
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
 .sidebar-el-menu {
   border: none;
-  height: calc(100% - 49px);
-}
-
-.sidebar-el-menu:not(.el-menu--collapse) {
-  width: 200px;
-}
-
-.sidebar-el-menu.el-menu--collapse {
-  width: 64px;
+  height: 100%;
 }
 
 .sidebar-el-menu .el-menu-item {
-  padding: 0 10px !important;
+  padding: 0 12px !important;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 6px;
+  margin: 2px 8px;
+  font-size: 14px;
 }
 
 .sidebar-el-menu .el-sub-menu__title {
-  padding: 0 10px !important;
+  padding: 0 12px !important;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 6px;
+  margin: 2px 8px;
+  font-size: 14px;
 }
 
-/* 折叠状态下的样式 */
-.sidebar.el-menu--collapse .collapse-trigger span {
-  display: none;
+.sidebar-el-menu:not(.el-menu--collapse) {
+  width: 100%;
 }
 
-.sidebar.el-menu--collapse .el-sub-menu__title span,
-.sidebar.el-menu--collapse .el-menu-item span {
-  display: none;
+.sidebar-el-menu .el-menu-item.is-active {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+.sidebar-el-menu .el-sub-menu__title.is-active {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+.sidebar-el-menu .el-menu-item:hover,
+.sidebar-el-menu .el-sub-menu__title:hover {
+  background-color: #f1f5f9;
 }
 </style>

@@ -19,11 +19,10 @@ import Sidebar from "@/components/admin/common/sidebar.vue";
 
   .content-box {
     position: absolute;
-    left: 130px;
+    left: 200px;
     right: 0;
     top: 70px;
     bottom: 0;
-    transition: left .3s ease-in-out;
   }
 
   .content {

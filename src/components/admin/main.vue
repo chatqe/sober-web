@@ -1,272 +1,407 @@
 <template>
-  <div>
-    <div>
-      <el-tag effect="dark" class="my-tag">
-        <svg viewBox="0 0 1024 1024" width="20" height="20" style="vertical-align: -4px;">
-          <path
-            d="M767.1296 808.6528c16.8448 0 32.9728 2.816 48.0256 8.0384 20.6848 7.1168 43.52 1.0752 57.1904-15.9744a459.91936 459.91936 0 0 0 70.5024-122.88c7.8336-20.48 1.0752-43.264-15.9744-57.088-49.6128-40.192-65.0752-125.3888-31.3856-185.856a146.8928 146.8928 0 0 1 30.3104-37.9904c16.2304-14.5408 22.1696-37.376 13.9264-57.6a461.27104 461.27104 0 0 0-67.5328-114.9952c-13.6192-16.9984-36.4544-22.9376-57.0368-15.8208a146.3296 146.3296 0 0 1-48.0256 8.0384c-70.144 0-132.352-50.8928-145.2032-118.7328-4.096-21.6064-20.736-38.5536-42.4448-41.8304-22.0672-3.2768-44.6464-5.0176-67.6864-5.0176-21.4528 0-42.5472 1.536-63.232 4.4032-22.3232 3.1232-40.2432 20.48-43.52 42.752-6.912 46.6944-36.0448 118.016-145.7152 118.4256-17.3056 0.0512-33.8944-2.9696-49.3056-8.448-21.0432-7.4752-44.3904-1.4848-58.368 15.9232A462.14656 462.14656 0 0 0 80.4864 348.16c-7.6288 20.0192-2.7648 43.008 13.4656 56.9344 55.5008 47.8208 71.7824 122.88 37.0688 185.1392a146.72896 146.72896 0 0 1-31.6416 39.168c-16.8448 14.7456-23.0912 38.1952-14.5408 58.9312 16.896 41.0112 39.5776 79.0016 66.9696 113.0496 13.9264 17.3056 37.2736 23.1936 58.2144 15.7184 15.4112-5.4784 32-8.4992 49.3056-8.4992 71.2704 0 124.7744 49.408 142.1312 121.2928 4.9664 20.48 21.4016 36.0448 42.24 39.168 22.2208 3.328 44.9536 5.0688 68.096 5.0688 23.3984 0 46.4384-1.792 68.864-5.1712 21.3504-3.2256 38.144-19.456 42.7008-40.5504 14.8992-68.8128 73.1648-119.7568 143.7696-119.7568z"
-            fill="#8C7BFD"></path>
-          <path
-            d="M511.8464 696.3712c-101.3248 0-183.7568-82.432-183.7568-183.7568s82.432-183.7568 183.7568-183.7568 183.7568 82.432 183.7568 183.7568-82.432 183.7568-183.7568 183.7568z m0-265.1648c-44.8512 0-81.3568 36.5056-81.3568 81.3568S466.9952 593.92 511.8464 593.92s81.3568-36.5056 81.3568-81.3568-36.5056-81.3568-81.3568-81.3568z"
-            fill="#FFE37B"></path>
-        </svg>
-        统计信息
-      </el-tag>
+  <div class="dashboard">
+    <div class="page-title">数据概览</div>
 
-      <!-- 总览 -->
-      <div>
-        <div class="history-title">总览</div>
-        <div>
-          <div style="width: 400px;margin: 0 auto;display: flex;justify-content: center">
-            <div class="history-name" style="line-height: 35px">总访问量（每个IP每天记一次）:</div>
-            <div style="color:var(--maxLightRed);font-weight: bold;font-size: 30px;line-height: 35px">
-              {{historyInfo.ip_history_count}}
+    <!-- KPI 卡片行 -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">总访问量</div>
+        <div class="kpi-value">{{ formatCount(historyInfo.ip_history_count) }}</div>
+        <div class="kpi-sub">每个IP每天记一次</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">今日访问</div>
+        <div class="kpi-value kpi-today">{{ formatCount(historyInfo.ip_count_today) }}</div>
+        <div class="kpi-sub">今日独立IP数</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">昨日访问</div>
+        <div class="kpi-value kpi-yest">{{ formatCount(historyInfo.ip_count_yest) }}</div>
+        <div class="kpi-sub">昨日独立IP数</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">省份分布</div>
+        <div class="kpi-value kpi-province">{{ (historyInfo.ip_history_province || []).length }}</div>
+        <div class="kpi-sub">访问省份总数</div>
+      </div>
+    </div>
+
+    <!-- 横向条形图区域 -->
+    <div class="chart-grid">
+      <!-- 省份访问TOP10（总览） -->
+      <div class="chart-card">
+        <div class="chart-card-title">省份访问 TOP10（总览）</div>
+        <div class="bar-chart">
+          <div
+            v-for="(row, i) in (historyInfo.ip_history_province || []).slice(0, 10)"
+            :key="i"
+            class="bar-row"
+          >
+            <span class="bar-label">{{ row.province }}</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill"
+                :style="{ width: barWidth(row.num, historyInfo.ip_history_province) }"
+              ></div>
             </div>
+            <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div class="history-info" style="width: 640px">
-            <div style="margin-right: 40px">
-              <div class="history-name">省份访问TOP10</div>
-              <div>
-                <el-table :data="historyInfo.ip_history_province">
-                  <el-table-column
-                    type="index"
-                    align="center"
-                    width="60">
-                  </el-table-column>
-                  <el-table-column
-                    prop="province"
-                    align="center"
-                    label="省份"
-                    width="140">
-                  </el-table-column>
-                  <el-table-column
-                    prop="num"
-                    align="center"
-                    label="数量"
-                    width="100">
-                  </el-table-column>
-                </el-table>
-              </div>
-            </div>
-            <div>
-              <div class="history-name">IP访问TOP10</div>
-              <div>
-                <el-table :data="historyInfo.ip_history_ip">
-                  <el-table-column
-                    type="index"
-                    align="center"
-                    width="60">
-                  </el-table-column>
-                  <el-table-column
-                    prop="ip"
-                    align="center"
-                    label="IP"
-                    width="140">
-                  </el-table-column>
-                  <el-table-column
-                    prop="num"
-                    align="center"
-                    label="数量"
-                    width="100">
-                  </el-table-column>
-                </el-table>
-              </div>
-            </div>
-          </div>
+          <div v-if="(historyInfo.ip_history_province || []).length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
-      <!-- 今日访问 -->
-      <div>
-        <div class="history-title">今日访问</div>
-        <div>
-          <div style="width: 250px;margin: 0 auto;display: flex;justify-content: center">
-            <div class="history-name" style="line-height: 35px">今日访问量：</div>
-            <div style="color:var(--maxLightRed);font-weight: bold;font-size: 30px;line-height: 35px">
-              {{historyInfo.ip_count_today}}
+      <!-- IP访问TOP10（总览） -->
+      <div class="chart-card">
+        <div class="chart-card-title">IP访问 TOP10（总览）</div>
+        <div class="bar-chart">
+          <div
+            v-for="(row, i) in (historyInfo.ip_history_ip || []).slice(0, 10)"
+            :key="i"
+            class="bar-row"
+          >
+            <span class="bar-label bar-ip">{{ row.ip }}</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill"
+                :style="{ width: barWidth(row.num, historyInfo.ip_history_ip) }"
+              ></div>
             </div>
+            <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div class="history-info" style="width: 640px">
-            <div style="margin-right: 40px">
-              <div class="history-name">今日访问省份统计</div>
-              <div>
-                <el-table :data="historyInfo.province_today">
-                  <el-table-column
-                    type="index"
-                    align="center"
-                    width="60">
-                  </el-table-column>
-                  <el-table-column
-                    prop="province"
-                    align="center"
-                    label="省份"
-                    width="140">
-                  </el-table-column>
-                  <el-table-column
-                    prop="num"
-                    align="center"
-                    label="数量"
-                    width="100">
-                  </el-table-column>
-                </el-table>
-              </div>
-            </div>
-            <div>
-              <div class="history-name">今日访问用户</div>
-              <div class="history-avatar">
-                <el-table :data="historyInfo.username_today">
-                  <el-table-column
-                    align="center"
-                    label="头像"
-                    width="100">
-                    <template #default="scope">
-                      <el-avatar class="user-avatar" :size="30"
-                                 :src="scope.row.avatar">
-                      </el-avatar>
-                    </template>
-                  </el-table-column>
-                  <el-table-column
-                    prop="username"
-                    align="center"
-                    label="用户"
-                    width="200">
-                  </el-table-column>
-                </el-table>
-              </div>
-            </div>
-          </div>
+          <div v-if="(historyInfo.ip_history_ip || []).length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
-      <!-- 昨日访问 -->
-      <div>
-        <div class="history-title">昨日访问</div>
-        <div>
-          <div style="width: 250px;margin: 0 auto;display: flex;justify-content: center">
-            <div class="history-name" style="line-height: 35px">昨日访问量：</div>
-            <div style="color:var(--maxLightRed);font-weight: bold;font-size: 30px;line-height: 35px">
-              {{historyInfo.ip_count_yest}}
+      <!-- 今日访问省份统计 -->
+      <div class="chart-card">
+        <div class="chart-card-title">今日访问省份统计</div>
+        <div class="bar-chart">
+          <div
+            v-for="(row, i) in (historyInfo.province_today || []).slice(0, 10)"
+            :key="i"
+            class="bar-row"
+          >
+            <span class="bar-label">{{ row.province }}</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill bar-fill-today"
+                :style="{ width: barWidth(row.num, historyInfo.province_today) }"
+              ></div>
             </div>
+            <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div class="history-info" style="width: 300px">
-            <div>
-              <div class="history-name">昨日访问用户</div>
-              <div class="history-avatar">
-                <el-table :data="historyInfo.username_yest">
-                  <el-table-column
-                    align="center"
-                    label="头像"
-                    width="100">
-                    <template #default="scope">
-                      <el-avatar class="user-avatar" :size="30"
-                                 :src="scope.row.avatar">
-                      </el-avatar>
-                    </template>
-                  </el-table-column>
-                  <el-table-column
-                    prop="username"
-                    align="center"
-                    label="用户"
-                    width="200">
-                  </el-table-column>
-                </el-table>
-              </div>
-            </div>
-          </div>
+          <div v-if="(historyInfo.province_today || []).length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
+
+      <!-- 今日访问用户 -->
+      <div class="chart-card">
+        <div class="chart-card-title">今日访问用户</div>
+        <div class="user-list">
+          <div
+            v-for="(row, i) in (historyInfo.username_today || []).slice(0, 8)"
+            :key="i"
+            class="user-item"
+          >
+            <el-avatar :size="32" :src="row.avatar" class="user-avatar"/>
+            <span class="user-name">{{ row.username }}</span>
+          </div>
+          <div v-if="!(historyInfo.username_today || []).length" class="empty-bar">暂无数据</div>
+        </div>
+      </div>
+
+      <!-- 昨日访问用户 -->
+      <div class="chart-card chart-card-wide">
+        <div class="chart-card-title">昨日访问用户</div>
+        <div class="user-list">
+          <div
+            v-for="(row, i) in (historyInfo.username_yest || []).slice(0, 12)"
+            :key="i"
+            class="user-item"
+          >
+            <el-avatar :size="32" :src="row.avatar" class="user-avatar"/>
+            <span class="user-name">{{ row.username }}</span>
+          </div>
+          <div v-if="!(historyInfo.username_yest || []).length" class="empty-bar">暂无数据</div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="loading" class="loading-overlay">
+      <el-icon class="is-loading"><Loading /></el-icon>
+      <span>加载中...</span>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
-import { webInfoApi } from '@/api/index.js';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
+import { webInfoApi } from '@/api/index.js'
 
-// 响应式数据
-const historyInfo = ref({});
+const loading = ref(false)
+const historyInfo = ref<Record<string, any>>({})
 
-// 获取统计信息
+const formatCount = (val: any) => {
+  if (val == null || val === undefined) return '0'
+  return String(val)
+}
+
+const barMax = (arr: any[]) => {
+  if (!arr || !arr.length) return 1
+  return Math.max(...arr.map((r: any) => Number(r.num) || 0), 1)
+}
+
+const barWidth = (num: number, arr: any[]) => {
+  const max = barMax(arr)
+  if (max === 0) return '0%'
+  return `${Math.round((num / max) * 100)}%`
+}
+
 const getHistoryInfo = async () => {
+  loading.value = true
   try {
-    const res = await webInfoApi.getHistoryInfo();
-    if (!res.data) {
-      ElMessage({
-        message: '获取数据失败',
-        type: "error"
-      });
-      return;
+    const res = await webInfoApi.getHistoryInfo()
+    if (res) {
+      historyInfo.value = res
+    } else {
+      ElMessage({ message: '获取数据失败', type: 'error' })
     }
-    // 直接检查res.data是否有值
-    if (Object.keys(res.data).length > 0) {
-      historyInfo.value = res.data;
-    }
-  } catch (error) {
-    ElMessage({
-      message: error.message || '请求失败',
-      type: "error"
-    });
+  } catch (error: any) {
+    ElMessage({ message: error.message || '请求失败', type: 'error' })
+  } finally {
+    loading.value = false
   }
-};
+}
 
-// 组件挂载时获取数据
 onMounted(() => {
-  getHistoryInfo();
-});
+  getHistoryInfo()
+})
 </script>
 
 <style scoped>
+.dashboard {
+  min-height: 100%;
+  background: #f1f5f9;
+  padding: 0;
+}
 
-  .my-tag {
-    width: 100%;
-    text-align: left;
-    background: var(--lightYellow);
-    border: none;
-    height: 40px;
-    line-height: 40px;
-    font-size: 16px;
-    color: var(--black);
-  }
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  padding: 24px 24px 0;
+  margin-bottom: 20px;
+}
 
-  .el-tag {
-    margin: 10px;
-  }
+/* ── KPI 卡片行 ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 0 24px 20px;
+}
 
-  .history-title {
-    margin: 15px auto 15px;
-    width: 120px;
-    text-align: center;
-    padding: 10px 20px;
-    background: var(--lightGreen);
-    color: var(--white);
-    font-weight: bold;
-    border-radius: 5px;
-  }
+.kpi-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
 
-  .history-name {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 0 10px 10px 0;
-    text-align: center;
-  }
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 12px 12px 0 0;
+}
 
-  .history-info {
-    display: flex;
-    text-align: center;
-    margin: 20px auto 0;
-  }
+.kpi-card:nth-child(2)::before {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
 
-  .history-info >>> .el-table .cell {
-    line-height: unset;
-  }
+.kpi-card:nth-child(3)::before {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
 
-  .history-avatar >>> .el-table .el-table__row .el-table__cell {
-    padding: 3.5px 0;
-  }
+.kpi-card:nth-child(4)::before {
+  background: linear-gradient(90deg, #ec4899, #f472b6);
+}
 
-  .history-info >>> .el-table::before {
-    height: unset;
-  }
+.kpi-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
 
+.kpi-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.kpi-today { color: #10b981; }
+.kpi-yest  { color: #f59e0b; }
+.kpi-province { color: #ec4899; }
+
+.kpi-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+/* ── 图表网格 ── */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 0 24px 24px;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid #e2e8f0;
+}
+
+.chart-card-wide {
+  grid-column: span 2;
+}
+
+.chart-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* ── 横向条形图 ── */
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar-label {
+  width: 80px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: right;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-ip {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.bar-track {
+  flex: 1;
+  height: 18px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.bar-fill-today {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.bar-value {
+  width: 36px;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── 用户列表 ── */
+.user-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.user-avatar {
+  flex-shrink: 0;
+}
+
+.user-name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 空状态 ── */
+.empty-bar {
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* ── 加载遮罩 ── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 999;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.loading-overlay .el-icon {
+  font-size: 28px;
+  color: #6366f1;
+}
 </style>
