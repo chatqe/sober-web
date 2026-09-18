@@ -54,7 +54,7 @@ export const APP_CONSTANTS = {
 
   // 媒体资源
   random_image: 'https://s1.ax1x.com/2022/12/04/zsKgDs.jpg?',
-  index_image: 'https://cdn.youngwanton.top/qingsi/static/backgroundImg/173184198345798169878.jpg',
+  index_image: 'https://img.soberup.top/qingsi/static/backgroundImg/173184198345798169878.jpg',
   favoriteVideo: 'https://www.corrain.top/static/assets/backgroundVideo.mp4',
 
   // 加密密钥（前后端一致，AES 16 位）
@@ -62,18 +62,18 @@ export const APP_CONSTANTS = {
 
   // 七牛云配置
   qiniuUrl: 'https://upload.qiniup.com',
-  qiniuDownload: 'https://cdn.youngwanton.top/',
+  qiniuDownload: 'https://img.soberup.top/',
 
   // 远端表情包地址
-  fileEmojiUrl: 'https://cdn.youngwanton.top/qingsi/',
+  fileEmojiUrl: 'https://img.soberup.top/qingsi/',
 
   // 友链页面默认数据
   friendWebName: '青肆博客',
   friendUrl: 'https://youngwanton.top',
-  friendAvatar: 'https://cdn.youngwanton.top/qingsi/static/109951165563896271.jpg',
+  friendAvatar: 'https://img.soberup.top/qingsi/static/109951165563896271.jpg',
   friendIntroduction: '这是一个 Vue2 Vue3 与 SpringBoot 结合的产物～',
-  friendCover: 'https://cdn.youngwanton.top/qingsi/static/4d8c408eb91af725a36.jpg',
-  friendBG: 'http://cdn.youngwanton.top/backgroundImg/12125413457542341.jpg',
+  friendCover: 'https://img.soberup.top/qingsi/static/4d8c408eb91af725a36.jpg',
+  friendBG: 'http://img.soberup.top/backgroundImg/12125413457542341.jpg',
   friendLetterTop: 'https://cdn.cbd.int/hexo-butterfly-envelope/lib/before.png',
   friendLetterBottom: 'https://cdn.cbd.int/hexo-butterfly-envelope/lib/after.png',
   friendLetterBiLi: 'https://cdn.cbd.int/hexo-butterfly-envelope/lib/line.png',
@@ -83,8 +83,8 @@ export const APP_CONSTANTS = {
   loveWeiYan: 'https://s1.ax1x.com/2022/12/04/zsKgDs.jpg',
   loveMessage: 'https://s1.ax1x.com/2022/12/04/zsKgDs.jpg',
   lovePhoto: 'https://s1.ax1x.com/2022/12/04/zsKh5V.jpg',
-  loveLike: 'https://cdn.youngwanton.top/qingsi/static/assets/like.svg',
-  newLike: 'https://cdn.youngwanton.top/qingsi/static/assets/newLike.svg',
+  loveLike: 'https://img.soberup.top/qingsi/static/assets/like.svg',
+  newLike: 'https://img.soberup.top/qingsi/static/assets/newLike.svg',
   loveSortId: 1,
   loveLabelId: 1,
 
