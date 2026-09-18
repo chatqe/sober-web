@@ -16,8 +16,8 @@ import type {
   QiniuTokenResponse,
   UploadResponse,
   ResourceInfo,
-  SortInfo,
-  LabelInfo
+  CategoryInfo,
+  TagInfo
 } from '../types';
 import { getArticle } from '../generated/article';
 import type { ListCategoryArticleResult } from '../generated/article';
@@ -32,16 +32,14 @@ export const getSortAndLabel = async (): Promise<SortAndLabelResponse> => {
         request.get('/category/dict'),
         request.get('/tag/list')
     ]);
-    const sorts: SortInfo[] = (sortRes.data || []).map((item: any) => ({
+    const sorts: CategoryInfo[] = (sortRes.data || []).map((item: any) => ({
         id: Number(item.value),
-        name: item.label,
-        sortName: item.label
+        name: item.label
     }));
-    const labels: LabelInfo[] = (labelRes.data || []).map((item: any) => ({
+    const labels: TagInfo[] = (labelRes.data || []).map((item: any) => ({
         id: item.id,
         name: item.name,
-        sortId: item.categoryId,
-        labelName: item.name
+        categoryId: item.categoryId
     }));
     return { sorts, labels };
 };

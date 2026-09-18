@@ -6,23 +6,24 @@
  */
 
 // 分类信息接口
-export interface SortInfo {
+export interface CategoryInfo {
   id: number;
   name: string;
   [key: string]: any;
 }
 
 // 标签信息接口
-export interface LabelInfo {
+export interface TagInfo {
   id: number;
   name: string;
+  categoryId?: number;
   [key: string]: any;
 }
 
 // 分类和标签列表响应
 export interface SortAndLabelResponse {
-  sorts: SortInfo[];
-  labels: LabelInfo[];
+  sorts: CategoryInfo[];
+  labels: TagInfo[];
   [key: string]: any;
 }
 
@@ -62,7 +63,8 @@ export interface ArticleDetail extends ArticleBase {
   likeCount: number;
   commentCount: number;
   sortName?: string;
-  labels?: LabelInfo[];
+  labelName?: string;
+  tags?: TagInfo[];
   [key: string]: any;
 }
 

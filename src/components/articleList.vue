@@ -132,7 +132,7 @@
               <path
                   d="M128 486.4m51.2 0l0 0q51.2 0 51.2 51.2l0 0q0 51.2-51.2 51.2l0 0q-51.2 0-51.2-51.2l0 0q0-51.2 51.2-51.2Z"
                   fill="#FFA86A"></path>
-            </svg> {{ article.sort.sortName }}
+            </svg> {{ article.category?.name || article.sortName }}
           </span>
           <span @click.stop="$router.push({path: '/sort', query: {sortId: article.sortId, labelId: article.labelId}})">
             <svg viewBox="0 0 1024 1024" width="15" height="15" style="vertical-align: -3px;">
@@ -142,7 +142,7 @@
               <path
                   d="M675.2256 491.4688c-82.176 0-149.0432-66.8672-149.0432-149.0432s66.8672-149.0432 149.0432-149.0432 149.0432 66.8672 149.0432 149.0432-66.8672 149.0432-149.0432 149.0432z m0-192.2048c-23.808 0-43.2128 19.3536-43.2128 43.2128 0 23.808 19.3536 43.2128 43.2128 43.2128 23.808 0 43.2128-19.3536 43.2128-43.2128s-19.4048-43.2128-43.2128-43.2128z"
                   fill="#FFE37B"></path>
-            </svg> {{ article.label.labelName }}
+            </svg> {{ article.tag?.name || article.labelName }}
           </span>
         </div>
       </div>

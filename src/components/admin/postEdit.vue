@@ -70,7 +70,7 @@
           <el-option
             v-for="item in sorts"
             :key="item.id"
-            :label="item.sortName"
+            :label="item.categoryName"
             :value="item.id">
           </el-option>
         </el-select>
@@ -80,7 +80,7 @@
           <el-option
             v-for="item in labelsTemp"
             :key="item.id"
-            :label="item.labelName"
+            :label="item.tagName"
             :value="item.id">
           </el-option>
         </el-select>
@@ -169,7 +169,7 @@ watch(() => article.sortId, (newVal, oldVal) => {
     article.labelId = null;
   }
   if (newVal && labels.value.length > 0) {
-    labelsTemp.value = labels.value.filter(l => l.sortId === newVal);
+    labelsTemp.value = labels.value.filter(l => l.categoryId === newVal);
   }
 }, { immediate: false })
 

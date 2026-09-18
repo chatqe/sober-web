@@ -11,10 +11,10 @@
           <el-option key="2" label="否" :value="false"></el-option>
         </el-select>
         <el-select v-model="pagination.sortId" placeholder="分类" class="filter-select">
-          <el-option v-for="item in sorts" :key="item.id" :label="item.sortName" :value="item.id" />
+          <el-option v-for="item in sorts" :key="item.id" :label="item.categoryName" :value="item.id" />
         </el-select>
         <el-select v-model="pagination.labelId" placeholder="标签" class="filter-select">
-          <el-option v-for="item in labelsTemp" :key="item.id" :label="item.labelName" :value="item.id" />
+          <el-option v-for="item in labelsTemp" :key="item.id" :label="item.tagName" :value="item.id" />
         </el-select>
         <el-input v-model="pagination.searchKey" placeholder="文章标题" class="filter-input" clearable />
         <el-button type="primary" @click="searchArticles()">搜索</el-button>
@@ -25,8 +25,8 @@
         <el-table-column prop="id" label="ID" width="55" align="center" />
         <el-table-column prop="username" label="作者" width="100" align="center" />
         <el-table-column prop="articleTitle" label="文章标题" align="center" show-overflow-tooltip />
-        <el-table-column prop="sort.sortName" label="分类" align="center" width="100" />
-        <el-table-column prop="label.labelName" label="标签" align="center" width="100" />
+        <el-table-column prop="sort.categoryName" label="分类" align="center" width="100" />
+        <el-table-column prop="label.tagName" label="标签" align="center" width="100" />
         <el-table-column prop="viewCount" label="浏览" width="70" align="center" />
         <el-table-column prop="likeCount" label="点赞" width="70" align="center" />
         <el-table-column prop="commentCount" label="评论" width="70" align="center" />
@@ -86,15 +86,15 @@ import { Document } from '@element-plus/icons-vue'
 import { useUserStore, useAuthStore } from '@/stores'
 
 // 定义接口
-interface Sort {
+interface Category {
   id: number;
-  sortName: string;
+  categoryName: string;
 }
 
-interface Label {
+interface Tag {
   id: number;
-  labelName: string;
-  sortId: number;
+  tagName: string;
+  categoryId: number;
 }
 
 interface Article {
@@ -102,8 +102,8 @@ interface Article {
   username: string;
   articleTitle: string;
   articleCover: string;
-  sort: Sort;
-  label: Label;
+  sort: Category;
+  label: Tag;
   viewCount: number;
   likeCount: number;
   commentCount: number;
@@ -158,15 +158,15 @@ const pagination = reactive<Pagination>({
   labelId: null
 })
 const articles = ref<Article[]>([])
-const sorts = ref<Sort[]>([])
-const labels = ref<Label[]>([])
-const labelsTemp = ref<Label[]>([])
+const sorts = ref<Category[]>([])
+const labels = ref<Tag[]>([])
+const labelsTemp = ref<Tag[]>([])
 
 // 监听分类变化，更新标签列表
 watch(() => pagination.sortId, (newVal) => {
   pagination.labelId = null
   if (newVal && labels.value && labels.value.length > 0) {
-    labelsTemp.value = labels.value.filter(l => l.sortId === newVal)
+    labelsTemp.value = labels.value.filter(l => l.categoryId === newVal)
   }
 })
 
@@ -175,8 +175,8 @@ const getSortAndLabel = async (): Promise<void> => {
   try {
     const res = await articleApi.getSortAndLabel()
     if (res && Object.keys(res).length > 0) {
-      sorts.value = res.sorts.map((s: any) => ({ id: s.id, sortName: s.name }))
-      labels.value = res.labels.map((l: any) => ({ id: l.id, labelName: l.name, sortId: l.sortId ?? l.categoryId }))
+      sorts.value = res.sorts.map((s: any) => ({ id: s.id, categoryName: s.name }))
+      labels.value = res.labels.map((l: any) => ({ id: l.id, tagName: l.name, categoryId: l.categoryId }))
       labelsTemp.value = labels.value
     }
   } catch (error) {
