@@ -188,7 +188,7 @@ onMounted(() => {
     radial-gradient(ellipse at 80% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
     linear-gradient(180deg, #f0f4ff 0%, #f1f5f9 100%);
   padding: 0;
-  border-radius: 0 8px 8px 0;
+  border-radius: 8px;
 }
 
 .page-title {
