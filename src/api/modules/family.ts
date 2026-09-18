@@ -11,7 +11,10 @@ import type {
   FamilyDeleteParams,
   FamilyBase
 } from '../types';
+import { getAdminFamily as _getAdminFamily } from '../generated/admin-family';
+import type { PageList2Params } from '@/types/modules/pageList2Params';
 
+const adminFamilyApi = _getAdminFamily();
 
 /**
  * 删除家庭信息
@@ -36,7 +39,7 @@ export async function getFamily(): Promise<FamilyDetail> {
  * 获取管理员家庭信息
  * @returns {Promise<FamilyDetail>}
  */
-export async function getAdminFamily(): Promise<FamilyDetail> {
+export async function getAdminFamilyInfo(): Promise<FamilyDetail> {
     const res = await request.get<FamilyDetail>('/family/getAdminFamily', {}, false);
     return res.data;
 }
@@ -69,3 +72,16 @@ export async function changeLoveStatus(params: {id: number, flag: boolean}): Pro
     const res = await request.get<boolean>('/family/changeLoveStatus', params, true);
     return res.data;
 }
+
+// ===== 管理后台家庭 API =====
+
+// 分页查询家庭列表
+export const listFamily = async (params: PageList2Params): Promise<any> => {
+    const res = await request.get<any>('/admin/families/page', params, true);
+    return res.data;
+};
+
+// 获取管理员家庭信息（别名，兼容组件调用）
+export const getAdminFamily = async (): Promise<FamilyDetail> => {
+    return getAdminFamilyInfo();
+};

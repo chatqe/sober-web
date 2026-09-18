@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard" :class="{ loaded: isLoaded }">
+  <div class="dashboard">
     <div class="page-title">数据概览</div>
 
     <!-- KPI 卡片行 -->
@@ -33,7 +33,7 @@
         <div class="chart-card-title">省份访问 TOP10（总览）</div>
         <div class="bar-chart">
           <div
-            v-for="(row, i) in (historyInfo.ip_history_province || []).slice(0, 10)"
+            v-for="(row, i) in provinceList"
             :key="i"
             class="bar-row"
           >
@@ -41,12 +41,12 @@
             <div class="bar-track">
               <div
                 class="bar-fill"
-                :style="{ width: barWidth(row.num, 'ip_history_province') }"
+                :style="{ width: barWidth(row.num, maxProvince), transitionDelay: staggerDelay(i) }"
               ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div v-if="(historyInfo.ip_history_province || []).length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="provinceList.length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
@@ -55,7 +55,7 @@
         <div class="chart-card-title">IP访问 TOP10（总览）</div>
         <div class="bar-chart">
           <div
-            v-for="(row, i) in (historyInfo.ip_history_ip || []).slice(0, 10)"
+            v-for="(row, i) in ipList"
             :key="i"
             class="bar-row"
           >
@@ -63,12 +63,12 @@
             <div class="bar-track">
               <div
                 class="bar-fill"
-                :style="{ width: barWidth(row.num, 'ip_history_ip') }"
+                :style="{ width: barWidth(row.num, maxIp), transitionDelay: staggerDelay(i) }"
               ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div v-if="(historyInfo.ip_history_ip || []).length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="ipList.length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
@@ -77,7 +77,7 @@
         <div class="chart-card-title">今日访问省份统计</div>
         <div class="bar-chart">
           <div
-            v-for="(row, i) in (historyInfo.province_today || []).slice(0, 10)"
+            v-for="(row, i) in todayProvince"
             :key="i"
             class="bar-row"
           >
@@ -85,12 +85,12 @@
             <div class="bar-track">
               <div
                 class="bar-fill bar-fill-today"
-                :style="{ width: barWidth(row.num, 'province_today') }"
+                :style="{ width: barWidth(row.num, maxTodayProv), transitionDelay: staggerDelay(i) }"
               ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div v-if="(historyInfo.province_today || []).length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="todayProvince.length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
@@ -99,14 +99,14 @@
         <div class="chart-card-title">今日访问用户</div>
         <div class="user-list">
           <div
-            v-for="(row, i) in (historyInfo.username_today || []).slice(0, 8)"
+            v-for="(row, i) in usernameToday"
             :key="i"
             class="user-item"
           >
-            <el-avatar :size="32" :src="row.avatar" class="user-avatar"/>
+            <img :src="row.avatar" :alt="row.username" class="user-avatar-img" />
             <span class="user-name">{{ row.username }}</span>
           </div>
-          <div v-if="!(historyInfo.username_today || []).length" class="empty-bar">暂无数据</div>
+          <div v-if="usernameToday.length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
@@ -115,14 +115,14 @@
         <div class="chart-card-title">昨日访问用户</div>
         <div class="user-list">
           <div
-            v-for="(row, i) in (historyInfo.username_yest || []).slice(0, 12)"
+            v-for="(row, i) in usernameYest"
             :key="i"
             class="user-item"
           >
-            <el-avatar :size="32" :src="row.avatar" class="user-avatar"/>
+            <img :src="row.avatar" :alt="row.username" class="user-avatar-img" />
             <span class="user-name">{{ row.username }}</span>
           </div>
-          <div v-if="!(historyInfo.username_yest || []).length" class="empty-bar">暂无数据</div>
+          <div v-if="usernameYest.length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
     </div>
@@ -135,38 +135,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { webInfoApi } from '@/api/index.js'
 
 const loading = ref(false)
-const isLoaded = ref(false)
 const historyInfo = ref<Record<string, any>>({})
-const maxValues = ref<Record<string, number>>({})
+
+const provinceList  = computed(() => (historyInfo.value.ip_history_province || []).slice(0, 10))
+const ipList        = computed(() => (historyInfo.value.ip_history_ip || []).slice(0, 10))
+const todayProvince = computed(() => (historyInfo.value.province_today || []).slice(0, 10))
+const usernameToday = computed(() => (historyInfo.value.username_today  || []).slice(0, 8))
+const usernameYest  = computed(() => (historyInfo.value.username_yest   || []).slice(0, 12))
+
+const maxProvince  = computed(() => Math.max(...provinceList.value.map((r: any) => Number(r.num) || 0), 1))
+const maxIp        = computed(() => Math.max(...ipList.value.map((r: any) => Number(r.num) || 0), 1))
+const maxTodayProv = computed(() => Math.max(...todayProvince.value.map((r: any) => Number(r.num) || 0), 1))
+
+const barWidth = (num: number, max: number) => {
+  if (max === 0) return '0%'
+  return `${Math.round((num / max) * 100)}%`
+}
+
+const staggerDelay = (i: string | number) => `${Number(i) * 30}ms`
 
 const formatCount = (val: any) => {
   if (val == null || val === undefined) return '0'
   return String(val)
-}
-
-const computeMaxValues = (data: Record<string, any>) => {
-  const result: Record<string, number> = {}
-  const compute = (key: string) => {
-    const arr = data[key]
-    if (!Array.isArray(arr) || !arr.length) { result[key] = 1; return }
-    result[key] = Math.max(...arr.map((r: any) => Number(r.num) || 0), 1)
-  }
-  compute('ip_history_province')
-  compute('ip_history_ip')
-  compute('province_today')
-  return result
-}
-
-const barWidth = (num: number, key: string) => {
-  const max = maxValues.value[key] ?? 1
-  if (max === 0) return '0%'
-  return `${Math.round((num / max) * 100)}%`
 }
 
 const getHistoryInfo = async () => {
@@ -175,9 +171,6 @@ const getHistoryInfo = async () => {
     const res = await webInfoApi.getHistoryInfo()
     if (res) {
       historyInfo.value = res
-      maxValues.value = computeMaxValues(res)
-      // 下一帧再开启过渡，避免首次渲染即触发 30+ 根条同时动画
-      requestAnimationFrame(() => { requestAnimationFrame(() => { isLoaded.value = true }) })
     } else {
       ElMessage({ message: '获取数据失败', type: 'error' })
     }
@@ -348,13 +341,8 @@ onMounted(() => {
   height: 100%;
   background: linear-gradient(90deg, #6366f1, #818cf8);
   border-radius: 4px;
-  /* 数据加载前不启动画，避免首次渲染就触发 30+ 根条同时过渡 */
+  /* 通过 :style 的 transitionDelay 实现 stagger 动画，每行递增 30ms */
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: 0s;
-}
-
-.dashboard.loaded .bar-fill {
-  transition-delay: 0.05s;
 }
 
 .bar-fill-today {
@@ -390,6 +378,14 @@ onMounted(() => {
 }
 
 .user-avatar {
+  flex-shrink: 0;
+}
+
+.user-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
   flex-shrink: 0;
 }
 

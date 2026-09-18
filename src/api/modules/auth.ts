@@ -60,3 +60,15 @@ export const captchaCheck = async (params: CaptchaCheckParams): Promise<boolean>
 export const emailCode = async (params: EmailCodeParams): Promise<void> => {
     await request.get('/user/mailCode', params, false);
 };
+
+// 密码重置（邮箱+验证码）
+export const resetPassword = async (params: {email: string, code: string, password: string}): Promise<any> => {
+    const res = await request.post('/user/resetPwdForFgtPwd', params, false, false);
+    return res.data;
+};
+
+// 免密登录
+export const passwordLessLogin = async (params: {email: string, code: string}): Promise<LoginResponse> => {
+    const res = await request.post<LoginResponse>('/user/login1', params, false, false);
+    return res.data;
+};

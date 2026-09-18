@@ -60,7 +60,7 @@
                 <el-dropdown-menu>
                   <el-dropdown-item v-for="(sort, index) in sortInfo" :key="index">
                     <div @click="router.push({path: '/sort', query: {sortId: sort.id}})">
-                      {{ sort.sortName }}
+                      {{ sort.name }}
                     </div>
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -292,7 +292,7 @@
                    :key="index"
                    class="sortMenu"
                    @click="smallMenu({path: '/sort', query: {sortId: menu.id}})">
-                {{ menu.sortName }}
+                {{ menu.name }}
               </div>
             </div>
           </li>
@@ -387,7 +387,7 @@
 
 <script setup lang="ts">
 import {computed, inject, onMounted, onUnmounted, ref, watch} from 'vue'
-import type {WatchStopHandle} from 'vue'
+import type {WatchStopHandle, Ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import type {RouteLocationNormalizedLoaded, RouteLocationRaw} from 'vue-router'
 import {ElMessage} from 'element-plus'
@@ -429,7 +429,7 @@ const isDark: Ref<boolean> = ref(false)
 const toolbarDrawer: Ref<boolean> = ref(false)
 const mouseAnimation: Ref<boolean> = ref(false)
 const toolButton: Ref<boolean> = ref(false)
-const adminLogin: boolean = authStore.isAdmin
+const adminLogin = computed(() => authStore.isAdmin)
 const currBgImg: Ref<string> = ref('') // 当前背景
 const showAuthModal: Ref<boolean> = ref(false)
 
@@ -437,7 +437,7 @@ const showAuthModal: Ref<boolean> = ref(false)
 const footerCfg = computed(() => {
   for (let i = route.matched.length - 1; i >= 0; i--) {
     const key = route.matched[i].name
-    if (key && routeMeta[key]) return routeMeta[key]
+    if (key && typeof key === 'string' && routeMeta[key]) return routeMeta[key]
   }
   return undefined
 })
@@ -447,7 +447,7 @@ const toolbar = computed(() => {
 })
 
 const sortInfo = computed(() => {
-  return sortInfoStore.sortInfo.filter(item => item.status !== 0)
+  return sortInfoStore.sortInfo.filter((item: any) => (item as any).isShow !== 0)
 })
 
 // 初始化数据
@@ -529,11 +529,7 @@ const smallMenuLogout = (): void => {
 }
 
 const goAdmin = (data: { path: string }): void => {
-  if (!$constant || !$constant.webURL) {
-    ElMessage.error('后台地址未配置')
-    return
-  }
-  window.open($constant.webURL + data.path)
+  window.open(`${window.location.origin}${data.path}`)
 }
 
 const goIm = (): void => {
@@ -564,7 +560,7 @@ const getWebInfo = async (): Promise<void> => {
   try {
     const res = await webApi.getWebInfo()
     if (res && res.data && !$common.isEmpty(res.data)) {
-      webInfoStore.loadWebInfo(res.data)
+      webInfoStore.loadWebInfo(res.data as any)
       localStorage.setItem('defaultStoreType', res.data.defaultStoreType || '')
     }
   } catch (error: any) {
@@ -589,17 +585,15 @@ const getSysConfig = async (): Promise<void> => {
 
 const getSortInfo = async (): Promise<void> => {
   try {
-    const res = await webApi.getSortInfo()
-    if (res && res.data && !$common.isEmpty(res.data)) {
-      sortInfoStore.loadSortInfo(res.data)
-    }
+    await sortInfoStore.loadHomeStats()
+    await sortInfoStore.loadListNavBar()
   } catch (error: any) {
     console.error('[getSortInfo error]', error)
     ElMessage.error(error?.message || '获取分类信息失败')
   }
 }
 const buildCssPicture = (): void => {
-  let root = document.querySelector(':root')
+  let root = document.querySelector<HTMLElement>(',:root')
   if (root && !$common.isEmpty(sysConfigStore.sysConfig)) {
     if (!$common.isEmpty(sysConfigStore.sysConfig.styleBgColor)) {
       root.style.setProperty('--styleBgColor', sysConfigStore.sysConfig.styleBgColor)

@@ -147,8 +147,8 @@ const props = defineProps<{
 const isGraffiti = ref(false)
 const total = ref<number>(0)
 const replyDialogVisible = ref(false)
-const floorComment = reactive<Comment>({}) 
-const replyComment = reactive<Comment>({})
+const floorComment = reactive<Comment>({id: 0, source: 0, type: '', userId: 0, likeCount: 0, commentContent: '', commentInfo: '', createTime: ''})
+const replyComment = reactive<Comment>({id: 0, source: 0, type: '', userId: 0, likeCount: 0, commentContent: '', commentInfo: '', createTime: ''})
 const comments = ref<Comment[]>([])
 const commentContentRef = ref<HTMLElement | null>(null)
 
@@ -194,7 +194,7 @@ function toPage(page: number): void {
 }
 
 function getTotal(): void {
-  commentApi.getCommentTotal({ source: props.source, type: props.type })
+  getCommentTotal(props.source, props.type)
     .then((res) => {
       if (!res.data) return
       total.value = res.data
@@ -236,7 +236,7 @@ function emoji(commentsList: Comment[], flag: boolean): void {
   })
 }
 
-function getComments(pageData: Pagination, comment: Comment = {}, isToPage: boolean = false): void {
+function getComments(pageData: Pagination, comment: Comment = {id: 0, source: 0, type: '', userId: 0, likeCount: 0, commentContent: '', commentInfo: '', createTime: ''}, isToPage: boolean = false): void {
   commentApi.listComment(pageData)
     .then((res) => {
       if (!res.data || !res.data.records) return

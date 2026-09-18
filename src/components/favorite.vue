@@ -3,7 +3,7 @@
     <div class="favorite-container">
       <!-- 封面 -->
       <div class="favorite-header my-animation-slide-top">
-        <video class="index-video" autoplay="autoplay" muted="muted" loop="loop"
+        <video class="index-video" autoplay muted loop
                :src="$constant.favoriteVideo">
         </video>
         <div style="position: absolute;left: 0;top: 0;padding: 5px 20px">
@@ -97,10 +97,18 @@ function changeFavorite(newCard: number): void {
 async function getCollect(): Promise<void> {
   try {
     const res = await webInfoApi.listCollect()
-    if (!res.data) return
-    if ($common.isEmpty(res.data)) return
-    if (typeof res.data !== 'object') return
-    collects.value = res.data as CollectData
+    if (!res || !Array.isArray(res)) return
+    const data = res as any
+    const collectsData: CollectData = {}
+    if (data.recordList && Array.isArray(data.recordList)) {
+      data.recordList.forEach((item: any) => {
+        if (!collectsData[item.classify]) {
+          collectsData[item.classify] = []
+        }
+        collectsData[item.classify].push(item)
+      })
+    }
+    collects.value = collectsData
   } catch (error: any) {
     ElMessage.error(error.message || '获取收藏失败')
   }

@@ -6,7 +6,7 @@ interface FooterState {
   footerCfg: { visible: boolean; enter: boolean }
 }
 
-export const useFooterStore = defineStore<FooterState>('footer', () => {
+export const useFooterStore = defineStore('footer', () => {
         const footerCfg = ref<{ visible: boolean; enter: boolean }>({visible: true, enter: true})
 
         const setFooterCfg = (newFooterCfg: { visible: boolean; enter: boolean }) => {
@@ -17,8 +17,4 @@ export const useFooterStore = defineStore<FooterState>('footer', () => {
             footerCfg,
             setFooterCfg
         }
-    },
-
-    {
-        persist: true
-    })
+})

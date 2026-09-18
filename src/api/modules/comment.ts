@@ -5,6 +5,7 @@
  * @since 2025-10-29 19:30
  */
 import request from '@/utils/request';
+import { getComment } from '../generated/comment';
 import type {
   CommentListParams,
   CommentListResponse,
@@ -12,16 +13,23 @@ import type {
   CommentCountResponse
 } from '../types';
 
+const commentGenerated = getComment();
+
+// 保存评论
+export const saveComment = async (comment: any): Promise<any> => {
+    return commentGenerated.saveComment(comment);
+};
+
 
 // 获取评论列表（管理员）
 export const bossCommentList = async (params: CommentListParams): Promise<CommentListResponse> => {
-    const res = await request.post<CommentListResponse>('/admin/comment/boss/list', params, true);
+    const res = await request.post<CommentListResponse>('/admin/comment/list', params, true);
     return res.data;
 };
 
 // 获取评论列表（用户）
 export const userCommentList = async (params: CommentListParams): Promise<CommentListResponse> => {
-    const res = await request.post<CommentListResponse>('/admin/comment/user/list', params, true);
+    const res = await request.post<CommentListResponse>('/comment/author/list', params, true);
     return res.data;
 };
 

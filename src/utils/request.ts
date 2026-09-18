@@ -7,7 +7,7 @@
  */
 
 import axios from "axios";
-import type {AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError} from "axios";
+import type {AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig} from "axios";
 // 处理url参数
 import qs from "qs";
 import {useAuthStore, useUserStore} from "@/stores/index.js";
@@ -82,7 +82,7 @@ const createReqConfig = ({isAdmin = false, contentType, timeout, onProgress}: Re
     if (onProgress) {
         config.onUploadProgress = (progressEvent) => {
             if (progressEvent.total > 0) {
-                progressEvent.percent = (progressEvent.loaded / progressEvent.total) * 100;
+                (progressEvent as any).percent = (progressEvent.loaded / progressEvent.total) * 100;
             }
             onProgress(progressEvent);
         };
@@ -92,7 +92,7 @@ const createReqConfig = ({isAdmin = false, contentType, timeout, onProgress}: Re
 };
 
 // 请求拦截器
-request.interceptors.request.use((config: AxiosRequestConfig) => {
+request.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     // 在发送请求之前做些什么
     return config;
 }, (error: AxiosError) => {
@@ -113,9 +113,9 @@ request.interceptors.response.use((resp: AxiosResponse<ApiResponse>) => {
     // 跳转
     if (data?.code === API_CODES.CLIENT_REDIRECT_LOGIN) {
         userStore.loadCurrentUser({});
-        userStore.loadCurrentAdmin({});
+        userStore.loadCurrentAdmin({} as any);
         userStore.clearUserData();
-        window.location.href = `${webUrl}/user`;
+        window.location.href = `${webUrl}/verify`;
     } else {
         // 请求失败
         console.error('[API Error]', msg);

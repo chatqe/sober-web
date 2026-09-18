@@ -1,80 +1,48 @@
 <template>
-  <div class="comment-list-container">
-    <div class="search-bar">
-      <el-select v-if="isBoss" v-model="pagination.commentType" placeholder="评论来源类型" class="select-item">
-        <el-option label="文章评论" value="article"/>
-        <el-option label="树洞留言" value="message"/>
-      </el-select>
-      <el-input
-          v-model="pagination.source"
-          type="number"
-          placeholder="评论来源标识"
-          class="input-item"
-          clearable
-      />
-      <el-button type="primary" @click="searchComments">
-        <template #icon>
-          <el-icon>
-            <Search/>
-          </el-icon>
-        </template>
-        搜索
-      </el-button>
-      <el-button type="danger" @click="clearSearch">
-        清除参数
-      </el-button>
-    </div>
-
-    <el-table
-        :data="comments"
-        border
-        class="table"
-        header-cell-class-name="table-header"
-    >
-      <el-table-column prop="id" label="ID" width="55" align="center"/>
-      <el-table-column prop="source" label="评论来源标识" align="center"/>
-      <el-table-column prop="type" label="评论来源类型" align="center"/>
-      <el-table-column prop="userId" label="发表用户ID" align="center"/>
-      <el-table-column prop="likeCount" label="点赞数" align="center"/>
-      <el-table-column prop="commentContent" label="评论内容" align="center"/>
-      <el-table-column prop="commentInfo" label="评论额外信息" align="center"/>
-      <el-table-column prop="createTime" label="创建时间" align="center"/>
-      <el-table-column label="操作" width="180" align="center">
-        <template #default="scope">
-          <el-button
-              type="primary"
-              link
-              @click="handleDelete(scope.row)"
-          >
-            <template #icon>
-              <el-icon>
-                <Delete/>
-              </el-icon>
-            </template>
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <div class="pagination">
-      <el-pagination
-          background
-          layout="total, prev, pager, next"
-          :current-page="pagination.current"
-          :page-size="pagination.size"
-          :total="pagination.total"
-          @current-change="handlePageChange"
-      />
+  <div class="page-container">
+    <div class="page-card">
+      <div class="section-header">
+        <el-icon size="16"><ChatDotRound /></el-icon>
+        <span>评论管理</span>
+      </div>
+      <div class="toolbar">
+        <el-select v-if="isAdmin" v-model="pagination.commentType" placeholder="评论类型" class="filter-select">
+          <el-option label="文章评论" value="article"/>
+          <el-option label="树洞留言" value="message"/>
+        </el-select>
+        <el-input v-model="pagination.source" type="number" placeholder="来源标识" class="filter-input" clearable />
+        <el-button type="primary" @click="searchComments()">搜索</el-button>
+        <el-button @click="clearSearch()">清除</el-button>
+      </div>
+      <el-table :data="comments" border class="table" stripe header-cell-class-name="table-header">
+        <el-table-column prop="id" label="ID" width="55" align="center" />
+        <el-table-column prop="source" label="来源标识" align="center" width="120" />
+        <el-table-column prop="type" label="来源类型" align="center" width="120" />
+        <el-table-column prop="userId" label="用户ID" align="center" width="100" />
+        <el-table-column prop="likeCount" label="点赞数" align="center" width="80" />
+        <el-table-column prop="commentContent" label="评论内容" align="center" show-overflow-tooltip />
+        <el-table-column prop="commentInfo" label="额外信息" align="center" show-overflow-tooltip />
+        <el-table-column prop="createTime" label="创建时间" align="center" width="155" />
+        <el-table-column label="操作" width="100" align="center" fixed="right">
+          <template #default="scope">
+            <el-button type="danger" link size="small" @click="handleDelete(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination">
+        <el-pagination background layout="total, prev, pager, next"
+          :current-page="pagination.current" :page-size="pagination.size"
+          :total="pagination.total" @current-change="handlePageChange" />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, inject } from 'vue';
-import type { Ref } from 'vue';
-import {useUserStore} from '@/stores';
-import {Delete, Search} from '@element-plus/icons-vue';
+import { ref, onMounted, inject, computed } from 'vue'
+import type { Ref } from 'vue'
+import {useAuthStore, useUserStore} from '@/stores'
+import { ChatDotRound } from '@element-plus/icons-vue'
 import {ElMessage, ElMessageBox} from "element-plus";
 import {commentApi} from "@/api/index.js";
 
@@ -109,10 +77,11 @@ interface CommonUtils {
 }
 
 const $common = inject<CommonUtils>('$common')!
+const authStore = useAuthStore()
 const userStore = useUserStore();
 
 // 响应式数据
-const isBoss: Ref<boolean> = ref(userStore.currentAdmin.isBoss);
+const isAdmin: Ref<boolean> = ref(authStore.isAdmin || userStore.currentAdmin?.isAdmin || false);
 const pagination: Ref<Pagination> = ref({
   current: 1,
   size: 10,
@@ -144,16 +113,16 @@ const clearSearch = (): void => {
  */
 const getComments = async (): Promise<void> => {
   try {
-    let res = {};
-    if (isBoss.value) {
+    let res: any = {};
+    if (isAdmin.value) {
       res = await commentApi.bossCommentList(pagination.value);
     } else {
       res = await commentApi.userCommentList(pagination.value);
     }
 
-    if (!($common.isEmpty(res.data))) {
-      comments.value = res.data.records;
-      pagination.value.total = res.data.total;
+    if (!($common.isEmpty(res))) {
+      comments.value = res.records;
+      pagination.value.total = res.total;
     }
   } catch (error: any) {
     ElMessage.error(error.message || '获取评论列表失败');
@@ -185,10 +154,10 @@ const handleDelete = async (item: Comment): Promise<void> => {
     );
     // 发送请求
     const deleteRequest: CommentDeleteRequest = {id: item.id};
-    if (isBoss.value) {
-      await commentApi.delAdminComment(deleteRequest, true);
+    if (isAdmin.value) {
+      await commentApi.delAdminComment(deleteRequest);
     } else {
-      await commentApi.delUserComment(deleteRequest, true);
+      await commentApi.delUserComment(deleteRequest);
     }
     ElMessage({
       message: "删除成功！",
@@ -210,36 +179,27 @@ const handleDelete = async (item: Comment): Promise<void> => {
 </script>
 
 <style scoped>
-.comment-list-container {
+.page-container { display: flex; flex-direction: column; gap: 16px; }
+.page-card {
+  background: #fff;
+  border-radius: 12px;
   padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
 }
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 10px;
+.section-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: #1a1d2e;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-.select-item {
-  width: 150px;
+.toolbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; flex-wrap: wrap;
 }
-
-.input-item {
-  width: 200px;
-}
-
-.pagination {
-  margin: 20px 0;
-  text-align: right;
-}
-
-/* Element Plus 样式覆盖 */
-:deep(.el-input__inner)::-webkit-inner-spin-button {
-  appearance: none;
-}
-
-.table {
-  width: 100%;
-}
+.filter-select { width: 130px; }
+.filter-input { width: 160px; }
+.table { width: 100%; font-size: 13.5px; }
+.pagination { margin-top: 16px; text-align: right; }
+:deep(.el-input__inner)::-webkit-inner-spin-button { appearance: none; }
 </style>

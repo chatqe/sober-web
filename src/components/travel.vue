@@ -4,7 +4,7 @@
       <!-- 封面 -->
       <div class="travel-header my-animation-slide-top">
         <!-- 背景图片 -->
-        <video class="index-video" autoplay="autoplay" muted="muted" loop="loop"
+        <video class="index-video" autoplay muted loop
                :src="$constant.favoriteVideo">
         </video>
         <div style="position: absolute;left: 0;top: 0;padding: 5px 20px">
@@ -100,9 +100,9 @@ const photoList = ref<ResourcePath[]>([])
 // 方法
 const getPhotoTitles = async (): Promise<void> => {
   try {
-    const res: ApiResponse = await webInfoApi.listAdminLovePhoto()
-    if (!$common.isEmpty(res.data)) {
-      photoTitleList.value = res.data
+    const res: any = await webInfoApi.listAdminLovePhoto()
+    if (!$common.isEmpty(res)) {
+      photoTitleList.value = res
       photoPagination.value = {
         pageNum: 1,
         pageSize: 10,
@@ -141,10 +141,10 @@ const pagePhotos = (): void => {
 
 const changePhoto = async (): Promise<void> => {
   try {
-    const res: ApiResponse = await webInfoApi.listResourcePath(photoPagination.value)
-    if (!$common.isEmpty(res.data)) {
-      photoList.value = photoList.value.concat(res.data.records)
-      photoPagination.value.total = res.data.total
+    const res: any = await webInfoApi.listResourcePath(photoPagination.value)
+    if (!$common.isEmpty(res)) {
+      photoList.value = photoList.value.concat(res.records)
+      photoPagination.value.total = res.total
     }
   } catch (error: any) {
     ElMessage({

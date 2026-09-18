@@ -27,7 +27,7 @@ import { useRoute } from 'vue-router'
 import router from '@/router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { useAuthStore, useUserStore } from '@/stores'
+import { useAuthStore, useUserStore, useWebInfoStore } from '@/stores'
 import { authApi } from '@/api/modules'
 
 interface CommonUtils {
@@ -42,12 +42,13 @@ const $constant = inject<AppConstants>('$constant')!
 const $common = inject<CommonUtils>('$common')!
 const userStore = useUserStore()
 const authStore = useAuthStore()
+const webInfoStore = useWebInfoStore()
 const route = useRoute()
 
 const account = ref<string>('')
 const password = ref<string>('')
-const redirect = computed(() => route.query.redirect || '/welcome')
-const webInfoAvatar = computed(() => userStore.webInfo?.avatar || '')
+const redirect = computed(() => (route.query.redirect as string) || '/admin/main')
+const webInfoAvatar = computed(() => webInfoStore.webInfo?.avatar || '')
 
 const login = async () => {
   if ($common.isEmpty(account.value) || $common.isEmpty(password.value)) {
@@ -61,15 +62,15 @@ const login = async () => {
       isAdmin: true
     }
     const res: any = await authApi.login(user)
-    if (!res) { ElMessage.error('登录失败，无返回数据'); return }
-    if (!$common.isEmpty(res.data)) {
-      authStore.setAdminToken(res.data.accessToken)
-      authStore.setIsAdmin(true)
-      userStore.loadCurrentAdmin(res.data)
-      account.value = ''
-      password.value = ''
-      router.push({ path: redirect.value })
-    }
+    if (!res || $common.isEmpty(res.accessToken)) { ElMessage.error('登录失败，无返回数据'); return }
+    authStore.setUserToken(res.accessToken)
+    authStore.setAdminToken(res.accessToken)
+    authStore.setIsAdmin(true)
+    userStore.loadCurrentUser(res)
+    userStore.loadCurrentAdmin({ avatar: res.avatar || '', isAdmin: res.isAdmin || false, ...res } as any)
+    account.value = ''
+    password.value = ''
+    router.push({ path: redirect.value })
   } catch (error: any) {
     ElMessage.error(error.message || '登录失败')
   }

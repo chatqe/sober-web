@@ -1,55 +1,47 @@
 <template>
-  <div>
-    <div>
-      <div class="handle-box">
-        <el-select clearable v-model="pagination.resourceType" placeholder="资源路径类型" class="handle-select mrb10">
-          <el-option
-            v-for="(item, i) in resourceTypes"
-            :key="i"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
+  <div class="page-container">
+    <div class="page-card">
+      <div class="section-header">
+        <el-icon size="16"><CreditCard /></el-icon>
+        <span>资源聚合</span>
+      </div>
+      <div class="toolbar">
+        <el-select clearable v-model="pagination.resourceType" placeholder="资源路径类型" class="filter-select">
+          <el-option v-for="(item, i) in resourceTypes" :key="i" :label="item.label" :value="item.value" />
         </el-select>
-        <el-select clearable v-model="pagination.status" placeholder="状态" class="handle-select mrb10">
+        <el-select clearable v-model="pagination.status" placeholder="状态" class="filter-select">
           <el-option key="1" label="启用" :value="true"></el-option>
           <el-option key="2" label="禁用" :value="false"></el-option>
         </el-select>
-        <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
+        <el-button type="primary" @click="search">搜索</el-button>
         <el-button type="primary" @click="addResourcePathDialog = true">新增资源路径</el-button>
       </div>
-      <el-table :data="resourcePaths" border class="table" header-cell-class-name="table-header">
-        <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-        <el-table-column prop="title" label="标题" align="center"></el-table-column>
-        <el-table-column prop="classify" label="分类" align="center"></el-table-column>
-        <el-table-column prop="introduction" label="简介" align="center"></el-table-column>
-        <el-table-column label="封面" align="center">
+      <el-table :data="resourcePaths" border class="table" stripe header-cell-class-name="table-header">
+        <el-table-column prop="id" label="ID" width="55" align="center" />
+        <el-table-column prop="title" label="标题" align="center" />
+        <el-table-column prop="classify" label="分类" align="center" width="100" />
+        <el-table-column prop="introduction" label="简介" align="center" show-overflow-tooltip />
+        <el-table-column label="封面" align="center" width="70">
           <template #default="scope">
-            <el-image lazy :preview-src-list="[scope.row.cover]" class="table-td-thumb" :src="scope.row.cover"
-                      fit="cover"></el-image>
+            <el-image lazy :preview-src-list="[scope.row.cover]" class="table-td-thumb" :src="scope.row.cover" fit="cover" />
           </template>
         </el-table-column>
-        <el-table-column prop="url" label="链接" align="center"></el-table-column>
-
-        <el-table-column prop="type" label="资源类型" align="center"></el-table-column>
-        <el-table-column label="状态" align="center">
+        <el-table-column prop="url" label="链接" align="center" show-overflow-tooltip />
+        <el-table-column prop="type" label="资源类型" align="center" width="100" />
+        <el-table-column label="状态" align="center" width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.status === false ? 'danger' : 'success'"
-                    disable-transitions>
+            <el-tag :type="scope.row.status === false ? 'danger' : 'success'" disable-transitions size="small">
               {{ scope.row.status === false ? '禁用' : '启用' }}
             </el-tag>
-            <el-switch @change="changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
+            <el-switch @change="changeStatus(scope.row)" v-model="scope.row.status" size="small" />
           </template>
         </el-table-column>
-
-        <el-table-column prop="remark" label="备注" align="center"></el-table-column>
-        <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
-        <el-table-column label="操作" width="180" align="center">
+        <el-table-column prop="remark" label="备注" align="center" show-overflow-tooltip />
+        <el-table-column prop="createTime" label="创建时间" align="center" width="155" />
+        <el-table-column label="操作" width="120" align="center" fixed="right">
           <template #default="scope">
-            <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="text" icon="el-icon-delete" style="color: var(--orangeRed)"
-                       @click="handleDelete(scope.row)">
-              删除
-            </el-button>
+            <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -63,93 +55,77 @@
       </div>
     </div>
 
-    <el-dialog title="图片"
+    <el-dialog title="上传封面"
                v-model="coverDialog"
-               width="25%"
+               width="400px"
                :append-to-body="true"
                :close-on-click-modal="false"
                destroy-on-close
                center>
-      <div>
-        <uploadPicture :isAdmin="true" :prefix="resourcePath.type + 'Cover'" @addPicture="addPicture" :maxSize="2"
-                       :maxNumber="1"></uploadPicture>
-      </div>
+      <uploadPicture :isAdmin="true" :prefix="resourcePath.type + 'Cover'" @addPicture="addPicture" :maxSize="2"
+                     :maxNumber="1" />
     </el-dialog>
 
-    <el-dialog title="文件"
+    <el-dialog title="上传文件"
                v-model="uploadDialog"
-               width="25%"
+               width="400px"
                :append-to-body="true"
                :close-on-click-modal="false"
                destroy-on-close
                center>
-      <div>
-        <uploadPicture :isAdmin="true" :prefix="resourcePath.type + 'Url'" @addPicture="addFile" :maxSize="10"
-                       :maxNumber="1" :listType="'text'" :accept="'image/*, video/*, audio/*'"></uploadPicture>
-      </div>
+      <uploadPicture :isAdmin="true" :prefix="resourcePath.type + 'Url'" @addPicture="addFile" :maxSize="10"
+                     :maxNumber="1" :listType="'text'" :accept="'image/*, video/*, audio/*'" />
     </el-dialog>
 
     <el-dialog title="资源路径"
                v-model="addResourcePathDialog"
-               width="50%"
+               width="560px"
                :before-close="clearDialog"
                :append-to-body="true"
                :close-on-click-modal="false"
                center>
-      <div>
-        <div>
-          <div style="margin-bottom: 5px">标题：</div>
-          <el-input maxlength="60" v-model="resourcePath.title"></el-input>
-          <div style="margin-top: 10px;margin-bottom: 5px">分类：</div>
-          <el-input :disabled="!['friendUrl', 'lovePhoto', 'funny', 'favorites'].includes(resourcePath.type)"
-                    maxlength="30" v-model="resourcePath.classify"></el-input>
-          <div style="margin-top: 10px;margin-bottom: 5px">简介：</div>
-          <el-input :disabled="!['friendUrl', 'favorites'].includes(resourcePath.type)"
-                    maxlength="1000" v-model="resourcePath.introduction"></el-input>
-          <div style="margin-top: 10px;margin-bottom: 5px">封面：</div>
-          <div style="display: flex">
-            <el-input v-model="resourcePath.cover"></el-input>
-            <div style="width: 66px;margin: 3.5px 0 0 10px">
-              <proButton :info="'上传封面'"
-                         @click="addResourcePathCover"
-                         :before="$constant.before_color_1"
-                         :after="$constant.after_color_1">
-              </proButton>
-            </div>
-          </div>
-          <div style="margin-top: 10px;margin-bottom: 5px">链接：</div>
-          <div style="display: flex">
-            <el-input :disabled="!['friendUrl', 'funny', 'favorites'].includes(resourcePath.type)"
-                      v-model="resourcePath.url"></el-input>
-            <div style="width: 66px;margin: 3.5px 0 0 10px">
-              <proButton :info="'上传文件'"
-                         @click="addResourcePathUrl"
-                         :before="$constant.before_color_1"
-                         :after="$constant.after_color_1">
-              </proButton>
-            </div>
-          </div>
-          <div style="margin-top: 10px;margin-bottom: 5px">资源类型：</div>
-          <el-select v-model="resourcePath.type" placeholder="资源路径类型" class="handle-select mrb10">
-            <el-option
-              v-for="(item, i) in resourceTypes"
-              :key="i"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-          <div style="margin-top: 10px;margin-bottom: 5px">备注：</div>
-          <el-input :disabled="![].includes(resourcePath.type)"
-                    maxlength="1000" v-model="resourcePath.remark" type="textarea"></el-input>
+      <div class="dialog-form">
+        <div class="form-row">
+          <span class="form-label">标题：</span>
+          <el-input maxlength="60" v-model="resourcePath.title" style="flex:1" />
         </div>
-        <div style="display: flex;margin-top: 30px" class="myCenter">
-          <proButton :info="'提交'"
-                     @click="addResourcePath"
-                     :before="$constant.before_color_2"
-                     :after="$constant.after_color_2">
-          </proButton>
+        <div class="form-row">
+          <span class="form-label">分类：</span>
+          <el-input :disabled="!['friendUrl', 'lovePhoto', 'funny', 'favorites'].includes(resourcePath.type)"
+                    maxlength="30" v-model="resourcePath.classify" style="flex:1" />
+        </div>
+        <div class="form-row">
+          <span class="form-label">简介：</span>
+          <el-input :disabled="!['friendUrl', 'favorites'].includes(resourcePath.type)"
+                    maxlength="1000" v-model="resourcePath.introduction" style="flex:1" />
+        </div>
+        <div class="form-row">
+          <span class="form-label">封面：</span>
+          <el-input v-model="resourcePath.cover" style="flex:1" />
+          <el-button type="primary" size="small" @click="addResourcePathCover">上传</el-button>
+        </div>
+        <div class="form-row">
+          <span class="form-label">链接：</span>
+          <el-input :disabled="!['friendUrl', 'funny', 'favorites'].includes(resourcePath.type)"
+                    v-model="resourcePath.url" style="flex:1" />
+          <el-button type="primary" size="small" @click="addResourcePathUrl" :disabled="!['funny'].includes(resourcePath.type)">上传</el-button>
+        </div>
+        <div class="form-row">
+          <span class="form-label">类型：</span>
+          <el-select v-model="resourcePath.type" placeholder="资源路径类型" style="flex:1">
+            <el-option v-for="(item, i) in resourceTypes" :key="i" :label="item.label" :value="item.value" />
+          </el-select>
+        </div>
+        <div class="form-row">
+          <span class="form-label">备注：</span>
+          <el-input :disabled="![].includes(resourcePath.type)"
+                    maxlength="1000" v-model="resourcePath.remark" type="textarea" :rows="3" style="flex:1" />
         </div>
       </div>
+      <template #footer>
+        <el-button @click="clearDialog">取消</el-button>
+        <el-button type="primary" @click="addResourcePath">提交</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -157,11 +133,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import * as resourceApi from '../../api/modules/resourceApi';
-
-// 引入组件
-const uploadPicture = () => import("../common/uploadPicture");
-const proButton = () => import("../common/proButton");
+import * as resourceApi from '@/api/modules/resource';
 
 // 响应式数据
 const resourceTypes = ref([
@@ -355,38 +327,34 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
-  .handle-box {
-    margin-bottom: 20px;
-  }
-
-  .handle-select {
-    width: 200px;
-  }
-
-  .table {
-    width: 100%;
-    font-size: 14px;
-  }
-
-  .mrb10 {
-    margin-right: 10px;
-    margin-bottom: 10px;
-  }
-
-  .table-td-thumb {
-    display: block;
-    margin: auto;
-    width: 40px;
-    height: 40px;
-  }
-
-  .pagination {
-    margin: 20px 0;
-    text-align: right;
-  }
-
-  .el-switch {
-    margin: 5px;
-  }
+.page-container { display: flex; flex-direction: column; gap: 16px; }
+.page-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+.section-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: #1a1d2e;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-select { width: 160px; }
+.table { width: 100%; font-size: 13.5px; }
+.pagination { margin-top: 16px; text-align: right; }
+.table-td-thumb {
+  display: block; margin: auto;
+  width: 36px; height: 36px;
+  border-radius: 6px;
+}
+.el-switch { margin: 5px; }
+.dialog-form { padding: 4px 0; }
+.form-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.form-label { font-size: 14px; color: #475569; white-space: nowrap; }
 </style>

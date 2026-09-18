@@ -16,7 +16,7 @@ export interface UserBase {
   avatar?: string;
   introduction?: string;
   subscribe?: string;
-  isBoss?: boolean;
+  isAdmin?: boolean;
   accessToken?: string;
   code?: string;
   createTime?: string;
@@ -32,7 +32,7 @@ export interface UserDetail extends UserBase {
   email?: string;
   avatar?: string;
   introduction?: string;
-  isBoss?: boolean;
+  isAdmin?: boolean;
   createTime: string;
   updateTime: string;
   [key: string]: any;

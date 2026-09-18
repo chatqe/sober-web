@@ -51,11 +51,11 @@ const login = async (): Promise<void> => {
   if (!$common.isEmpty(email.value) && !$common.isEmpty(code.value)) {
     try {
       const res = await authApi.passwordLessLogin({email: email.value, code: code.value})
-      if (!res.data) return
-      
-      userStore.loadCurrentUser(res.data)
-      authStore.setUserToken(res.data.accessToken)
-      if (res.data.isAdmin) {
+      if (!res) return
+
+      userStore.loadCurrentUser(res)
+      authStore.setUserToken(res.accessToken)
+      if (res.isAdmin) {
         authStore.setIsAdmin(true)
       }
       email.value = ""

@@ -102,10 +102,10 @@ const register = async (): Promise<void> => {
   }
 
   try {
-    const res = await userApi.register(user)
-    if (!$common.isEmpty(res.data)) {
-      userStore.loadCurrentUser(res.data)
-      authStore.setUserToken(res.data.accessToken)
+    const res = await userApi.register(user as any)
+    if (!$common.isEmpty(res)) {
+      userStore.loadCurrentUser(res)
+      authStore.setUserToken(res.accessToken)
       // 清空表单
       username.value = ""
       registPwd.value = ""

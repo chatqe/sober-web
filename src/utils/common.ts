@@ -67,7 +67,7 @@ function decrypt(encryptedBase64Str: string): string {
 function faceReg(content: string): string {
   return content.replace(/\[[^\[\]]+\]/g, (word) => {
     const emojiName = word.replace('[', '').replace(']', '')
-    const index = APP_CONSTANTS.emojiList.indexOf(emojiName)
+    const index = APP_CONSTANTS.emojiList.indexOf(emojiName as any)
     if (index > -1) {
       const url = APP_CONSTANTS.fileEmojiUrl + 'emoji/q' + (index + 1) + '.gif'
       return `<img style="vertical-align: middle;width: 32px;height: 32px" src="${url}" title="${word}"/>`
@@ -107,7 +107,7 @@ function imgShow(selector: string): void {
       bigImg.setAttribute('src', src)
 
       const tempImg = new Image()
-      tempImg.onload = function () {
+      tempImg.onload = function (this: HTMLImageElement) {
         const windowW = window.innerWidth
         const windowH = window.innerHeight
         const realWidth = this.width

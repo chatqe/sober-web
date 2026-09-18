@@ -17,22 +17,16 @@ interface Admin {
   username?: string;
   email?: string;
   avatar: string;
-  isBoss: boolean;
+  isAdmin: boolean;
   [key: string]: any;
 }
 
-// 定义State接口
-interface UserState {
-  currentUser: User;
-  currentAdmin: Admin;
-}
-
-export const useUserStore = defineStore<UserState>('user', () => {
+export const useUserStore = defineStore('user', () => {
 
         const currentUser = ref<User>({})
         const currentAdmin = ref<Admin>({
             avatar: '',
-            isBoss: false,
+            isAdmin: false,
         })
 
         const loadCurrentUser = (user: User): void => {
@@ -46,7 +40,7 @@ export const useUserStore = defineStore<UserState>('user', () => {
 
         const clearUserData = (): void => {
             currentUser.value = {}
-            currentAdmin.value = { avatar: '', isBoss: false }
+            currentAdmin.value = { avatar: '', isAdmin: false }
         }
 
 
@@ -58,8 +52,4 @@ export const useUserStore = defineStore<UserState>('user', () => {
             loadCurrentAdmin,
             clearUserData,
         }
-    },
-
-    {
-        persist: true // 持久化
-    })
+})

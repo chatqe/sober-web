@@ -41,7 +41,7 @@ const allFiles = [
   'src/components/love.vue',
   'src/components/message.vue',
   'src/components/myAside.vue',
-  'src/components/newTreeHole.vue',
+  'src/components/Danmaku.vue',
   'src/components/sort.vue',
   'src/components/travel.vue',
   'src/components/user.vue',

@@ -127,20 +127,20 @@
 
 
     <!--    最新树洞-->
-    <newTreeHole></newTreeHole>
+    <Danmaku></Danmaku>
 
 
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onMounted, ref} from 'vue'
+import {computed, inject, onMounted, ref, type Ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {Calendar, StarFilled} from '@element-plus/icons-vue'
 import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
-import {articleApi} from '@/api/index.js'
-import newTreeHole from "./newTreeHole.vue"
+import {articleApi, categoryApi} from '@/api/index.js'
+import Danmaku from "./danmaku.vue"
 import TagCloud from 'TagCloud'
 
 // 定义注入的类型
@@ -172,9 +172,13 @@ interface Article {
 
 interface SortItem {
   id: number
-  sortName: string
-  sortDescription: string
-  status: number
+  name: string
+  desc: string
+  type?: number
+  isShow?: number
+  sort?: number
+  icon?: string
+  countOfSort?: number
   [key: string]: any
 }
 
@@ -206,27 +210,36 @@ const showAdmireDialog: Ref<boolean> = ref(false)
 const articleSearch: Ref<string> = ref("")
 
 const cloudRef = ref<HTMLElement | null>(null)
-const tags: Ref<string[]> = ref(sortInfoStore.labels || ['Vue3', 'Vite', 'TS', 'Pinia', '标签云'])
+const tags: Ref<string[]> = ref([])
 
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   getRecommendArticles()
+  try {
+    const res = await categoryApi.dict()
+    if (res?.data && Array.isArray(res.data)) {
+      const allValues = res.data.flatMap((item: any) => Object.values(item).map(String))
+      tags.value = [...new Set(allValues)] as string[]
+    }
+  } catch (e) {
+    tags.value = ['Vue3', 'Vite', 'TS', 'Pinia', '标签云']
+  }
   if (cloudRef.value) {
-    TagCloud(cloudRef.value, tags.value, {
-      radius: 150,          // 标签云旋转半径（px）
-      maxSpeed: 'fast',     // 最大速度 'slow'/'normal'/'fast'）
-      initSpeed: 'normal',  // 初始速度
-      direction: 135,       // 旋转方向 （顺时针角度，如0=上，90=左）
-      keep: true            // 鼠标移出后是否继续旋转
+    ;(TagCloud as any)(cloudRef.value, tags.value, {
+      radius: 150,
+      maxSpeed: 'fast',
+      initSpeed: 'normal',
+      direction: 135,
+      keep: true
     })
   }
 })
 
 // 计算属性
 const webInfo = computed<WebInfo>(() => webInfoStore.webInfo)
-const sortInfo = computed<SortItem[]>(() => {
+const sortInfo = computed(() => {
   // 过滤不显示的sort列表
-  return sortInfoStore.sortInfo.filter(item => item.status !== 0)
+  return sortInfoStore.sortInfo.filter(function(item: any) { return item.isShow !== 0; })
 })
 const articleTotal = computed<number>(() => sortInfoStore.articleTotal)
 const currentUser = computed(() => userStore.currentUser)

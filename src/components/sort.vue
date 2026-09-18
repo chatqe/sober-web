@@ -7,11 +7,11 @@
 
     <div class="my-animation-slide-bottom sort-container">
       <!-- 标签 -->
-      <div class="sort-warp shadow-box" v-if="!$common.isEmpty(sort) && !$common.isEmpty(sort.labels)">
-        <div v-for="(label, index) in sort.labels" :key="index"
-             :class="{isActive: !$common.isEmpty(labelId) && parseInt(labelId) === label.id}"
-             @click="listArticle(label)">
-          <proTag :info="label.labelName+' '+label.countOfLabel"
+      <div class="sort-warp shadow-box" v-if="!$common.isEmpty(category) && !$common.isEmpty(categoryTags)">
+        <div v-for="(tag, index) in categoryTags" :key="index"
+             :class="{isActive: !$common.isEmpty(tagId) && parseInt(tagId) === tag.id}"
+             @click="listArticle(tag)">
+          <proTag :info="tag.name+' '+tag.countOfTag"
                   :color="$constant.before_color_list[Math.floor(Math.random() * 6)]"
                   style="margin: 12px">
           </proTag>
@@ -51,6 +51,7 @@ import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {useSortInfoStore} from '@/stores'
 import {articleApi} from '@/api/index.js'
+import {adminApi} from '@/api/modules/admin'
 
 const route = useRoute()
 const router = useRouter()
@@ -67,16 +68,17 @@ const myFooter = defineAsyncComponent(() => import("./common/myFooter.vue"))
 
 
 
-const sortId = computed(() => router.currentRoute.value.query.sortId)
-const labelId = computed(() => router.currentRoute.value.query.labelId)
-const sort = ref(null)
+const categoryId = computed(() => router.currentRoute.value.query.sortId)
+const tagId = computed(() => router.currentRoute.value.query.labelId)
+const category = ref(null)
+const categoryTags = ref([])
 const pagination = ref({
   pageNum: 1,
   pageSize: 10,
   total: 0,
   searchKey: "",
-  sortId: sortId.value,
-  labelId: labelId.value
+  sortId: categoryId.value,
+  tagId: tagId.value ? parseInt(tagId.value) : null
 })
 const articles = ref([])
 
@@ -95,12 +97,13 @@ watch(() => route.query, () => {
     total: 0,
     searchKey: "",
     sortId: route.query.sortId,
-    labelId: route.query.labelId
+    tagId: route.query.labelId ? parseInt(route.query.labelId) : null
   }
   articles.value = []
-  sortId.value = route.query.sortId
-  labelId.value = route.query.labelId
-  getSort()
+  categoryId.value = route.query.sortId
+  tagId.value = route.query.labelId
+  getCategory()
+  getCategories()
   getArticles()
 })
 
@@ -110,27 +113,48 @@ const pageArticles = () => {
   getArticles()
 }
 
-const getSort = () => {
+const getCategory = () => {
   if (!$common.isEmpty(sortInfo.value)) {
-    // let sortArray = sortInfo.value.filter(f => {
-    //   return f.id === parseInt(sortId.value)
-    // })
-    let sortArray = sortInfo.value.filter(f => f.id === sortId.value)
-    if (!$common.isEmpty(sortArray)) {
-      sort.value = sortArray[0]
+    let categoryArray = sortInfo.value.filter(f => f.id === parseInt(categoryId.value))
+    if (!$common.isEmpty(categoryArray)) {
+      category.value = categoryArray[0]
     }
   }
 }
 
-const listArticle = (label) => {
-  labelId.value = label.id
+// 加载当前分类的标签列表
+const getCategories = async () => {
+  if (!$common.isEmpty(category.value) && category.value.id) {
+    try {
+      const res = await adminApi.getTagPage({ categoryId: category.value.id })
+      if (res?.data?.list) {
+        categoryTags.value = res.data.list.map(item => ({
+          ...item,
+          countOfTag: item.articleCount || 0
+        }))
+      } else if (res?.data) {
+        categoryTags.value = res.data.map(item => ({
+          ...item,
+          countOfTag: item.articleCount || 0
+        }))
+      }
+    } catch (error) {
+      categoryTags.value = []
+    }
+  } else {
+    categoryTags.value = []
+  }
+}
+
+const listArticle = (tag) => {
+  tagId.value = tag.id
   pagination.value = {
     current: 1,
     size: 10,
     total: 0,
     searchKey: "",
-    sortId: route.query.sortId,
-    labelId: label.id
+    sortId: route.query.sortId ? parseInt(route.query.sortId) : null,
+    tagId: tag.id
   }
   articles.value = []
   nextTick(() => {
@@ -142,8 +166,6 @@ const getArticles = async () => {
   try {
     const res = await articleApi.getArticleList(pagination.value)
     if (!$common.isEmpty(res.data)) {
-      // console.log(res.data)
-      // articles.value = articles.value.concat(res.data.list)
       articles.value = res.data.list
       pagination.value.total = res.data.total
     }
@@ -156,8 +178,10 @@ const getArticles = async () => {
 }
 
 // 生命周期
-onMounted(() => {
-  getSort()
+onMounted(async () => {
+  await sortInfoStore.loadHomeStats()
+  getCategory()
+  getCategories()
   getArticles()
 })
 

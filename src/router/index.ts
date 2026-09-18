@@ -94,57 +94,57 @@ const routes: AppRouteRecordRaw[] = [
     },
     {
         path: '/admin',
-        redirect: '/welcome',
+        redirect: '/admin/main',
         meta: {requiresAuth: true},
         component: () => import('../components/admin/admin.vue'),
         children: [
             {
-                path: '/welcome', // 或者使用 path: 'welcome' 生成相对路径 /admin/welcome
+                path: 'welcome',
                 name: 'welcome',
                 component: () => import('../components/admin/welcome.vue')
             },
             {
-                path: '/main',
+                path: 'main',
                 name: 'main',
                 component: () => import('../components/admin/main.vue')
             }, {
-                path: '/webEdit',
+                path: 'webEdit',
                 name: 'webEdit',
                 component: () => import('../components/admin/webEdit.vue')
             }, {
-                path: '/userList',
+                path: 'userList',
                 name: 'userList',
                 component: () => import('../components/admin/userList.vue')
             }, {
-                path: '/postList',
+                path: 'postList',
                 name: 'postList',
                 component: () => import('../components/admin/postList.vue')
             }, {
-                path: '/postEdit',
+                path: 'postEdit',
                 name: 'postEdit',
                 component: () => import('../components/admin/postEdit.vue')
             }, {
-                path: '/sortList',
-                name: 'sortList',
-                component: () => import('../components/admin/sortList.vue')
+                path: 'categoryList',
+                name: 'categoryList',
+                component: () => import('../components/admin/categoryList.vue')
             }, {
-                path: '/commentList',
+                path: 'commentList',
                 name: 'commentList',
                 component: () => import('../components/admin/commentList.vue')
             }, {
-                path: '/treeHoleList',
+                path: 'treeHoleList',
                 name: 'treeHoleList',
-                component: () => import('../components/admin/treeHoleList.vue')
+                component: () => import('../components/admin/danmakuList.vue')
             }, {
-                path: '/resourceList',
+                path: 'resourceList',
                 name: 'resourceList',
                 component: () => import('../components/admin/resourceList.vue')
             }, {
-                path: '/loveList',
+                path: 'loveList',
                 name: 'loveList',
                 component: () => import('../components/admin/loveList.vue')
             }, {
-                path: '/resourcePathList',
+                path: 'resourcePathList',
                 name: 'resourcePathList',
                 component: () => import('../components/admin/resourcePathList.vue')
             }

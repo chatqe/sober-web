@@ -61,7 +61,7 @@ export interface CommentListParams {
 
 // 评论列表响应
 export interface CommentListResponse {
-  list: CommentDetail[];
+  records: CommentDetail[];
   total: number;
   [key: string]: any;
 }

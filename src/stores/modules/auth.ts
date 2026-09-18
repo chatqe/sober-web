@@ -4,14 +4,7 @@
 import {defineStore} from 'pinia'
 import {ref} from 'vue'
 
-// 定义State接口
-interface AuthState {
-  userToken: string;
-  adminToken: string;
-  isAdmin: boolean;
-}
-
-export const useAuthStore = defineStore<AuthState>('authorization', () => {
+export const useAuthStore = defineStore('authorization', () => {
     // 状态定义
     const userToken = ref<string>('');
     const adminToken = ref<string>('');
@@ -77,6 +70,5 @@ export const useAuthStore = defineStore<AuthState>('authorization', () => {
         hasAdminToken
     };
 }, {
-    // 持久化配置
     persist: true
 });

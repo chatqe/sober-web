@@ -3,9 +3,9 @@
     <div class="page-card">
       <div class="section-header">
         <el-icon size="16"><Collection /></el-icon>
-        <span>树洞留言列表</span>
+        <span>弹幕管理</span>
       </div>
-      <el-table :data="treeHoles" border class="table" stripe header-cell-class-name="table-header">
+      <el-table :data="danmakus" border class="table" stripe header-cell-class-name="table-header">
         <el-table-column prop="id" label="ID" width="55" align="center" />
         <el-table-column prop="message" label="留言内容" align="center" show-overflow-tooltip />
         <el-table-column prop="createTime" label="创建时间" align="center" width="160" />
@@ -33,77 +33,63 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, inject } from 'vue'
-import type { Ref } from 'vue'
 import { Collection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { webInfoApi } from '@/api/modules'
-
-interface TreeHole {
-  id: number;
-  message: string;
-  createTime: string;
-  [key: string]: any;
-}
-
-interface Pagination {
-  current: number;
-  size: number;
-  total: number;
-}
-
-interface TreeHoleDeleteRequest {
-  id: number;
-}
+import { danmakuApi } from '@/api/modules'
+import type { Danmaku } from '@/types/modules/danmaku'
 
 interface CommonUtils {
-  isEmpty: (obj: any) => boolean;
+  isEmpty: (obj: any) => boolean
 }
 
 const $common = inject<CommonUtils>('$common')!
 
-const treeHoles = ref<TreeHole[]>([])
+const danmakus = ref<Danmaku[]>([])
 const sizeOptions = [10, 20, 50, 100]
-const pagination = reactive<Pagination>({
+const pagination = reactive({
   current: 1,
   size: 10,
   total: 0
 })
 
-const getTreeHoles = async (): Promise<void> => {
+const getDanmakus = async (): Promise<void> => {
   try {
-    const res = await webInfoApi.getTreeHoleList(pagination)
-    if (!($common.isEmpty(res))) {
-      treeHoles.value = res.data.records
-      pagination.total = res.data.total
+    const res = await danmakuApi.list()
+    if (!$common.isEmpty(res.data)) {
+      const all = res.data as Danmaku[]
+      pagination.total = all.length
+      const start = (pagination.current - 1) * pagination.size
+      danmakus.value = all.slice(start, start + pagination.size)
+    } else {
+      danmakus.value = []
+      pagination.total = 0
     }
   } catch (error: any) {
-    ElMessage.error(error.message || '获取树洞列表失败')
+    ElMessage.error(error.message || '获取弹幕列表失败')
   }
 }
 
 const handlePageChange = (val: number): void => {
   pagination.current = val
-  getTreeHoles()
+  getDanmakus()
 }
 
 const handleSizeChange = (val: number): void => {
   pagination.size = val
   pagination.current = 1
-  getTreeHoles()
+  getDanmakus()
 }
 
-const handleDelete = async (item: TreeHole): Promise<void> => {
+const handleDelete = async (item: Danmaku): Promise<void> => {
   try {
-    await ElMessageBox.confirm('确认删除？', '提示', {
+    await ElMessageBox.confirm('确认删除该弹幕？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
       center: true
     })
-    const deleteRequest: TreeHoleDeleteRequest = { id: item.id }
-    await webInfoApi.deleteTreeHole(deleteRequest)
-    pagination.current = 1
-    getTreeHoles()
+    await danmakuApi.delete(item.id!)
+    getDanmakus()
     ElMessage.success('删除成功！')
   } catch (error: any) {
     if (error !== 'cancel') ElMessage.error(error.message || '删除失败')
@@ -111,7 +97,7 @@ const handleDelete = async (item: TreeHole): Promise<void> => {
 }
 
 onMounted((): void => {
-  getTreeHoles()
+  getDanmakus()
 })
 </script>
 
@@ -122,6 +108,7 @@ onMounted((): void => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
 }
 .section-header {
   display: flex;

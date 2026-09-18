@@ -1,61 +1,54 @@
 <template>
-  <div>
-    <div>
-      <div class="handle-box">
-        <el-select clearable v-model="pagination.status" placeholder="状态" class="handle-select mrb10">
+  <div class="page-container">
+    <div class="page-card">
+      <div class="section-header">
+        <el-icon size="16"><Sugar /></el-icon>
+        <span>表白墙</span>
+      </div>
+      <div class="toolbar">
+        <el-select v-model="pagination.status" placeholder="状态" class="filter-select">
           <el-option key="1" label="启用" :value="true"></el-option>
           <el-option key="2" label="禁用" :value="false"></el-option>
         </el-select>
-        <el-button type="primary" :icon="Search" @click="search">搜索</el-button>
+        <el-button type="primary" @click="search()">搜索</el-button>
       </div>
-      <el-table :data="loves" border class="table" header-cell-class-name="table-header">
-        <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-        <el-table-column prop="userId" label="用户ID" align="center"></el-table-column>
-
-        <el-table-column prop="manName" label="男生昵称" align="center"></el-table-column>
-        <el-table-column prop="womanName" label="女生昵称" align="center"></el-table-column>
-
-        <el-table-column label="背景封面" align="center">
+      <el-table :data="loves" border class="table" stripe header-cell-class-name="table-header">
+        <el-table-column prop="id" label="ID" width="55" align="center" />
+        <el-table-column prop="userId" label="用户ID" align="center" width="90" />
+        <el-table-column prop="manName" label="男生昵称" align="center" width="100" />
+        <el-table-column prop="womanName" label="女生昵称" align="center" width="100" />
+        <el-table-column label="背景" align="center" width="70">
           <template #default="scope">
-            <el-image lazy :preview-src-list="[scope.row.bgCover]" class="table-td-thumb" :src="scope.row.bgCover"
-                      fit="cover"></el-image>
+            <el-image lazy :preview-src-list="[scope.row.bgCover]" class="table-td-thumb" :src="scope.row.bgCover" fit="cover" />
           </template>
         </el-table-column>
-        <el-table-column label="男生头像" align="center">
+        <el-table-column label="男生头像" align="center" width="70">
           <template #default="scope">
-            <el-image lazy :preview-src-list="[scope.row.manCover]" class="table-td-thumb" :src="scope.row.manCover"
-                      fit="cover"></el-image>
+            <el-image lazy :preview-src-list="[scope.row.manCover]" class="table-td-thumb" :src="scope.row.manCover" fit="cover" />
           </template>
         </el-table-column>
-        <el-table-column label="女生头像" align="center">
+        <el-table-column label="女生头像" align="center" width="70">
           <template #default="scope">
-            <el-image lazy :preview-src-list="[scope.row.womanCover]" class="table-td-thumb" :src="scope.row.womanCover"
-                      fit="cover"></el-image>
+            <el-image lazy :preview-src-list="[scope.row.womanCover]" class="table-td-thumb" :src="scope.row.womanCover" fit="cover" />
           </template>
         </el-table-column>
-
-        <el-table-column label="状态" align="center">
+        <el-table-column label="状态" align="center" width="90">
           <template #default="scope">
-            <el-tag :type="scope.row.status === false ? 'danger' : 'success'"
-                    disable-transitions>
+            <el-tag :type="scope.row.status === false ? 'danger' : 'success'" disable-transitions size="small">
               {{ scope.row.status === false ? '禁用' : '启用' }}
             </el-tag>
-            <el-switch @change="() => changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
+            <el-switch @change="() => changeStatus(scope.row)" v-model="scope.row.status" size="small" />
           </template>
         </el-table-column>
-
-        <el-table-column prop="timing" label="计时" align="center"></el-table-column>
-        <el-table-column prop="countdownTitle" label="倒计时标题" align="center"></el-table-column>
-        <el-table-column prop="countdownTime" label="倒计时时间" align="center"></el-table-column>
-        <el-table-column prop="familyInfo" label="额外信息" align="center" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
-        <el-table-column prop="updateTime" label="最终修改时间" align="center"></el-table-column>
-        <el-table-column label="操作" width="180" align="center">
+        <el-table-column prop="timing" label="计时" align="center" width="120" />
+        <el-table-column prop="countdownTitle" label="倒计时标题" align="center" show-overflow-tooltip />
+        <el-table-column prop="countdownTime" label="倒计时时间" align="center" width="155" />
+        <el-table-column prop="familyInfo" label="额外信息" align="center" show-overflow-tooltip />
+        <el-table-column prop="createTime" label="创建时间" align="center" width="155" />
+        <el-table-column prop="updateTime" label="修改时间" align="center" width="155" />
+        <el-table-column label="操作" width="80" align="center" fixed="right">
           <template #default="scope">
-            <el-button type="danger" link :icon="Delete"
-                       @click="handleDelete(scope.row)">
-              删除
-            </el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -75,7 +68,7 @@
 import { ref, onMounted } from 'vue'
 import type { Ref } from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {Search, Delete} from '@element-plus/icons-vue'
+import { Sugar } from '@element-plus/icons-vue'
 import {familyApi} from '@/api/index.js'
 // 定义接口
 interface Love {
@@ -153,10 +146,10 @@ const search = (): void => {
 const getLoves = async (): Promise<void> => {
   try {
     loading.value = true
-    const res = await familyApi.listFamily(pagination.value)
+    const res = await familyApi.listFamily({ query: { ...pagination, status: 1 } as any })
 
-    if (res.data?.records) {
-      loves.value = res.data.records
+    if (res.data?.list) {
+      loves.value = res.data.list
       pagination.value.total = res.data.total
     }
   } catch (error: any) {
@@ -192,38 +185,27 @@ onMounted((): void => {
 </script>
 
 <style scoped>
-
-.handle-box {
-  margin-bottom: 20px;
+.page-container { display: flex; flex-direction: column; gap: 16px; }
+.page-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
 }
-
-.handle-select {
-  width: 200px;
+.section-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: #1a1d2e;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-.table {
-  width: 100%;
-  font-size: 14px;
-}
-
-.mrb10 {
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.filter-select { width: 100px; }
+.table { width: 100%; font-size: 13.5px; }
+.pagination { margin-top: 16px; text-align: right; }
 .table-td-thumb {
-  display: block;
-  margin: auto;
-  width: 40px;
-  height: 40px;
-}
-
-.pagination {
-  margin: 20px 0;
-  text-align: right;
-}
-
-.el-switch {
-  margin: 5px;
+  display: block; margin: auto;
+  width: 36px; height: 36px;
+  border-radius: 6px;
 }
 </style>

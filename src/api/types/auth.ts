@@ -22,7 +22,7 @@ export interface LoginResponse {
   gender?: number;
   avatar?: string;
   introduction?: string;
-  isBoss?: boolean;
+  isAdmin?: boolean;
   accessToken?: string;
   createTime?: string;
   updateTime?: string;
@@ -38,7 +38,7 @@ export interface UserInfo {
   gender?: number;
   avatar?: string;
   introduction?: string;
-  isBoss?: boolean;
+  isAdmin?: boolean;
   createTime?: string;
   updateTime?: string;
   [key: string]: any;

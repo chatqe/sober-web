@@ -18,8 +18,7 @@
             lazy
             :src="backgroundImage"
             fit="cover"
-        >
-          <template #error>
+        ><template #error>
             <div class="image-slot background-image-index-error"></div>
           </template>
         </el-image>
@@ -47,7 +46,7 @@
         <div class="page-container-wrap">
           <div class="page-container">
             <div class="aside-content" v-if="showAside">
-              <MyAside @select-sort="selectSort" @select-article="selectArticle"/>
+              <MyAside @select-sort="(sort: any) => selectSort(sort)" @select-article="selectArticle"/>
             </div>
 
             <div class="recent-posts" ref="recentPostsRef">
@@ -80,7 +79,7 @@
                               d="M367.36 482.304H195.9936c-63.3344 0-114.6368-51.3536-114.6368-114.6368V196.2496c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368V367.616c0 63.3344-51.3536 114.688-114.688 114.688zM367.36 938.752H195.9936c-63.3344 0-114.6368-51.3536-114.6368-114.6368v-171.4176c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368v171.4176c0 63.3344-51.3536 114.6368-114.688 114.6368zM828.672 938.752h-171.4176c-63.3344 0-114.6368-51.3536-114.6368-114.6368v-171.4176c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368v171.4176c0 63.3344-51.3024 114.6368-114.6368 114.6368zM828.672 482.304h-171.4176c-63.3344 0-114.6368-51.3536-114.6368-114.6368V196.2496c0-63.3344 51.3536-114.6368 114.6368-114.6368h171.4176c63.3344 0 114.6368 51.3536 114.6368 114.6368V367.616c0 63.3344-51.3024 114.688-114.6368 114.688z"
                               fill="#FF623E"></path>
                         </svg>
-                        {{ sort.sortName }}
+                        {{ sort.name }}
                       </div>
 
                       <div class="article-more" @click="router.push({path: '/sort', query: {sortId: sort.id}})">
@@ -261,11 +260,10 @@ const handleCurrentChange = (): void => {
 
 const getArticles = async (): Promise<void> => {
   try {
-    const response: ArticleApiResponse = await articleApi.getArticleList(pagination.value)
-    if (!$common.isEmpty(response.data)) {
-      // articles.value = articles.value.concat(response.data.list)
-      articles.value = response.data.list
-      pagination.value.total = response.data.total
+const response = await articleApi.getArticleList(pagination.value as any)
+    if (!$common.isEmpty((response as any).data)) {
+      articles.value = (response as any).data.list
+      pagination.value.total = (response as any).data.total
     }
   } catch (error: any) {
     ElMessage({
@@ -277,9 +275,9 @@ const getArticles = async (): Promise<void> => {
 
 const getSortArticles = async (): Promise<void> => {
   try {
-    const response = await articleApi.listSortArticle()
+    const response = await articleApi.listCategoryArticle()
     if (!$common.isEmpty(response.data)) {
-      sortArticles.value = response.data
+      sortArticles.value = response.data as any
     }
   } catch (error: any) {
     ElMessage({
@@ -293,7 +291,7 @@ const navigation = (selector: string): void => {
   const element = document.querySelector(selector)
   if (element) {
     window.scrollTo({
-      top: element.offsetTop,
+    top: (element as HTMLElement).offsetTop,
       behavior: "smooth"
     })
   }

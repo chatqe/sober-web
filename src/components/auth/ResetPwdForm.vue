@@ -61,7 +61,7 @@ const resetPwd = async (): Promise<void> => {
   if (!$common.isEmpty(email.value) && !$common.isEmpty(code.value) && !$common.isEmpty(newPwd.value)) {
     try {
       const res = await authApi.resetPassword({email: email.value, code: code.value, password: $common.encrypt(newPwd.value)})
-      if (res.data) {
+      if (res) {
         ElMessage.success("密码重置成功！")
         emit('switch', 'login')
       }

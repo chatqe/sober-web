@@ -83,8 +83,8 @@
   import { ref, reactive, computed, onMounted, inject } from 'vue'
   import { ElMessage, ElIcon } from 'element-plus'
   import { Edit, ArrowLeft, ArrowRight, Refresh } from '@element-plus/icons-vue'
-  import { useUserStore } from '../../store/index'
-  import { resourceApi, qiniuApi } from '@/api/index.js'
+  import { useUserStore } from '@/stores'
+  import { uploadApi, qiniuApi } from '@/api/index.js'
   import { defineAsyncComponent } from 'vue'
 
   // 定义接口
@@ -129,7 +129,7 @@
   }
   
   // 动态导入组件
-  const proButton = defineAsyncComponent(() => import("../common/proButton"))
+  const proButton = defineAsyncComponent(() => import("../common/proButton.vue"))
   
   // 注入全局属性
   const $common = inject<CommonUtils>('$common')!
@@ -250,7 +250,7 @@
         // 清除子路径
         if (!context.value) return
         context.value.beginPath()
-        context.value.moveTo(e.layerX, e.layerY)
+        context.value.moveTo((e as MouseEvent).layerX, (e as MouseEvent).layerY)
         // 当前绘图表面状态
         const preData = context.value.getImageData(0, 0, 1200, 600)
         // 当前绘图表面进栈
@@ -259,7 +259,7 @@
       
       function canvasMove(e: MouseEvent | TouchEvent): void {
         if (canvasMoveUse.value && context.value) {
-          context.value.lineTo(e.layerX, e.layerY)
+          context.value.lineTo((e as MouseEvent).layerX, (e as MouseEvent).layerY)
           context.value.stroke()
         }
       }
@@ -365,7 +365,7 @@
       
       async function saveLocal(fd: FormData): Promise<void> {
         try {
-          const res = await resourceApi.upload(fd)
+          const res = await uploadApi.uploadFile(fd)
           if (!res.data) return
           
           clearContext()
@@ -379,7 +379,7 @@
       
       async function saveQiniu(fd: FormData): Promise<void> {
         try {
-          const tokenRes = await qiniuApi.getUpToken({key: fd.get("key")})
+          const tokenRes = await qiniuApi.getUpToken(fd.get("key") as string)
           if (!tokenRes.data) return
           
           fd.append("token", tokenRes.data)

@@ -465,7 +465,7 @@ const captchaSubConfirm = async () => {
   }
 
   const res = await authApi.captchaCheck({uuid: verifyuuid.value, code: captcha.value})
-  if (!res.data) {
+  if (!res) {
     ElMessage.error("验证码错误！")
 
   } else {
@@ -511,11 +511,11 @@ const login = async () => {
   }
 
   try {
-    const res = await authApi.login(user, false, false)
-    if (!$common.isEmpty(res.data)) {
-      userStore.loadCurrentUser(res.data)
-      authStore.setUserToken(res.data.accessToken)
-      if (res.data.isAdmin) {
+    const res = await authApi.login(user)
+    if (!$common.isEmpty(res)) {
+      userStore.loadCurrentUser(res)
+      authStore.setUserToken(res.accessToken)
+      if (res.isAdmin) {
         authStore.setIsAdmin(true)
       }
       account.value = ""
@@ -573,9 +573,9 @@ const register = async () => {
 
   try {
     const res = await userApi.register(user)
-    if (!$common.isEmpty(res.data)) {
-      userStore.loadCurrentUser(res.data)
-      authStore.setUserToken(res.data.accessToken)
+    if (!$common.isEmpty(res)) {
+      userStore.loadCurrentUser(res)
+      authStore.setUserToken(res.accessToken)
       username.value = ""
       registPwd.value = ""
       code.value = ""
@@ -614,8 +614,8 @@ const submitUserInfo = async () => {
     })
 
     const res = await userApi.updateUserInfo(user)
-    if (!$common.isEmpty(res.data)) {
-      userStore.loadCurrentUser(res.data)
+    if (!$common.isEmpty(res)) {
+      userStore.loadCurrentUser(res)
       ElMessage({
         message: "修改成功！",
         type: "success"
@@ -745,8 +745,8 @@ const submitDialog = async () => {
 
       try {
         const res = await userApi.updateUserInfo(user)
-        if (!$common.isEmpty(res.data)) {
-          userStore.loadCurrentUser(res.data)
+        if (!$common.isEmpty(res)) {
+          userStore.loadCurrentUser(res)
           clearDialog()
           ElMessage({
             message: "修改成功！",
@@ -810,8 +810,8 @@ const updateSecretInfo = async () => {
       })
     } else {
       const res = await userApi.updateSecretInfo(params, false, false)
-      if (!$common.isEmpty(res.data)) {
-        userStore.loadCurrentUser(res.data)
+      if (!$common.isEmpty(res)) {
+        userStore.loadCurrentUser(res)
         clearDialog()
         ElMessage({
           message: "修改成功！",
@@ -845,8 +845,8 @@ const getCode = async () => {
   if (!verifyEmail()) return
   captchaShow.value = true
   const res = await authApi.getCaptchaCode({flag: true, email: email.value})
-  captchaImg.value = res.data.img
-  verifyuuid.value = res.data.uuid
+  captchaImg.value = res.img
+  verifyuuid.value = res.uuid
 }
 const getCode1 = async () => {
   if (codeString.value === "验证码") {
@@ -957,7 +957,7 @@ const resetPwdForFgtPwd = async () => {
     code: code.value,
     bizType: EmailBizType.RESET_PWD
   })
-  if (!$common.isEmpty(res.data)) {
+  if (!$common.isEmpty(res)) {
     ElMessage.success("修改成功，请重新登陆！")
     fwdClose()
   }

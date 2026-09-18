@@ -49,10 +49,18 @@ function toUrl(url: string): void {
 async function getCollect(): Promise<void> {
   try {
     const res = await webInfoApi.listCollect()
-    if (!res.data) return
-    if ($common.isEmpty(res.data)) return
-    if (typeof res.data !== 'object') return
-    collects.value = res.data as CollectData
+    if (!res || !Array.isArray(res)) return
+    const data = res as any
+    const collectsData: CollectData = {}
+    if (data.recordList && Array.isArray(data.recordList)) {
+      data.recordList.forEach((item: any) => {
+        if (!collectsData[item.classify]) {
+          collectsData[item.classify] = []
+        }
+        collectsData[item.classify].push(item)
+      })
+    }
+    collects.value = collectsData
   } catch (error: any) {
     ElMessage.error(error.message || '获取收藏失败')
   }

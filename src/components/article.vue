@@ -139,9 +139,8 @@
           <MdEditor
             v-model="articleContentHtml"
             class="entry-content"
-            :modelValue="articleContentHtml"
             :previewOnly="true"
-            :toolbars="{}"
+            :toolbars="[]"
             :editorId="'article-editor-' + article.id"
             ref="entryContentRef"
           />
@@ -155,7 +154,7 @@
           <div class="article-sort">
             <span
               @click="$router.push({path: '/sort', query: {sortId: article.sortId, labelId: article.labelId}})">{{
-                article.sort.sortName + " ▶ " + article.label.labelName
+                article.category?.name + " ▶ " + article.tag?.name
               }}</span>
           </div>
           <!-- 作者信息 -->
@@ -175,7 +174,7 @@
           <!--          <div class="myCenter" id="article-like" @click="subscribeLabel()">-->
           <div class="myCenter" id="article-like">
             <el-icon class="article-like-icon" :class="{'article-like': subscribe}"
-               @click="subscribeLabel()"><Thumb /></el-icon>
+               @click="subscribeLabel()"><Star /></el-icon>
             <div class="class">
               <img class="article-newlike-img" :src="$constant.newLike" alt="点赞"
                    @click="addArticleLikeCount()">
@@ -311,10 +310,11 @@ import { defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
 import { ElMessage, ElMessageBox, ElNotification, ElIcon } from 'element-plus'
-import { Thumb } from '@element-plus/icons-vue'
+import { Star } from '@element-plus/icons-vue'
 // 导入状态管理
 import { useUserStore, useWebInfoStore } from '@/stores'
-import MdEditor from 'md-editor-v3'
+import { MdEditor } from 'md-editor-v3'
+import { behaviorApi } from '@/api/modules'
 
 // 导入API模块
 import { articleApi, userApi, weiYanApi } from '@/api/index.js'
@@ -358,10 +358,10 @@ const tips = ref<string>("")
 const scrollTop = ref<number>(0)
 
 // DOM引用
-const tocButtonRef = ref(null)
-const tocElementRef = ref(null)
-const articleContentRef = ref(null)
-const entryContentRef = ref(null)
+const tocButtonRef = ref<HTMLElement | null>(null)
+const tocElementRef = ref<HTMLElement | null>(null)
+const articleContentRef = ref<HTMLElement | null>(null)
+const entryContentRef = ref<HTMLElement | null>(null)
 
 // 由于我们使用md-editor-v3进行渲染，移除MarkdownIt初始化
 
@@ -417,7 +417,7 @@ const subscribeLabel = async (): Promise<void> => {
 
   try {
     await ElMessageBox.confirm(
-      '确认' + (subscribe.value ? '取消订阅' : '订阅') + '专栏【' + article.value.label.labelName + '】？' + 
+      '确认' + (subscribe.value ? '取消订阅' : '订阅') + '专栏【' + article.value.tag?.name + '】？' + 
       (subscribe.value ? "" : "订阅专栏后，该专栏发布新文章将通过邮件通知订阅用户。"), 
       subscribe.value ? "取消订阅" : "文章订阅", {
       confirmButtonText: '确定',
@@ -425,12 +425,12 @@ const subscribeLabel = async (): Promise<void> => {
       center: true
     })
     
-    const res = await userApi.subscribe({
-      labelId: article.value.labelId,
-      flag: !subscribe.value
+    const res = await behaviorApi.subscribeBehavior({
+      bizId: article.value.labelId,
+      bizType: 1
     })
-    
-    if (!res.data) {
+
+    if (!res) {
       ElMessage({
         message: '操作成功',
         type: "success"
@@ -486,7 +486,7 @@ const deleteTreeHole = async (holeId: string): Promise<void> => {
       }
     )
     
-    await weiYanApi.deleteWeiYan(holeId)
+    await weiYanApi.deleteWeiYan(Number(holeId))
     
     ElMessage({
       type: 'success',
@@ -601,10 +601,7 @@ const addId = (): void => {
 // 获取文章详情
 const getArticle = async (passwordVal?: string): Promise<void> => {
   try {
-    const res = await articleApi.getArticleById({
-      id: id.value,
-      password: passwordVal
-    })
+    const res = await articleApi.getArticleById(Number(id.value))
     
     if (!$common.isEmpty(res.data)) {
       article.value = res.data;
@@ -628,7 +625,7 @@ const getArticle = async (passwordVal?: string): Promise<void> => {
         const previewElement = document.querySelector(`#article-editor-${article.value.id}-preview`);
         if (previewElement) {
           // 将ref设置为预览元素，以便后续函数使用
-          entryContentRef.value = previewElement;
+          entryContentRef.value = previewElement as HTMLElement;
           highlight();
           addId();
           getTocbot();
@@ -742,7 +739,7 @@ const highlight = () => {
   if (tables.length > 0) {
     tables.forEach(table => {
       // 仅在没有包装的时候才包装
-      if (!table.parentNode.classList.contains('table-wrapper')) {
+      if (!(table.parentNode as HTMLElement | null)?.classList.contains('table-wrapper')) {
         const wrapper = document.createElement('div')
         wrapper.className = 'table-wrapper'
         table.parentNode.insertBefore(wrapper, table)
@@ -757,7 +754,7 @@ const addArticleLikeCount = async () => {
     let loginFlag = $common.isEmpty(currentUser.value)
 
     await articleApi.addArticleLikeCount({
-      articleId: id.value,
+      articleId: Number(id.value),
       userId: loginFlag ? null : currentUser.value.id,
       operation: 0
     })
@@ -782,8 +779,8 @@ const checkHasLike = async () => {
   
   // 已登录 查看是否被当前登录用户点赞
   try {
-    const res = await articleApi.checkHasLike({articleId: id.value})
-    console.log(res.data)
+    const res = await articleApi.checkHasLike({ articleId: Number(id.value) })
+    console.log(res)
   } catch (error) {
     console.error('检查点赞状态失败:', error)
   }

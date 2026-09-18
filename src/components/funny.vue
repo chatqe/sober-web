@@ -133,9 +133,8 @@ onBeforeUnmount(() => {
 async function listFunny(): Promise<void> {
   try {
     const res = await webInfoApi.listFunny()
-    if (!res.data) return
-    if ($common.isEmpty(res.data)) return
-    funnys.value = res.data as FunnyCategory[]
+    if (!res) return
+    funnys.value = (res as any) as FunnyCategory[]
     if (funnys.value.length > 0) {
       changeFunny(funnys.value[0].classify)
     }

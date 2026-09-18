@@ -6,12 +6,7 @@ interface SysConfig {
   [key: string]: any
 }
 
-// 定义State接口
-interface SysConfigState {
-  sysConfig: SysConfig
-}
-
-export const useSysConfigStore = defineStore<SysConfigState>('sysConfig', () => {
+export const useSysConfigStore = defineStore('sysConfig', () => {
 
         const sysConfig = ref<SysConfig>({})
 
@@ -23,8 +18,4 @@ export const useSysConfigStore = defineStore<SysConfigState>('sysConfig', () => 
             sysConfig,
             loadSysConfig
         }
-    },
-
-    {
-        persist: true
-    })
+})

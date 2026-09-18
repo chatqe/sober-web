@@ -95,35 +95,14 @@ interface UploadProps {
 }
 
 // 定义props
-const props = defineProps<UploadProps>({
-  isAdmin: {
-    type: Boolean,
-    default: false
-  },
-  prefix: {
-    type: String,
-    default: ""
-  },
-  listType: {
-    type: String,
-    default: "picture"
-  },
-  storeType: {
-    type: String,
-    default: localStorage.getItem("defaultStoreType")
-  },
-  accept: {
-    type: String,
-    default: "image/*"
-  },
-  maxSize: {
-    type: Number,
-    default: 5
-  },
-  maxNumber: {
-    type: Number,
-    default: 5
-  }
+const props = withDefaults(defineProps<UploadProps>(), {
+  isAdmin: false,
+  prefix: "",
+  listType: "picture",
+  storeType: () => localStorage.getItem("defaultStoreType") || "",
+  accept: "image/*",
+  maxSize: 5,
+  maxNumber: 5
 });
 
 // 定义emits
@@ -156,7 +135,7 @@ function customUpload(options: UploadOptions): Promise<any> {
   console.log('key: ',key,'props: ', props)
   if (props.storeType === "local") {
     let fd = new FormData();
-    fd.append("file", options.file);
+    fd.append("file", options.file.raw);
     fd.append("originalName", options.file.name);
     fd.append("key", key);
     fd.append("relativePath", key);
@@ -201,8 +180,8 @@ function handleError(err: any, file: UploadFile, fileList: UploadFile[]): void {
 }
 
 // 上传文件之前的钩子
-function beforeUpload(file: UploadFile): boolean | Promise<File> {
-  // 可以添加逻辑，返回false或Promise.reject会停止上传
+function beforeUpload(_file: UploadFile): boolean | void {
+  return;
 }
 
 // 文件列表移除文件时的钩子

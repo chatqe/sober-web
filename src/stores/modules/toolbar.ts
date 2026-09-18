@@ -6,7 +6,7 @@ interface ToolbarState {
   toolbar: { visible: boolean; enter: boolean }
 }
 
-export const useToolbarStore = defineStore<ToolbarState>('toolbar', () => {
+export const useToolbarStore = defineStore('toolbar', () => {
         const toolbar = ref<{ visible: boolean; enter: boolean }>({visible: false, enter: true})
 
         const changeToolbarStatus = (toolbarState: { visible: boolean; enter: boolean }) => {
@@ -17,8 +17,4 @@ export const useToolbarStore = defineStore<ToolbarState>('toolbar', () => {
             toolbar,
             changeToolbarStatus
         }
-    },
-
-    {
-        persist: true
-    })
+})

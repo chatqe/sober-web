@@ -1,91 +1,70 @@
 <template>
-  <div>
-    <div>
-      <div class="handle-box">
-        <el-select v-model="pagination.userType" placeholder="用户类型" class="handle-select mrb10">
+  <div class="page-container">
+    <div class="page-card">
+      <div class="section-header">
+        <el-icon size="16"><User /></el-icon>
+        <span>用户管理</span>
+      </div>
+      <div class="toolbar">
+        <el-select v-model="pagination.userType" placeholder="用户类型" class="filter-select">
           <el-option key="1" label="Boss" :value="0"></el-option>
           <el-option key="2" label="管理员" :value="1"></el-option>
           <el-option key="3" label="普通用户" :value="2"></el-option>
         </el-select>
-        <el-select v-model="pagination.userStatus" placeholder="用户状态" class="handle-select mrb10">
+        <el-select v-model="pagination.userStatus" placeholder="用户状态" class="filter-select">
           <el-option key="1" label="启用" :value="true"></el-option>
           <el-option key="2" label="禁用" :value="false"></el-option>
         </el-select>
-        <el-input v-model="pagination.searchKey" placeholder="用户名/手机号" class="handle-input mrb10"></el-input>
-        <el-button type="primary" icon="el-icon-search" @click="searchUser()">搜索</el-button>
-        <el-button type="danger" @click="clearSearch()">清除参数</el-button>
+        <el-input v-model="pagination.searchKey" placeholder="用户名/手机号" class="filter-input" clearable />
+        <el-button type="primary" @click="searchUser()">搜索</el-button>
+        <el-button @click="clearSearch()">清除</el-button>
       </div>
-      <el-table :data="users" border class="table" header-cell-class-name="table-header">
-        <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-        <el-table-column prop="username" label="用户名" align="center"></el-table-column>
-        <el-table-column prop="phoneNum" label="手机号" align="center"></el-table-column>
-        <el-table-column prop="email" label="邮箱" align="center"></el-table-column>
-        <el-table-column label="赞赏" width="100" align="center">
+      <el-table :data="users" border class="table" stripe header-cell-class-name="table-header">
+        <el-table-column prop="id" label="ID" width="55" align="center" />
+        <el-table-column prop="username" label="用户名" align="center" />
+        <el-table-column prop="phoneNum" label="手机号" align="center" />
+        <el-table-column prop="email" label="邮箱" align="center" />
+        <el-table-column label="赞赏" width="120" align="center">
           <template #default="scope">
-            <el-input size="medium" maxlength="30" v-model="scope.row.admire"
+            <el-input size="small" maxlength="30" v-model="scope.row.admire"
                       @blur="changeUserAdmire(scope.row)"></el-input>
           </template>
         </el-table-column>
-        <el-table-column label="用户状态" align="center">
+        <el-table-column label="用户状态" align="center" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.userStatus === false ? 'danger' : 'success'"
-                    disable-transitions>
+                    disable-transitions size="small">
               {{scope.row.userStatus === false ? '禁用' : '启用'}}
             </el-tag>
-            <el-switch @click="changeUserStatus(scope.row)" v-model="scope.row.userStatus"></el-switch>
+            <el-switch @click="changeUserStatus(scope.row)" v-model="scope.row.userStatus" size="small" />
           </template>
         </el-table-column>
-        <el-table-column label="头像" align="center">
+        <el-table-column label="头像" align="center" width="70">
           <template #default="scope">
-            <el-image lazy class="table-td-thumb" :src="scope.row.avatar" fit="cover"></el-image>
+            <el-image lazy class="table-td-thumb" :src="scope.row.avatar" fit="cover" />
           </template>
         </el-table-column>
-        <el-table-column label="性别" align="center">
+        <el-table-column label="性别" align="center" width="70">
           <template #default="scope">
-            <el-tag type="success"
-                    v-if="scope.row.gender === 1"
-                    disable-transitions>
-              男
-            </el-tag>
-            <el-tag type="success"
-                    v-else-if="scope.row.gender === 2"
-                    disable-transitions>
-              女
-            </el-tag>
-            <el-tag type="success"
-                    v-else
-                    disable-transitions>
-              保密
+            <el-tag type="info" size="small" disable-transitions>
+              {{ scope.row.gender === 1 ? '男' : scope.row.gender === 2 ? '女' : '保密' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="introduction" label="简介" align="center"></el-table-column>
-        <el-table-column label="用户类型" width="100" align="center">
+        <el-table-column prop="introduction" label="简介" align="center" show-overflow-tooltip />
+        <el-table-column label="用户类型" align="center" width="100">
           <template #default="scope">
-            <el-tag type="success"
-                    v-if="scope.row.userType === 0"
-                    style="cursor: pointer"
-                    @click="editUser(scope.row)"
-                    disable-transitions>
-              Boss
-            </el-tag>
-            <el-tag type="success"
-                    v-else-if="scope.row.userType === 1"
-                    style="cursor: pointer"
-                    @click="editUser(scope.row)"
-                    disable-transitions>
-              管理员
-            </el-tag>
-            <el-tag type="success"
-                    v-else
-                    style="cursor: pointer"
-                    @click="editUser(scope.row)"
-                    disable-transitions>
-              普通用户
+            <el-tag
+              :type="scope.row.userType === 0 ? 'warning' : scope.row.userType === 1 ? 'primary' : 'info'"
+              size="small"
+              style="cursor: pointer"
+              @click="editUser(scope.row)"
+              disable-transitions>
+              {{ scope.row.userType === 0 ? 'Boss' : scope.row.userType === 1 ? '管理员' : '普通用户' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="注册时间" align="center"></el-table-column>
+        <el-table-column prop="createTime" label="注册时间" align="center" width="160" />
       </el-table>
       <div class="pagination">
         <el-pagination background layout="total, prev, pager, next"
@@ -97,27 +76,23 @@
       </div>
     </div>
 
-    <!-- 编辑弹出框 -->
     <el-dialog title="修改用户类型"
                v-model="editVisible"
-               width="30%"
+               width="360px"
                :before-close="handleClose"
                :append-to-body="true"
                destroy-on-close
                center>
-      <div class="myCenter">
+      <div class="dialog-content">
         <el-radio-group v-model="changeUser.userType">
           <el-radio-button :label="0">Boss</el-radio-button>
           <el-radio-button :label="1">管理员</el-radio-button>
           <el-radio-button :label="2">普通用户</el-radio-button>
         </el-radio-group>
       </div>
-
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="handleClose()">取 消</el-button>
-          <el-button type="primary" @click="saveEdit()">确 定</el-button>
-        </span>
+        <el-button @click="handleClose()">取消</el-button>
+        <el-button type="primary" @click="saveEdit()">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -127,7 +102,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import type { Ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { User } from '@element-plus/icons-vue'
 import { userApi } from '@/api/index.js'
+import type { ChangeUserTypeUserType } from '@/types/modules/changeUserTypeUserType'
 
 // 定义数据接口
 interface User {
@@ -156,7 +133,7 @@ interface Pagination {
 
 interface ChangeUser {
   id: number | null
-  userType: number | null
+  userType: ChangeUserTypeUserType | null
 }
 
 interface UserStatusRequest {
@@ -171,7 +148,7 @@ interface UserAdmireRequest {
 
 interface UserTypeRequest {
   userId: number
-  userType: number
+  userType: ChangeUserTypeUserType
 }
 
 // 从全局注入获取公共工具函数
@@ -216,9 +193,9 @@ const clearSearch = (): void => {
 const getUsers = async (): Promise<void> => {
   try {
     const res: any = await userApi.listUsers(pagination)
-    if (!isEmpty(res.data)) {
-      users.value = res.data.records
-      pagination.total = res.data.total
+    if (!$common.isEmpty(res)) {
+      users.value = res.records
+      pagination.total = res.total
     }
   } catch (error: any) {
     ElMessage({
@@ -247,7 +224,7 @@ const changeUserStatus = async (user: User): Promise<void> => {
 
 // 修改用户赞赏信息
 const changeUserAdmire = async (user: User): Promise<void> => {
-  if (!isEmpty(user.admire)) {
+  if (!$common.isEmpty(user.admire)) {
     try {
       await ElMessageBox.confirm('确认保存？', '提示', {
         confirmButtonText: '确定',
@@ -282,7 +259,7 @@ const changeUserAdmire = async (user: User): Promise<void> => {
 // 编辑用户
 const editUser = (user: User): void => {
   changeUser.id = user.id
-  changeUser.userType = user.userType
+  changeUser.userType = parseInt(String(user.userType)) as unknown as ChangeUserTypeUserType | null
   editVisible.value = true
 }
 
@@ -338,43 +315,46 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
-  .handle-box {
-    margin-bottom: 20px;
-  }
-
-  .handle-select {
-    width: 120px;
-  }
-
-  .handle-input {
-    width: 160px;
-    display: inline-block;
-  }
-
-  .table {
-    width: 100%;
-    font-size: 14px;
-  }
-
-  .mrb10 {
-    margin-right: 10px;
-    margin-bottom: 10px;
-  }
-
-  .table-td-thumb {
-    display: block;
-    margin: auto;
-    width: 40px;
-    height: 40px;
-  }
-
-  .pagination {
-    margin: 20px 0;
-    text-align: right;
-  }
-
-  .el-switch {
-    margin: 5px;
-  }
+.page-container { display: flex; flex-direction: column; gap: 16px; }
+.page-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1d2e;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-select { width: 120px; }
+.filter-input { width: 180px; }
+.table { width: 100%; font-size: 13.5px; }
+.pagination { margin-top: 16px; text-align: right; }
+.table-td-thumb {
+  display: block;
+  margin: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+}
+.dialog-content {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
 </style>

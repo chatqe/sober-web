@@ -25,12 +25,7 @@ interface WebInfoData {
   [key: string]: any;
 }
 
-// 定义State接口
-interface WebInfoState {
-  webInfo: WebInfo;
-}
-
-export const useWebInfoStore = defineStore<WebInfoState>('webInfo', () => {
+export const useWebInfoStore = defineStore('webInfo', () => {
 
         const webInfo = ref<WebInfo>({
             webName: "",
@@ -56,8 +51,4 @@ export const useWebInfoStore = defineStore<WebInfoState>('webInfo', () => {
             webInfo,
             loadWebInfo
         }
-    },
-
-    {
-        persist: true
-    })
+})

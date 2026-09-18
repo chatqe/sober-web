@@ -56,15 +56,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {computed, defineAsyncComponent, inject, onMounted, ref} from 'vue';
 import {useUserStore, useWebInfoStore} from '@/stores';
 import {ElMessage} from 'element-plus';
 import vueDanmaku from 'vue-danmaku'
-import {webInfoApi} from '@/api/index.js';
+import {danmakuApi} from '@/api/modules';
+import type {CommonUtils} from '@/types'
 
 // 获取注入的全局属性
-const $common = inject('$common')
+const $common = inject<CommonUtils>('$common')!
 
 // 异步导入组件
 const comment = defineAsyncComponent(() => import('@/components/comment/comment.vue'))
@@ -97,30 +98,21 @@ function getRandomColor() {
 //   return '';
 // });
 
-// 获取树洞数据
+// 获取弹幕数据
 const getTreeHole = async () => {
   try {
-    const res = await webInfoApi.listTreeHole();
+    const res = await danmakuApi.latest();
     if (!$common.isEmpty(res.data)) {
-      // res.data.forEach(m => {
-      //   barrageList.value.push({
-      //     id: m.id,
-      //     avatar: m.avatar,
-      //     msg: m.message,
-      //     time: Math.floor(Math.random() * 5 + 10)
-      //   });
-      // });
-      barrageList.value = res.data.map(m => ({
+      barrageList.value = res.data.map((m: any) => ({
         id: m.id,
         avatar: m.avatar,
         msg: m.message,
-        time: ~~(Math.random() * 5 + 10)   // 位运算取整，比 floor 快一点
+        time: ~~(Math.random() * 5 + 10)
       }))
-      // console.log('barrageList:', barrageList.value)
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
-      message: error.message,
+      message: error.message || '获取弹幕失败',
       type: "error"
     });
   }
@@ -138,17 +130,17 @@ const submitMessage = async () => {
     return;
   }
 
-  let treeHole = {
+  let danmakuMsg: any = {
     message: messageContent.value.trim()
   };
 
-  const currentUser = userStore.currentUser;
+  const currentUser = userStore.currentUser as any;
   if (!$common.isEmpty(currentUser) && !$common.isEmpty(currentUser.avatar)) {
-    treeHole.avatar = currentUser.avatar;
+    danmakuMsg.avatar = currentUser.avatar;
   }
 
   try {
-    const res = await webInfoApi.saveTreeHole(treeHole);
+    const res = await danmakuApi.save(danmakuMsg);
     if (!$common.isEmpty(res.data)) {
       barrageList.value.push({
         id: res.data.id,
@@ -157,13 +149,13 @@ const submitMessage = async () => {
         time: Math.floor(Math.random() * 5 + 10)
       });
       ElMessage({
-        message: "发布成功！",
+        message: "发送成功！",
         type: "success"
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
-      message: error.message,
+      message: error.message || '发送失败',
       type: "error"
     });
   }

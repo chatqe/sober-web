@@ -1,8 +1,12 @@
 <template>
-  <div>
-    <div>
-      <div class="handle-box">
-        <el-select clearable v-model="pagination.resourceType" placeholder="资源类型" class="handle-select mrb10">
+  <div class="page-container">
+    <div class="page-card">
+      <div class="section-header">
+        <el-icon size="16"><Paperclip /></el-icon>
+        <span>资源管理</span>
+      </div>
+      <div class="toolbar">
+        <el-select clearable v-model="pagination.resourceType" placeholder="资源类型" class="filter-select">
           <el-option key="21" label="Video.Article" value="video/article"></el-option>
           <el-option key="20" label="公共资源" value="assets"></el-option>
           <el-option key="10" label="表情包" value="internetMeme"></el-option>
@@ -25,49 +29,43 @@
           <el-option key="18" label="Love.Woman" value="love/womanCover"></el-option>
           <el-option key="19" label="收藏夹封面" value="favoritesCover"></el-option>
         </el-select>
-        <el-button type="primary" icon="el-icon-search" @click="search()">搜索</el-button>
+        <el-button type="primary" @click="search()">搜索</el-button>
         <el-button type="primary" @click="addResources()">新增资源</el-button>
       </div>
-      <el-table :data="resources" border class="table" header-cell-class-name="table-header">
-        <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-        <el-table-column prop="originalName" label="名称" align="center"></el-table-column>
-        <el-table-column prop="userId" label="用户ID" align="center"></el-table-column>
-        <el-table-column prop="type" label="资源类型" align="center"></el-table-column>
-        <el-table-column label="状态" align="center">
+      <el-table :data="resources" border class="table" stripe header-cell-class-name="table-header">
+        <el-table-column prop="id" label="ID" width="55" align="center" />
+        <el-table-column prop="originalName" label="名称" align="center" />
+        <el-table-column prop="userId" label="用户ID" align="center" width="90" />
+        <el-table-column prop="type" label="资源类型" align="center" width="120" />
+        <el-table-column label="状态" align="center" width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.status === false ? 'danger' : 'success'"
-                    disable-transitions>
+            <el-tag :type="scope.row.status === false ? 'danger' : 'success'" disable-transitions size="small">
               {{scope.row.status === false ? '禁用' : '启用'}}
             </el-tag>
-            <el-switch @click="changeStatus(scope.row)" v-model="scope.row.status"></el-switch>
+            <el-switch @click="changeStatus(scope.row)" v-model="scope.row.status" size="small" />
           </template>
         </el-table-column>
         <el-table-column label="路径" align="center">
           <template #default="scope">
-            <template v-if="!isEmpty(scope.row.mimeType) && scope.row.mimeType.includes('image')">
-              <el-image lazy :preview-src-list="[scope.row.path]" class="table-td-thumb" :src="scope.row.path"
-                        fit="cover"></el-image>
+            <template v-if="!$common.isEmpty(scope.row.mimeType) && scope.row.mimeType.includes('image')">
+              <el-image lazy :preview-src-list="[scope.row.path]" class="table-td-thumb" :src="scope.row.path" fit="cover" />
             </template>
             <template v-else>
-              {{scope.row.path}}
+              <span class="path-text">{{scope.row.path}}</span>
             </template>
           </template>
         </el-table-column>
-
-        <el-table-column label="大小(KB)" align="center">
+        <el-table-column label="大小(KB)" align="center" width="90">
           <template #default="scope">
             {{Math.round(scope.row.size / 1024)}}
           </template>
         </el-table-column>
-        <el-table-column prop="mimeType" label="类型" align="center"></el-table-column>
-        <el-table-column prop="storeType" label="存储平台" align="center"></el-table-column>
-        <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
-        <el-table-column label="操作" width="180" align="center">
+        <el-table-column prop="mimeType" label="MIME类型" align="center" width="140" />
+        <el-table-column prop="storeType" label="存储平台" align="center" width="90" />
+        <el-table-column prop="createTime" label="创建时间" align="center" width="155" />
+        <el-table-column label="操作" width="80" align="center" fixed="right">
           <template #default="scope">
-            <el-button type="text" icon="el-icon-delete" style="color: var(--orangeRed)"
-                       @click="handleDelete(scope.row)">
-              删除
-            </el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -81,23 +79,18 @@
       </div>
     </div>
 
-    <el-dialog title="文件"
+    <el-dialog title="上传资源"
                v-model="resourceDialog"
-               width="25%"
+               width="480px"
                :append-to-body="true"
                :close-on-click-modal="false"
                destroy-on-close
                center>
-      <div>
-        <div style="display: flex;margin-bottom: 10px">
-          <div style="line-height: 40px">存储平台：</div>
-          <el-select v-model="storeType" placeholder="存储平台" style="width: 120px">
-            <el-option
-              v-for="(item, i) in storeTypes"
-              :key="i"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
+      <div class="dialog-section">
+        <div class="form-row">
+          <span class="form-label">存储平台：</span>
+          <el-select v-model="storeType" placeholder="存储平台" style="width: 140px">
+            <el-option v-for="(item, i) in storeTypes" :key="i" :label="item.label" :value="item.value" />
           </el-select>
         </div>
         <uploadPicture :isAdmin="true" :prefix="pagination.resourceType" @addPicture="addFile"
@@ -113,8 +106,11 @@
 import { ref, reactive, onMounted, inject } from 'vue';
 import type { Ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { Paperclip } from '@element-plus/icons-vue'
 import uploadPicture from '../common/uploadPicture.vue';
 import { resourceApi } from '@/api/index.js';
+import type { CommonUtils } from '@/types'
+import type { _DeleteParams } from '@/types/modules/_deleteParams'
 
 // 定义接口
 interface Resource {
@@ -143,18 +139,9 @@ interface StoreType {
   value: string;
 }
 
-interface ResourceDeleteRequest {
-  path: string;
-}
-
 interface ResourceStatusRequest {
   id: number;
   flag: boolean;
-}
-
-// 从全局注入获取公共工具函数
-interface CommonUtils {
-  isEmpty: (obj: any) => boolean;
 }
 
 const $common = inject<CommonUtils>('$common')!
@@ -208,7 +195,7 @@ const handleDelete = async (item: Resource): Promise<void> => {
       center: true
     });
     
-    const deleteRequest: ResourceDeleteRequest = {path: item.path};
+    const deleteRequest: _DeleteParams = {id: item.id};
     await resourceApi.deleteResource(deleteRequest);
     pagination.current = 1;
     await getResources();
@@ -285,38 +272,43 @@ onMounted((): void => {
 </script>
 
 <style scoped>
-
-  .handle-box {
-    margin-bottom: 20px;
-  }
-
-  .handle-select {
-    width: 200px;
-  }
-
-  .table {
-    width: 100%;
-    font-size: 14px;
-  }
-
-  .mrb10 {
-    margin-right: 10px;
-    margin-bottom: 10px;
-  }
-
-  .table-td-thumb {
-    display: block;
-    margin: auto;
-    width: 40px;
-    height: 40px;
-  }
-
-  .pagination {
-    margin: 20px 0;
-    text-align: right;
-  }
-
-  .el-switch {
-    margin: 5px;
-  }
+.page-container { display: flex; flex-direction: column; gap: 16px; }
+.page-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+.section-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: #1a1d2e;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-select { width: 160px; }
+.table { width: 100%; font-size: 13.5px; }
+.pagination { margin-top: 16px; text-align: right; }
+.table-td-thumb {
+  display: block; margin: auto;
+  width: 36px; height: 36px;
+  border-radius: 6px;
+}
+.path-text {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #64748b;
+  max-width: 200px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dialog-section { padding: 4px 0; }
+.form-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.form-label { font-size: 14px; color: #475569; white-space: nowrap; }
 </style>
