@@ -1,6 +1,5 @@
 <template>
   <aside class="sidebar">
-    <!-- Logo -->
     <div class="sidebar-logo">
       <div class="logo-icon">
         <el-icon><Monitor /></el-icon>
@@ -8,45 +7,36 @@
       <span class="logo-text">控制台</span>
     </div>
 
-    <!-- 菜单 -->
     <el-menu
       class="sidebar-menu"
       :default-active="currentRoutePath"
       :router="true"
       :unique-opened="true"
     >
-      <template v-for="group in menuGroups" :key="group.label">
-        <!-- 分组标题 -->
-        <div class="menu-group-label">{{ group.label }}</div>
-
-        <!-- 菜单项 -->
-        <template v-for="item in group.items" :key="item.index">
-          <!-- 有子菜单 -->
-          <template v-if="item.subs?.length">
-            <el-sub-menu :index="item.index">
-              <template #title>
-                <el-icon><component :is="item.icon" /></el-icon>
-                <span>{{ item.title }}</span>
-              </template>
-              <template v-for="sub in item.subs" :key="sub.index">
-                <el-sub-menu v-if="sub.subs?.length" :index="sub.index">
-                  <template #title>{{ sub.title }}</template>
-                  <el-menu-item
-                    v-for="third in sub.subs"
-                    :key="third.index"
-                    :index="third.index"
-                  >{{ third.title }}</el-menu-item>
-                </el-sub-menu>
-                <el-menu-item v-else :index="sub.index">{{ sub.title }}</el-menu-item>
-              </template>
-            </el-sub-menu>
-          </template>
-          <!-- 普通菜单项 -->
-          <el-menu-item v-else :index="item.index">
-            <el-icon><component :is="item.icon" /></el-icon>
-            <span>{{ item.title }}</span>
-          </el-menu-item>
+      <template v-for="item in menuItems" :key="item.index">
+        <template v-if="item.subs?.length">
+          <el-sub-menu :index="item.index">
+            <template #title>
+              <el-icon><component :is="item.icon" /></el-icon>
+              <span>{{ item.title }}</span>
+            </template>
+            <template v-for="sub in item.subs" :key="sub.index">
+              <el-sub-menu v-if="sub.subs?.length" :index="sub.index">
+                <template #title>{{ sub.title }}</template>
+                <el-menu-item
+                  v-for="third in sub.subs"
+                  :key="third.index"
+                  :index="third.index"
+                >{{ third.title }}</el-menu-item>
+              </el-sub-menu>
+              <el-menu-item v-else :index="sub.index">{{ sub.title }}</el-menu-item>
+            </template>
+          </el-sub-menu>
         </template>
+        <el-menu-item v-else :index="item.index">
+          <el-icon><component :is="item.icon" /></el-icon>
+          <span>{{ item.title }}</span>
+        </el-menu-item>
       </template>
     </el-menu>
   </aside>
@@ -66,27 +56,18 @@ const userStore = useUserStore()
 const isAdmin = computed(() => authStore.isAdmin || userStore.currentAdmin?.isAdmin || false)
 const currentRoutePath = computed(() => router.currentRoute.value.path)
 
-// 按功能分组的菜单数据
-const menuGroups = computed(() => {
-  const base = [
-    { icon: House,     index: 'main',         title: '报表管理', isAdmin: true  },
-    { icon: Document,  index: 'postList',     title: '文章管理', isAdmin: false },
-    { icon: EditPen,   index: 'commentList',  title: '评论管理', isAdmin: false },
-    { icon: Notebook,  index: 'categoryList', title: '分类管理', isAdmin: true  },
-    { icon: Sugar,     index: 'loveList',     title: '表白墙',   isAdmin: true  },
-    { icon: ChatDotRound, index: 'treeHoleList', title: '弹幕管理', isAdmin: true },
-    { icon: Paperclip, index: 'resourceList', title: '资源管理', isAdmin: true  },
-    { icon: CreditCard, index: 'resourcePathList', title: '资源聚合', isAdmin: true },
-    { icon: Setting,   index: 'webEdit',     title: '网站设置', isAdmin: true  },
-    { icon: User,      index: 'userList',    title: '用户管理', isAdmin: true  },
-  ].filter(item => isAdmin.value || !item.isAdmin)
-
-  return [
-    { label: '概览',     items: [base[0]] },
-    { label: '内容管理', items: base.slice(1, 6) },
-    { label: '系统管理', items: base.slice(6) },
-  ]
-})
+const menuItems = computed(() => [
+  { icon: House,     index: 'main',         title: '报表管理', isAdmin: true  },
+  { icon: Document,  index: 'postList',     title: '文章管理', isAdmin: false },
+  { icon: EditPen,   index: 'commentList',  title: '评论管理', isAdmin: false },
+  { icon: Notebook,  index: 'categoryList', title: '分类管理', isAdmin: true  },
+  { icon: Sugar,     index: 'loveList',     title: '表白墙',   isAdmin: true  },
+  { icon: ChatDotRound, index: 'treeHoleList', title: '弹幕管理', isAdmin: true },
+  { icon: Paperclip, index: 'resourceList', title: '资源管理', isAdmin: true  },
+  { icon: CreditCard, index: 'resourcePathList', title: '资源聚合', isAdmin: true },
+  { icon: Setting,   index: 'webEdit',     title: '网站设置', isAdmin: true  },
+  { icon: User,      index: 'userList',    title: '用户管理', isAdmin: true  },
+].filter(item => isAdmin.value || !item.isAdmin))
 </script>
 
 <style scoped>
@@ -107,7 +88,7 @@ const menuGroups = computed(() => {
 
 .sidebar::-webkit-scrollbar { width: 0; }
 
-/* ── Logo 区域 ── */
+/* ── Logo ── */
 .sidebar-logo {
   display: flex;
   align-items: center;
@@ -143,42 +124,32 @@ const menuGroups = computed(() => {
   overflow-x: hidden;
   border: none;
   background: transparent !important;
-  padding: 8px 0 16px;
+  padding: 10px 0 16px;
 }
 .sidebar-menu:not(.el-menu--collapse) { width: 100%; }
 
-/* 自定义滚动条 */
 .sidebar-menu::-webkit-scrollbar { width: 4px; }
 .sidebar-menu::-webkit-scrollbar-track { background: transparent; }
-.sidebar-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
-
-/* ── 分组标题 ── */
-.menu-group-label {
-  padding: 16px 20px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #94a3b8;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  user-select: none;
-}
+.sidebar-menu::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
 
 /* ── 菜单项通用 ── */
 .sidebar-menu .el-menu-item,
 .sidebar-menu .el-sub-menu__title {
   position: relative;
-  margin: 2px 8px !important;
-  border-radius: 8px !important;
+  margin: 1px 6px !important;
+  border-radius: 10px !important;
   height: 42px !important;
   line-height: 42px !important;
   padding: 0 12px !important;
   font-size: 13.5px;
   color: #475467;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 左侧活跃指示条 */
+/* 左侧指示条 */
 .sidebar-menu .el-menu-item::before,
 .sidebar-menu .el-sub-menu__title::before {
   content: '';
@@ -189,8 +160,8 @@ const menuGroups = computed(() => {
   width: 3px;
   height: 20px;
   border-radius: 0 3px 3px 0;
-  background: #6366f1;
-  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(180deg, #818cf8, #6366f1);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sidebar-menu .el-menu-item:hover::before,
@@ -198,10 +169,13 @@ const menuGroups = computed(() => {
   transform: translateY(-50%) scaleY(1);
 }
 
+/* Hover 效果 */
 .sidebar-menu .el-menu-item:hover,
 .sidebar-menu .el-sub-menu__title:hover {
-  background: #f1f5f9;
+  background: linear-gradient(90deg, rgba(99,102,241,0.06) 0%, rgba(99,102,241,0.02) 60%, transparent 100%);
   color: #1e293b;
+  transform: translateX(2px);
+  box-shadow: inset 0 0 0 1px rgba(99,102,241,0.08);
 }
 
 /* 激活状态 */
@@ -210,13 +184,14 @@ const menuGroups = computed(() => {
   background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
   color: #4f46e5;
   font-weight: 500;
-  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.12), inset 0 0 0 1px rgba(99,102,241,0.1);
+  transform: translateX(0);
 }
 
 .sidebar-menu .el-menu-item.is-active::before,
 .sidebar-menu .el-sub-menu__title.is-active::before {
   transform: translateY(-50%) scaleY(1);
-  background: linear-gradient(180deg, #818cf8, #6366f1);
+  background: linear-gradient(180deg, #818cf8, #4f46e5);
 }
 
 /* 图标 */
@@ -224,41 +199,47 @@ const menuGroups = computed(() => {
 .sidebar-menu .el-sub-menu__title .el-icon {
   font-size: 16px;
   margin-right: 8px;
-  opacity: 0.8;
-  transition: opacity 0.15s;
+  opacity: 0.72;
+  transition: opacity 0.2s, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 .sidebar-menu .el-menu-item:hover .el-icon,
 .sidebar-menu .el-sub-menu__title:hover .el-icon {
   opacity: 1;
+  transform: scale(1.08);
 }
 .sidebar-menu .el-menu-item.is-active .el-icon,
 .sidebar-menu .el-sub-menu__title.is-active .el-icon {
   opacity: 1;
   color: #4f46e5;
+  transform: scale(1.05);
 }
 
 /* 子菜单箭头 */
 .sidebar-menu .el-sub-menu__title .el-sub-menu__icon-arrow {
-  margin-right: 4px;
+  margin-right: 2px;
   font-size: 12px;
-  opacity: 0.5;
-  transition: opacity 0.15s;
+  opacity: 0.45;
+  transition: opacity 0.2s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-menu .el-sub-menu__title:hover .el-sub-menu__icon-arrow {
   opacity: 0.8;
+}
+.sidebar-menu .el-sub-menu.is-opened > .el-sub-menu__title .el-sub-menu__icon-arrow {
+  transform: rotate(90deg);
+  opacity: 0.7;
 }
 
 /* 子菜单展开时父级高亮 */
 .sidebar-menu .el-sub-menu.is-opened > .el-sub-menu__title {
   color: #334155;
-  background: rgba(99, 102, 241, 0.04);
+  background: rgba(99, 102, 241, 0.05);
 }
 .sidebar-menu .el-sub-menu.is-opened > .el-sub-menu__title .el-icon {
   opacity: 1;
 }
 
-/* 子菜单项 */
+/* 子菜单项（缩进） */
 .sidebar-menu .el-menu-item {
   padding-left: 48px !important;
   font-size: 13px;
