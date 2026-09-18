@@ -1,80 +1,78 @@
 <template>
-  <div>
-    <div class="handle-box">
-      <el-select v-model="pagination.recommendStatus" placeholder="是否推荐" style="width: 120px" class="mrb10">
-        <el-option key="1" label="是" :value="true"></el-option>
-        <el-option key="2" label="否" :value="false"></el-option>
-      </el-select>
-      <el-select style="width: 140px" class="mrb10" v-model="pagination.sortId" placeholder="请选择分类">
-        <el-option v-for="item in sorts" :key="item.id" :label="item.sortName" :value="item.id">
-        </el-option>
-      </el-select>
-      <el-select style="width: 140px" class="mrb10" v-model="pagination.labelId" placeholder="请选择标签">
-        <el-option v-for="item in labelsTemp" :key="item.id" :label="item.labelName" :value="item.id">
-        </el-option>
-      </el-select>
-      <el-input v-model="pagination.searchKey" placeholder="文章标题" class="handle-input mrb10"></el-input>
-      <el-button type="primary" icon="el-icon-search" @click="searchArticles()">搜索</el-button>
-      <el-button type="danger" @click="clearSearch()">清除参数</el-button>
-      <el-button type="primary" @click="$router.push({ path: '/postEdit' })">新增文章</el-button>
-    </div>
-    <el-table :data="articles" border class="table" header-cell-class-name="table-header">
-      <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-      <el-table-column prop="username" label="作者" width="100" align="center"></el-table-column>
-      <el-table-column prop="articleTitle" label="文章标题" align="center"></el-table-column>
-      <el-table-column prop="sort.sortName" label="分类" align="center"></el-table-column>
-      <el-table-column prop="label.labelName" label="标签" align="center"></el-table-column>
-      <el-table-column prop="viewCount" label="浏览量" width="80" align="center"></el-table-column>
-      <el-table-column prop="likeCount" label="点赞数" width="80" align="center"></el-table-column>
-      <el-table-column prop="commentCount" label="评论数" width="80" align="center"></el-table-column>
-
-      <el-table-column label="封面" align="center">
-        <template #default="scope">
-          <el-image lazy class="table-td-thumb" :src="scope.row.articleCover" fit="cover"></el-image>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="是否可见" align="center">
-        <template #default="scope">
-          <el-tag :type="scope.row.viewStatus === false ? 'danger' : 'success'" disable-transitions>
-            {{ scope.row.viewStatus === false ? '不可见' : '可见' }}
-          </el-tag>
-          <el-switch @click="changeStatus(scope.row, 1)" v-model="scope.row.viewStatus"></el-switch>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="是否启用评论" align="center">
-        <template #default="scope">
-          <el-tag :type="scope.row.commentStatus === false ? 'danger' : 'success'" disable-transitions>
-            {{ scope.row.commentStatus === false ? '否' : '是' }}
-          </el-tag>
-          <el-switch @click="changeStatus(scope.row, 2)" v-model="scope.row.commentStatus"></el-switch>
-        </template>
-      </el-table-column>
-      <el-table-column label="是否推荐" align="center">
-        <template #default="scope">
-          <el-tag :type="scope.row.recommendStatus === false ? 'danger' : 'success'" disable-transitions>
-            {{ scope.row.recommendStatus === false ? '否' : '是' }}
-          </el-tag>
-          <el-switch @click="changeStatus(scope.row, 3)" v-model="scope.row.recommendStatus"></el-switch>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
-      <el-table-column prop="updateTime" label="最终修改时间" align="center"></el-table-column>
-      <el-table-column label="操作" width="180" align="center">
-        <template #default="scope">
-          <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button type="text" icon="el-icon-delete" style="color: var(--orangeRed)" @click="handleDelete(scope.row)">
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div class="pagination">
-      <el-pagination background layout="total, prev, pager, next" v-model:current-page="pagination.current"
-        :page-size="pagination.size" :total="pagination.total" @current-change="handlePageChange">
-      </el-pagination>
+  <div class="page-container">
+    <div class="page-card">
+      <div class="section-header">
+        <el-icon size="16"><Document /></el-icon>
+        <span>文章管理</span>
+      </div>
+      <div class="toolbar">
+        <el-select v-model="pagination.recommendStatus" placeholder="是否推荐" class="filter-select">
+          <el-option key="1" label="是" :value="true"></el-option>
+          <el-option key="2" label="否" :value="false"></el-option>
+        </el-select>
+        <el-select v-model="pagination.sortId" placeholder="分类" class="filter-select">
+          <el-option v-for="item in sorts" :key="item.id" :label="item.sortName" :value="item.id" />
+        </el-select>
+        <el-select v-model="pagination.labelId" placeholder="标签" class="filter-select">
+          <el-option v-for="item in labelsTemp" :key="item.id" :label="item.labelName" :value="item.id" />
+        </el-select>
+        <el-input v-model="pagination.searchKey" placeholder="文章标题" class="filter-input" clearable />
+        <el-button type="primary" @click="searchArticles()">搜索</el-button>
+        <el-button @click="clearSearch()">清除</el-button>
+        <el-button type="primary" @click="$router.push({ path: '/admin/postEdit' })">新增文章</el-button>
+      </div>
+      <el-table :data="articles" border class="table" stripe header-cell-class-name="table-header">
+        <el-table-column prop="id" label="ID" width="55" align="center" />
+        <el-table-column prop="username" label="作者" width="100" align="center" />
+        <el-table-column prop="articleTitle" label="文章标题" align="center" show-overflow-tooltip />
+        <el-table-column prop="sort.sortName" label="分类" align="center" width="100" />
+        <el-table-column prop="label.labelName" label="标签" align="center" width="100" />
+        <el-table-column prop="viewCount" label="浏览" width="70" align="center" />
+        <el-table-column prop="likeCount" label="点赞" width="70" align="center" />
+        <el-table-column prop="commentCount" label="评论" width="70" align="center" />
+        <el-table-column label="封面" align="center" width="70">
+          <template #default="scope">
+            <el-image lazy class="table-td-thumb" :src="scope.row.articleCover" fit="cover" />
+          </template>
+        </el-table-column>
+        <el-table-column label="可见" align="center" width="80">
+          <template #default="scope">
+            <el-tag :type="scope.row.viewStatus === false ? 'danger' : 'success'" disable-transitions size="small">
+              {{ scope.row.viewStatus === false ? '隐藏' : '显示' }}
+            </el-tag>
+            <el-switch @click="changeStatus(scope.row, 1)" v-model="scope.row.viewStatus" size="small" />
+          </template>
+        </el-table-column>
+        <el-table-column label="评论" align="center" width="90">
+          <template #default="scope">
+            <el-tag :type="scope.row.commentStatus === false ? 'danger' : 'success'" disable-transitions size="small">
+              {{ scope.row.commentStatus === false ? '关闭' : '开启' }}
+            </el-tag>
+            <el-switch @click="changeStatus(scope.row, 2)" v-model="scope.row.commentStatus" size="small" />
+          </template>
+        </el-table-column>
+        <el-table-column label="推荐" align="center" width="80">
+          <template #default="scope">
+            <el-tag :type="scope.row.recommendStatus === false ? 'danger' : 'success'" disable-transitions size="small">
+              {{ scope.row.recommendStatus === false ? '否' : '是' }}
+            </el-tag>
+            <el-switch @click="changeStatus(scope.row, 3)" v-model="scope.row.recommendStatus" size="small" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" align="center" width="155" />
+        <el-table-column prop="updateTime" label="修改时间" align="center" width="155" />
+        <el-table-column label="操作" width="120" align="center" fixed="right">
+          <template #default="scope">
+            <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination">
+        <el-pagination background layout="total, prev, pager, next" v-model:current-page="pagination.current"
+          :page-size="pagination.size" :total="pagination.total" @current-change="handlePageChange">
+        </el-pagination>
+      </div>
     </div>
   </div>
 </template>
@@ -82,9 +80,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import router from '@/src/router'
+import router from '@/router'
 import { articleApi } from '@/api/index.js'
-import { useUserStore } from '@/stores'
+import { Document } from '@element-plus/icons-vue'
+import { useUserStore, useAuthStore } from '@/stores'
 
 // 定义接口
 interface Sort {
@@ -132,7 +131,7 @@ interface ApiResponse<T> {
 }
 
 interface ArticleListResponse {
-  records: Article[];
+  list: Article[];
   total: number;
 }
 
@@ -144,10 +143,11 @@ interface ChangeStatusParam {
 }
 
 // 使用store和router
+const authStore = useAuthStore()
 const userStore = useUserStore()
 
 // 响应式数据
-const isBoss = computed(() => userStore.currentAdmin?.isBoss || false)
+const isAdmin = computed(() => authStore.isAdmin || userStore.currentAdmin?.isAdmin || false)
 const pagination = reactive<Pagination>({
   current: 1,
   size: 10,
@@ -174,9 +174,9 @@ watch(() => pagination.sortId, (newVal) => {
 const getSortAndLabel = async (): Promise<void> => {
   try {
     const res = await articleApi.getSortAndLabel()
-    if (res.data && Object.keys(res.data).length > 0) {
-      sorts.value = res.data.sorts
-      labels.value = res.data.labels
+    if (res && Object.keys(res).length > 0) {
+      sorts.value = res.sorts
+      labels.value = res.labels
     }
   } catch (error) {
     ElMessage({
@@ -203,13 +203,18 @@ const clearSearch = (): void => {
 // 获取文章列表
 const getArticles = async (): Promise<void> => {
   try {
-    const res: ApiResponse<ArticleListResponse> = await articleApi.getArticleList({
-      ...pagination,
-      isBoss: isBoss.value
+    const res: any = await articleApi.getArticleList({
+      pageNum: pagination.current,
+      pageSize: pagination.size,
+      searchKey: pagination.searchKey,
+      recommendStatus: pagination.recommendStatus || undefined,
+      sortId: pagination.sortId ? String(pagination.sortId) : undefined,
+      labelId: pagination.labelId || undefined,
+      isAdmin: isAdmin.value
     })
-    if (res.data && Object.keys(res.data).length > 0) {
-      articles.value = res.data.records
-      pagination.total = res.data.total
+    if (res && Object.keys(res).length > 0) {
+      articles.value = res.list
+      pagination.total = res.total
     }
   } catch (error) {
     ElMessage({
@@ -307,7 +312,7 @@ const handleDelete = async (item: Article): Promise<void> => {
 
 // 编辑文章
 const handleEdit = (item: Article): void => {
-  router.push({ path: '/postEdit', query: { id: item.id } })
+  router.push({ path: '/admin/postEdit', query: { id: item.id } })
 }
 
 // 组件挂载时获取数据
@@ -318,38 +323,41 @@ onMounted((): void => {
 </script>
 
 <style scoped>
-.handle-box {
-  margin-bottom: 20px;
+.page-container { display: flex; flex-direction: column; gap: 16px; }
+.page-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
 }
-
-.handle-input {
-  width: 160px;
-  display: inline-block;
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1d2e;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-.table {
-  width: 100%;
-  font-size: 14px;
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
-
-.mrb10 {
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-
+.filter-select { width: 120px; }
+.filter-input { width: 160px; }
+.table { width: 100%; font-size: 13.5px; }
+.pagination { margin-top: 16px; text-align: right; }
 .table-td-thumb {
   display: block;
   margin: auto;
   width: 40px;
   height: 40px;
-}
-
-.pagination {
-  margin: 20px 0;
-  text-align: right;
-}
-
-.el-switch {
-  margin: 5px;
+  border-radius: 6px;
 }
 </style>
