@@ -175,8 +175,9 @@ const getSortAndLabel = async (): Promise<void> => {
   try {
     const res = await articleApi.getSortAndLabel()
     if (res && Object.keys(res).length > 0) {
-      sorts.value = res.sorts
-      labels.value = res.labels
+      sorts.value = res.sorts.map((s: any) => ({ id: s.id, sortName: s.name }))
+      labels.value = res.labels.map((l: any) => ({ id: l.id, labelName: l.name, sortId: l.sortId ?? l.categoryId }))
+      labelsTemp.value = labels.value
     }
   } catch (error) {
     ElMessage({

@@ -15,8 +15,12 @@ import type {
   ArticleDeleteParams,
   QiniuTokenResponse,
   UploadResponse,
-  ResourceInfo
+  ResourceInfo,
+  SortInfo,
+  LabelInfo
 } from '../types';
+import { getArticle } from '../generated/article';
+import type { ListCategoryArticleResult } from '../generated/article';
 
 
 /**
@@ -24,8 +28,22 @@ import type {
  * @returns {Promise<SortAndLabelResponse>} 分类和标签列表
  */
 export const getSortAndLabel = async (): Promise<SortAndLabelResponse> => {
-    const res = await request.get<SortAndLabelResponse>('/webInfo/listSortAndLabel');
-    return res.data;
+    const [sortRes, labelRes] = await Promise.all([
+        request.get('/category/dict'),
+        request.get('/tag/list')
+    ]);
+    const sorts: SortInfo[] = (sortRes.data || []).map((item: any) => ({
+        id: Number(item.value),
+        name: item.label,
+        sortName: item.label
+    }));
+    const labels: LabelInfo[] = (labelRes.data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        sortId: item.categoryId,
+        labelName: item.name
+    }));
+    return { sorts, labels };
 };
 
 /**
@@ -46,6 +64,14 @@ export const getArticleById = async (id: number): Promise<ArticleDetail> => {
 export const getArticleList = async (params: ArticleListParams): Promise<ArticleListResponse> => {
     const res = await request.post<ArticleListResponse>('/article/listPage', params);
     return res.data;
+};
+
+/**
+ * 获取分类文章列表（按分类ID分组）
+ * @returns {Promise<ListCategoryArticleResult>} 分类文章映射
+ */
+export const listCategoryArticle = async (): Promise<ListCategoryArticleResult> => {
+    return getArticle().listCategoryArticle();
 };
 
 /**
@@ -125,5 +151,25 @@ export const uploadFile = async (formData: FormData): Promise<UploadResponse> =>
  */
 export const saveResource = async (resource: ResourceInfo): Promise<ResourceInfo> => {
     const res = await request.post<ResourceInfo>('/resource/saveResource', resource);
+    return res.data;
+};
+
+/**
+ * 添加文章点赞数
+ * @param {ArticleDTO} params - 文章ID、用户ID、操作类型
+ * @returns {Promise<any>}
+ */
+export const addArticleLikeCount = async (params: {articleId: number, userId: number | null, operation: number}): Promise<any> => {
+    const res = await request.post('/article/addArticleLikeCount', params);
+    return res.data;
+};
+
+/**
+ * 检查是否已点赞
+ * @param {CheckHasLikeParams} params - 包含文章ID
+ * @returns {Promise<boolean>}
+ */
+export const checkHasLike = async (params: {articleId: number}): Promise<boolean> => {
+    const res = await request.get<boolean>('/article/checkHasLike', params);
     return res.data;
 };

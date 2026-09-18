@@ -59,7 +59,7 @@ export const useSortInfoStore = defineStore('sortInfo', () => {
             const res = await categoryApi.dict()
             if (res && res.data && Array.isArray(res.data)) {
                 const allValues = res.data.flatMap((item: any) => Object.values(item).map(String))
-                tags.value = [...new Set(allValues)]
+                tags.value = [...new Set(allValues.map(v => String(v)))]
             }
         } catch (e) {
             console.error('[loadTags error]', e)

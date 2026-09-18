@@ -67,7 +67,7 @@ const menuItems = computed(() => [
   { icon: CreditCard, index: 'resourcePathList', title: '资源聚合', isAdmin: true },
   { icon: Setting,   index: 'webEdit',     title: '网站设置', isAdmin: true  },
   { icon: User,      index: 'userList',    title: '用户管理', isAdmin: true  },
-].filter(item => isAdmin.value || !item.isAdmin))
+].filter(item => isAdmin.value || !item.isAdmin) as any[])
 </script>
 
 <style scoped>

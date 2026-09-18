@@ -24,7 +24,7 @@ export const webApi = {
   /** 获取网站信息 */
   getWebInfo: webInfoApi.getWebInfo,
   /** 获取分类信息列表 */
-  getSortInfo: categoryApi.list4,
+  getSortInfo: categoryApi.dict1,
   /** 保存友链 */
   saveFriend: weblinksApi.saveFriend,
   /** 查询友链列表 */
