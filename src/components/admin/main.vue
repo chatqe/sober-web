@@ -4,91 +4,125 @@
 
     <!-- KPI 卡片行 -->
     <div class="kpi-row">
-      <div class="kpi-card" :style="{ '--accent': accentColor[0] }">
+      <div class="kpi-card">
         <div class="kpi-label">📊 总访问量</div>
         <div class="kpi-value">{{ formatCount(historyInfo.ip_history_count) }}</div>
         <div class="kpi-sub">每个IP每天记一次</div>
       </div>
-      <div class="kpi-card" :style="{ '--accent': accentColor[1] }">
+      <div class="kpi-card">
         <div class="kpi-label">☀️ 今日访问</div>
         <div class="kpi-value kpi-today">{{ formatCount(historyInfo.ip_count_today) }}</div>
         <div class="kpi-sub">今日独立IP数</div>
       </div>
-      <div class="kpi-card" :style="{ '--accent': accentColor[2] }">
+      <div class="kpi-card">
         <div class="kpi-label">🌙 昨日访问</div>
         <div class="kpi-value kpi-yest">{{ formatCount(historyInfo.ip_count_yest) }}</div>
         <div class="kpi-sub">昨日独立IP数</div>
       </div>
-      <div class="kpi-card" :style="{ '--accent': accentColor[3] }">
+      <div class="kpi-card">
         <div class="kpi-label">🗺️ 省份分布</div>
-        <div class="kpi-value kpi-province">{{ provinceCount }}</div>
+        <div class="kpi-value kpi-province">{{ (historyInfo.ip_history_province || []).length }}</div>
         <div class="kpi-sub">访问省份总数</div>
       </div>
     </div>
 
     <!-- 横向条形图区域 -->
     <div class="chart-grid">
+      <!-- 省份访问TOP10（总览） -->
       <div class="chart-card">
         <div class="chart-card-title">省份访问 TOP10（总览）</div>
         <div class="bar-chart">
-          <div v-for="(row, i) in provinceList" :key="i" class="bar-row">
+          <div
+            v-for="(row, i) in (historyInfo.ip_history_province || []).slice(0, 10)"
+            :key="i"
+            class="bar-row"
+          >
             <span class="bar-label">{{ row.province }}</span>
             <div class="bar-track">
-              <div class="bar-fill" :style="{ width: provinceWidths[i] }"></div>
+              <div
+                class="bar-fill"
+                :style="{ width: barWidth(row.num, 'ip_history_province') }"
+              ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div v-if="provinceList.length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="(historyInfo.ip_history_province || []).length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
+      <!-- IP访问TOP10（总览） -->
       <div class="chart-card">
         <div class="chart-card-title">IP访问 TOP10（总览）</div>
         <div class="bar-chart">
-          <div v-for="(row, i) in ipList" :key="i" class="bar-row">
+          <div
+            v-for="(row, i) in (historyInfo.ip_history_ip || []).slice(0, 10)"
+            :key="i"
+            class="bar-row"
+          >
             <span class="bar-label bar-ip">{{ row.ip }}</span>
             <div class="bar-track">
-              <div class="bar-fill" :style="{ width: ipWidths[i] }"></div>
+              <div
+                class="bar-fill"
+                :style="{ width: barWidth(row.num, 'ip_history_ip') }"
+              ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div v-if="ipList.length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="(historyInfo.ip_history_ip || []).length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
+      <!-- 今日访问省份统计 -->
       <div class="chart-card">
         <div class="chart-card-title">今日访问省份统计</div>
         <div class="bar-chart">
-          <div v-for="(row, i) in todayProvinceList" :key="i" class="bar-row">
+          <div
+            v-for="(row, i) in (historyInfo.province_today || []).slice(0, 10)"
+            :key="i"
+            class="bar-row"
+          >
             <span class="bar-label">{{ row.province }}</span>
             <div class="bar-track">
-              <div class="bar-fill bar-fill-today" :style="{ width: todayProvinceWidths[i] }"></div>
+              <div
+                class="bar-fill bar-fill-today"
+                :style="{ width: barWidth(row.num, 'province_today') }"
+              ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
           </div>
-          <div v-if="todayProvinceList.length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="(historyInfo.province_today || []).length === 0" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
+      <!-- 今日访问用户 -->
       <div class="chart-card">
         <div class="chart-card-title">今日访问用户</div>
         <div class="user-list">
-          <div v-for="(row, i) in todayUserList" :key="i" class="user-item">
-            <img :src="row.avatar" class="user-avatar" :alt="row.username" />
+          <div
+            v-for="(row, i) in (historyInfo.username_today || []).slice(0, 8)"
+            :key="i"
+            class="user-item"
+          >
+            <el-avatar :size="32" :src="row.avatar" class="user-avatar"/>
             <span class="user-name">{{ row.username }}</span>
           </div>
-          <div v-if="todayUserList.length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="!(historyInfo.username_today || []).length" class="empty-bar">暂无数据</div>
         </div>
       </div>
 
+      <!-- 昨日访问用户 -->
       <div class="chart-card chart-card-wide">
         <div class="chart-card-title">昨日访问用户</div>
         <div class="user-list">
-          <div v-for="(row, i) in yestUserList" :key="i" class="user-item">
-            <img :src="row.avatar" class="user-avatar" :alt="row.username" />
+          <div
+            v-for="(row, i) in (historyInfo.username_yest || []).slice(0, 12)"
+            :key="i"
+            class="user-item"
+          >
+            <el-avatar :size="32" :src="row.avatar" class="user-avatar"/>
             <span class="user-name">{{ row.username }}</span>
           </div>
-          <div v-if="yestUserList.length === 0" class="empty-bar">暂无数据</div>
+          <div v-if="!(historyInfo.username_yest || []).length" class="empty-bar">暂无数据</div>
         </div>
       </div>
     </div>
@@ -101,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { webInfoApi } from '@/api/index.js'
@@ -109,27 +143,30 @@ import { webInfoApi } from '@/api/index.js'
 const loading = ref(false)
 const isLoaded = ref(false)
 const historyInfo = ref<Record<string, any>>({})
+const maxValues = ref<Record<string, number>>({})
 
-const accentColor = ['#6366f1', '#10b981', '#f59e0b', '#ec4899']
+const formatCount = (val: any) => {
+  if (val == null || val === undefined) return '0'
+  return String(val)
+}
 
-// 直接取 slice，避免模板里重复调用
-const provinceList   = computed(() => (historyInfo.value.ip_history_province  || []).slice(0, 10))
-const ipList         = computed(() => (historyInfo.value.ip_history_ip        || []).slice(0, 10))
-const todayProvinceList = computed(() => (historyInfo.value.province_today     || []).slice(0, 10))
-const todayUserList      = computed(() => (historyInfo.value.username_today   || []).slice(0, 8))
-const yestUserList       = computed(() => (historyInfo.value.username_yest    || []).slice(0, 12))
+const computeMaxValues = (data: Record<string, any>) => {
+  const result: Record<string, number> = {}
+  const compute = (key: string) => {
+    const arr = data[key]
+    if (!Array.isArray(arr) || !arr.length) { result[key] = 1; return }
+    result[key] = Math.max(...arr.map((r: any) => Number(r.num) || 0), 1)
+  }
+  compute('ip_history_province')
+  compute('ip_history_ip')
+  compute('province_today')
+  return result
+}
 
-const provinceCount = computed(() => (historyInfo.value.ip_history_province || []).length)
-
-// 预计算每条 bar 的宽度，渲染时直接读数组，不再现场 Math.max
-const provinceWidths   = computed(() => computeWidths(provinceList.value))
-const ipWidths         = computed(() => computeWidths(ipList.value))
-const todayProvinceWidths = computed(() => computeWidths(todayProvinceList.value))
-
-function computeWidths(arr: any[]) {
-  if (!arr.length) return arr.map(() => '0%')
-  const max = Math.max(...arr.map((r: any) => Number(r.num) || 0), 1)
-  return arr.map((r: any) => max === 0 ? '0%' : `${Math.round((Number(r.num) || 0) / max * 100)}%`)
+const barWidth = (num: number, key: string) => {
+  const max = maxValues.value[key] ?? 1
+  if (max === 0) return '0%'
+  return `${Math.round((num / max) * 100)}%`
 }
 
 const getHistoryInfo = async () => {
@@ -138,8 +175,9 @@ const getHistoryInfo = async () => {
     const res = await webInfoApi.getHistoryInfo()
     if (res) {
       historyInfo.value = res
-      // 数据到达即标记，bar 直接在目标宽度渲染，无动画闪烁
-      isLoaded.value = true
+      maxValues.value = computeMaxValues(res)
+      // 下一帧再开启过渡，避免首次渲染即触发 30+ 根条同时动画
+      requestAnimationFrame(() => { requestAnimationFrame(() => { isLoaded.value = true }) })
     } else {
       ElMessage({ message: '获取数据失败', type: 'error' })
     }
@@ -158,8 +196,10 @@ onMounted(() => {
 <style scoped>
 .dashboard {
   min-height: 100%;
-  /* 单层纯色背景，消除多层渐变合成开销 */
-  background: #f1f5f9;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
+    linear-gradient(180deg, #f0f4ff 0%, #f1f5f9 100%);
   padding: 0;
   border-radius: 8px;
 }
@@ -186,12 +226,31 @@ onMounted(() => {
   padding: 20px 22px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   border: 1px solid #e2e8f0;
-  /* 用 inset box-shadow 替代 ::before，省去伪元素合成 */
-  box-shadow:
-    0 1px 3px rgba(0,0,0,0.06),
-    0 1px 2px rgba(0,0,0,0.04),
-    inset 0 3px 0 0 var(--accent, #6366f1);
   position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 12px 12px 0 0;
+}
+
+.kpi-card:nth-child(2)::before {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.kpi-card:nth-child(3)::before {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.kpi-card:nth-child(4)::before {
+  background: linear-gradient(90deg, #ec4899, #f472b6);
 }
 
 .kpi-label {
@@ -289,12 +348,13 @@ onMounted(() => {
   height: 100%;
   background: linear-gradient(90deg, #6366f1, #818cf8);
   border-radius: 4px;
-  /* 仅在 loaded 后才启动过渡，数据到来时直接渲染目标宽度，不闪烁 */
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 数据加载前不启动画，避免首次渲染就触发 30+ 根条同时过渡 */
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0s;
 }
 
 .dashboard.loaded .bar-fill {
-  /* loaded 后才有过渡，之前宽度按 0% 渲染但不触发动画 */
+  transition-delay: 0.05s;
 }
 
 .bar-fill-today {
@@ -330,11 +390,7 @@ onMounted(() => {
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
   flex-shrink: 0;
-  object-fit: cover;
 }
 
 .user-name {
