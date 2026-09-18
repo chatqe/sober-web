@@ -386,19 +386,19 @@ const changeWebStatus = async (info) => {
 const getWebInfo = async () => {
   try {
     const res = await webInfoApi.getAdminWebInfo();
-    if (!res.data) return;
-    webInfo.id = res.data.id;
-    webInfo.webName = res.data.webName;
-    webInfo.webTitle = res.data.webTitle;
-    webInfo.footer = res.data.footer;
-    webInfo.backgroundImage = res.data.backgroundImage;
-    webInfo.avatar = res.data.avatar;
-    webInfo.waifuJson = res.data.waifuJson;
-    webInfo.status = res.data.status;
-    notices.value = JSON.parse(res.data.notices || '[]');
-    randomAvatar.value = JSON.parse(res.data.randomAvatar || '[]');
-    randomName.value = JSON.parse(res.data.randomName || '[]');
-    randomCover.value = JSON.parse(res.data.randomCover || '[]');
+    if (!res) return;
+    webInfo.id = res.id;
+    webInfo.webName = res.webName;
+    webInfo.webTitle = res.webTitle;
+    webInfo.footer = res.footer;
+    webInfo.backgroundImage = res.backgroundImage;
+    webInfo.avatar = res.avatar;
+    webInfo.waifuJson = res.waifuJson;
+    webInfo.status = res.status;
+    notices.value = JSON.parse(res.notices || '[]');
+    randomAvatar.value = JSON.parse(res.randomAvatar || '[]');
+    randomName.value = JSON.parse(res.randomName || '[]');
+    randomCover.value = JSON.parse(res.randomCover || '[]');
   } catch (error) {
     ElMessage.error(error.message);
   }
