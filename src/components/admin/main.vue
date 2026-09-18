@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard">
+  <div class="dashboard" :class="{ loaded: isLoaded }">
     <div class="page-title">数据概览</div>
 
     <!-- KPI 卡片行 -->
@@ -41,7 +41,7 @@
             <div class="bar-track">
               <div
                 class="bar-fill"
-                :style="{ width: barWidth(row.num, historyInfo.ip_history_province) }"
+                :style="{ width: barWidth(row.num, 'ip_history_province') }"
               ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
@@ -63,7 +63,7 @@
             <div class="bar-track">
               <div
                 class="bar-fill"
-                :style="{ width: barWidth(row.num, historyInfo.ip_history_ip) }"
+                :style="{ width: barWidth(row.num, 'ip_history_ip') }"
               ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
@@ -85,7 +85,7 @@
             <div class="bar-track">
               <div
                 class="bar-fill bar-fill-today"
-                :style="{ width: barWidth(row.num, historyInfo.province_today) }"
+                :style="{ width: barWidth(row.num, 'province_today') }"
               ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
@@ -141,20 +141,30 @@ import { Loading } from '@element-plus/icons-vue'
 import { webInfoApi } from '@/api/index.js'
 
 const loading = ref(false)
+const isLoaded = ref(false)
 const historyInfo = ref<Record<string, any>>({})
+const maxValues = ref<Record<string, number>>({})
 
 const formatCount = (val: any) => {
   if (val == null || val === undefined) return '0'
   return String(val)
 }
 
-const barMax = (arr: any[]) => {
-  if (!arr || !arr.length) return 1
-  return Math.max(...arr.map((r: any) => Number(r.num) || 0), 1)
+const computeMaxValues = (data: Record<string, any>) => {
+  const result: Record<string, number> = {}
+  const compute = (key: string) => {
+    const arr = data[key]
+    if (!Array.isArray(arr) || !arr.length) { result[key] = 1; return }
+    result[key] = Math.max(...arr.map((r: any) => Number(r.num) || 0), 1)
+  }
+  compute('ip_history_province')
+  compute('ip_history_ip')
+  compute('province_today')
+  return result
 }
 
-const barWidth = (num: number, arr: any[]) => {
-  const max = barMax(arr)
+const barWidth = (num: number, key: string) => {
+  const max = maxValues.value[key] ?? 1
   if (max === 0) return '0%'
   return `${Math.round((num / max) * 100)}%`
 }
@@ -165,6 +175,9 @@ const getHistoryInfo = async () => {
     const res = await webInfoApi.getHistoryInfo()
     if (res) {
       historyInfo.value = res
+      maxValues.value = computeMaxValues(res)
+      // 下一帧再开启过渡，避免首次渲染即触发 30+ 根条同时动画
+      requestAnimationFrame(() => { requestAnimationFrame(() => { isLoaded.value = true }) })
     } else {
       ElMessage({ message: '获取数据失败', type: 'error' })
     }
@@ -335,7 +348,13 @@ onMounted(() => {
   height: 100%;
   background: linear-gradient(90deg, #6366f1, #818cf8);
   border-radius: 4px;
-  transition: width 0.6s ease;
+  /* 数据加载前不启动画，避免首次渲染就触发 30+ 根条同时过渡 */
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0s;
+}
+
+.dashboard.loaded .bar-fill {
+  transition-delay: 0.05s;
 }
 
 .bar-fill-today {
