@@ -179,7 +179,7 @@
         <div class="chart-card-title">What are the most visited pages?</div>
         <div class="user-list">
           <div
-            v-for="(row, i) in usernameToday"
+            v-for="(row, i) in usernameToday.slice(0, 10)"
             :key="`today-${i}`"
             class="user-item"
           >
@@ -188,6 +188,7 @@
             <span class="user-rank">{{ i + 1 }}</span>
           </div>
           <div v-if="usernameToday.length === 0" class="empty-bar">暂无数据</div>
+          <div v-else-if="usernameToday.length > 10" class="more-indicator">仅展示前 10 名</div>
         </div>
       </div>
     </div>
@@ -707,6 +708,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 7px;
+  max-height: 340px;
+  overflow-y: auto;
 }
 
 .user-item {
@@ -756,6 +759,15 @@ onMounted(() => {
   font-size: 13px;
   padding: 16px 0;
   text-align: center;
+}
+
+.more-indicator {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  padding: 6px 0 2px;
+  border-top: 1px dashed #e2e8f0;
+  margin-top: 4px;
 }
 
 /* ── Responsive ── */
