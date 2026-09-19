@@ -81,7 +81,7 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import router from '@/router'
-import { articleApi } from '@/api/index.js'
+import { articleApi, categoryApi } from '@/api/index.js'
 import { Document } from '@element-plus/icons-vue'
 import { useUserStore, useAuthStore } from '@/stores'
 
@@ -173,7 +173,7 @@ watch(() => pagination.sortId, (newVal) => {
 // 获取分类和标签
 const getSortAndLabel = async (): Promise<void> => {
   try {
-    const res = await articleApi.getSortAndLabel()
+    const res = await categoryApi.getSortAndLabel()
     if (res && Object.keys(res).length > 0) {
       sorts.value = res.sorts.map((s: any) => ({ id: s.id, categoryName: s.name }))
       labels.value = res.labels.map((l: any) => ({ id: l.id, tagName: l.name, categoryId: l.categoryId }))

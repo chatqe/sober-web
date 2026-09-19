@@ -100,7 +100,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-import { commonApi, articleApi } from '@/api/index.js'
+import { commonApi, articleApi, categoryApi } from '@/api/index.js'
 
 // 组件导入
 import uploadPicture from '../common/uploadPicture.vue'
@@ -240,7 +240,7 @@ const addArticleCover = (res) => {
 // 获取分类和标签
 const getSortAndLabel = async () => {
   try {
-    const res = await articleApi.getSortAndLabel()
+    const res = await categoryApi.getSortAndLabel()
     if (res && Object.keys(res).length > 0) {
       sorts.value = res.sorts;
       labels.value = res.labels;

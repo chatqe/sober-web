@@ -6,7 +6,6 @@
  */
 import request from '@/utils/request';
 import type {
-  SortAndLabelResponse,
   ArticleDetail,
   ArticleListParams,
   ArticleListResponse,
@@ -16,33 +15,11 @@ import type {
   QiniuTokenResponse,
   UploadResponse,
   ResourceInfo,
-  CategoryInfo,
-  TagInfo
 } from '../types';
 import { getArticle } from '../generated/article';
 import type { ListCategoryArticleResult } from '../generated/article';
 
 
-/**
- * 获取分类和标签列表
- * @returns {Promise<SortAndLabelResponse>} 分类和标签列表
- */
-export const getSortAndLabel = async (): Promise<SortAndLabelResponse> => {
-    const [sortRes, labelRes] = await Promise.all([
-        request.get('/category/dict'),
-        request.get('/tag/list')
-    ]);
-    const sorts: CategoryInfo[] = (sortRes.data || []).map((item: any) => ({
-        id: Number(item.value),
-        name: item.label
-    }));
-    const labels: TagInfo[] = (labelRes.data || []).map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        categoryId: item.categoryId
-    }));
-    return { sorts, labels };
-};
 
 /**
  * 根据ID获取文章详情
