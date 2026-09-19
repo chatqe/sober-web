@@ -46,6 +46,7 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+*/api/generated
 
 # Webpack
 .cache/
