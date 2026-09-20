@@ -52,6 +52,6 @@ onMounted(() => {
 .content-box {
   flex: 1;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0);
+  background: rgba(250, 251, 252, 1);
 }
 </style>
