@@ -42,7 +42,7 @@
         </template>
       </el-dropdown>
     </div>
-  </header>
+  </div>
 </template>
 
 <script setup lang="ts">
