@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { RouteLocationNormalized } from 'vue-router'
 
 export interface RouteTab {
@@ -32,6 +32,20 @@ export const useAdminTabsStore = defineStore('adminTabs', () => {
     return ROUTE_TITLE_MAP[path] || path.split('/').pop() || '页面'
   }
 
+  // 根据当前路由初始化 tabs（在 router ready 后调用一次）
+  const initFromRoute = (route: RouteLocationNormalized): void => {
+    const existing = tabs.value.find(t => t.path === route.path)
+    if (!existing) {
+      tabs.value.push({
+        path: route.path,
+        title: getTabTitle(route.path),
+        name: route.name as string | undefined,
+      })
+    }
+    openPaths.value.add(route.path)
+    activePath.value = route.path
+  }
+
   const addTab = (route: RouteLocationNormalized): void => {
     const path = route.path
     if (!openPaths.value.has(path)) {
@@ -41,6 +55,9 @@ export const useAdminTabsStore = defineStore('adminTabs', () => {
         title: getTabTitle(path),
         name: route.name as string | undefined,
       })
+    } else if (path === '/admin/main' && !tabs.value.some(t => t.path === path)) {
+      // /admin/main 始终保持在 tabs 中
+      tabs.value.unshift({ path, title: getTabTitle(path) })
     }
     activePath.value = path
   }
@@ -75,5 +92,5 @@ export const useAdminTabsStore = defineStore('adminTabs', () => {
     activePath.value = path
   }
 
-  return { tabs, activePath, addTab, closeTab, closeOthers, closeAll, setActive }
+  return { tabs, activePath, initFromRoute, addTab, closeTab, closeOthers, closeAll, setActive }
 })

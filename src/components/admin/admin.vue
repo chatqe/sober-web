@@ -3,7 +3,6 @@
     <sidebar />
     <div class="right-panel">
       <my-header />
-      <tab-bar />
       <div class="content-box">
         <div class="content">
           <router-view />
@@ -14,9 +13,18 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import MyHeader from "@/components/admin/common/myHeader.vue";
 import Sidebar from "@/components/admin/common/sidebar.vue";
-import TabBar from "@/components/admin/common/tabBar.vue";
+import { useAdminTabsStore } from '@/stores/modules/adminTabs'
+
+const route = useRoute()
+const tabStore = useAdminTabsStore()
+
+onMounted(() => {
+  tabStore.initFromRoute(route as any)
+})
 </script>
 
 <style scoped>
@@ -40,5 +48,10 @@ import TabBar from "@/components/admin/common/tabBar.vue";
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+}
+.content-box {
+  flex: 1;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0);
 }
 </style>

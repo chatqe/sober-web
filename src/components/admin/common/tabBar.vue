@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAdminTabsStore, type RouteTab } from '@/stores/modules/adminTabs'
 import { Close, ArrowDown } from '@element-plus/icons-vue'
@@ -77,17 +77,16 @@ const handleMoreCommand = (cmd: string): void => {
   }
 }
 
-// 路由变化时自动添加页签
-watch(
-  () => route.fullPath,
-  (newRoute) => {
-    // Vue Router fullPath 带 query，但 tab 用 path（不带 query）
-    const path = newRoute.includes('?') ? newRoute.split('?')[0] : newRoute
-    store.addTab({ path, fullPath: newRoute, name: route.name as any } as any)
-    nextTick(() => scrollToTab(path))
-  },
-  { immediate: true }
-)
+const addTabFromRoute = (): void => {
+  const current = router.currentRoute.value
+  const path = current.path || current.fullPath.split('?')[0]
+  if (!path) return
+  store.addTab(current as any)
+  nextTick(() => scrollToTab(path))
+}
+
+// 路由变更后自动添加页签
+router.afterEach(addTabFromRoute)
 </script>
 
 <style scoped>
@@ -95,8 +94,7 @@ watch(
   display: flex;
   align-items: center;
   height: 38px;
-  background: #fff;
-  border-bottom: 1px solid #e2e8f0;
+  background: #f1f5f9;
   padding: 0 12px;
   gap: 4px;
   user-select: none;
@@ -129,15 +127,13 @@ watch(
   border: 1px solid transparent;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  background: #fff;
 }
 .tab-item:hover {
-  background: #f1f5f9;
-  color: #1e293b;
+  color: #4f46e5;
 }
 .tab-item.active {
-  background: #eef2ff;
   color: #4f46e5;
-  border-color: rgba(99, 102, 241, 0.2);
   font-weight: 500;
 }
 
@@ -150,14 +146,11 @@ watch(
 
 .tab-close {
   font-size: 12px;
-  opacity: 0;
+  opacity: 0.5;
   border-radius: 3px;
   padding: 1px;
   transition: opacity 0.15s, background 0.15s;
   flex-shrink: 0;
-}
-.tab-item:hover .tab-close {
-  opacity: 0.6;
 }
 .tab-close:hover {
   opacity: 1 !important;
