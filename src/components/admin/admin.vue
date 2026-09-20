@@ -57,7 +57,7 @@ onMounted(() => {
 }
 .content {
   height: 100%;
-  padding: 16px 20px;
+  padding: 0 15px;
   overflow: auto;
 }
 </style>
