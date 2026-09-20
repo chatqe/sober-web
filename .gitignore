@@ -46,7 +46,7 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
-*/api/generated
+/src/api/generated/
 
 # Webpack
 .cache/
@@ -92,4 +92,5 @@ components.d.ts
 
 # Vite 预构建缓存目录
 node_modules/.vite/
+
 
