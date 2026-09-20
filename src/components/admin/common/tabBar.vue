@@ -94,7 +94,7 @@ router.afterEach(addTabFromRoute)
   display: flex;
   align-items: center;
   height: 38px;
-  background: #f1f5f9;
+  background: rgba(250, 251, 252, 1);
   padding: 0 12px;
   gap: 4px;
   user-select: none;
