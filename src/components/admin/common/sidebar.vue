@@ -57,16 +57,16 @@ const isAdmin = computed(() => authStore.isAdmin || userStore.currentAdmin?.isAd
 const currentRoutePath = computed(() => router.currentRoute.value.path)
 
 const menuItems = computed(() => [
-  { icon: House,     index: 'main',         title: '报表管理', isAdmin: true  },
-  { icon: Document,  index: 'postList',     title: '文章管理', isAdmin: false },
-  { icon: EditPen,   index: 'commentList',  title: '评论管理', isAdmin: false },
-  { icon: Notebook,  index: 'categoryList', title: '分类管理', isAdmin: true  },
-  { icon: Sugar,     index: 'loveList',     title: '表白墙',   isAdmin: true  },
-  { icon: ChatDotRound, index: 'treeHoleList', title: '弹幕管理', isAdmin: true },
-  { icon: Paperclip, index: 'resourceList', title: '资源管理', isAdmin: true  },
-  { icon: CreditCard, index: 'resourcePathList', title: '资源聚合', isAdmin: true },
-  { icon: Setting,   index: 'webEdit',     title: '网站设置', isAdmin: true  },
-  { icon: User,      index: 'userList',    title: '用户管理', isAdmin: true  },
+  { icon: House,     index: '/admin/main',         title: '报表管理', isAdmin: true  },
+  { icon: Document,  index: '/admin/postList',     title: '文章管理', isAdmin: false },
+  { icon: EditPen,   index: '/admin/commentList',  title: '评论管理', isAdmin: false },
+  { icon: Notebook,  index: '/admin/categoryList', title: '分类管理', isAdmin: true  },
+  { icon: Sugar,     index: '/admin/loveList',     title: '表白墙',   isAdmin: true  },
+  { icon: ChatDotRound, index: '/admin/treeHoleList', title: '弹幕管理', isAdmin: true },
+  { icon: Paperclip, index: '/admin/resourceList', title: '资源管理', isAdmin: true  },
+  { icon: CreditCard, index: '/admin/resourcePathList', title: '资源聚合', isAdmin: true },
+  { icon: Setting,   index: '/admin/webEdit',     title: '网站设置', isAdmin: true  },
+  { icon: User,      index: '/admin/userList',    title: '用户管理', isAdmin: true  },
 ].filter(item => isAdmin.value || !item.isAdmin) as any[])
 </script>
 
