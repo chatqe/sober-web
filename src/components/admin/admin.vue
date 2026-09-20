@@ -55,4 +55,9 @@ onMounted(() => {
   overflow: hidden;
   background: rgba(250, 251, 252, 1);
 }
+.content {
+  height: 100%;
+  padding: 16px 20px;
+  overflow: auto;
+}
 </style>
