@@ -9,13 +9,6 @@
           <p class="header-subtitle">Showing results for {{ periodLabel }}</p>
         </div>
       </div>
-      <div class="header-right">
-        <el-button circle><el-icon><Bell /></el-icon></el-button>
-        <div class="user-badge">
-          <el-avatar :size="28" :src="currentUser?.avatar || undefined">{{ currentUser?.username?.[0] || 'U' }}</el-avatar>
-          <span class="user-name">{{ currentUser?.username || 'User' }}</span>
-        </div>
-      </div>
     </div>
 
     <!-- KPI Row -->
@@ -198,12 +191,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Bell } from '@element-plus/icons-vue'
 import { webInfoApi } from '@/api/index.js'
-import { useUserStore } from '@/stores'
 
-const userStore = useUserStore()
-const currentUser = computed(() => userStore.currentUser)
 const historyInfo = ref<Record<string, any>>({})
 
 // Period label
@@ -401,32 +390,6 @@ onMounted(() => {
   font-size: 12.5px;
   color: #94a3b8;
   margin: 0;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-badge {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 10px 4px 4px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  font-size: 13px;
-  color: #334155;
-}
-
-.user-name {
-  font-weight: 500;
-  max-width: 90px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ── KPI Row ── */
@@ -780,7 +743,6 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .kpi-row       { grid-template-columns: 1fr; }
-  .dashboard-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .device-layout  { flex-direction: column; align-items: flex-start; }
   .bar-row       { grid-template-columns: 24px 60px 1fr 32px; }
 }

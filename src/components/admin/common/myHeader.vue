@@ -12,27 +12,22 @@
         <span>首页</span>
       </div>
       <el-divider direction="vertical" class="header-divider" />
-      <div class="user-area">
-        <el-dropdown placement="bottom" :show-timeout="100" :hide-timeout="150">
-          <div class="user-trigger">
-            <el-avatar
-              :size="36"
-              :src="currentAdmin.avatar"
-              class="user-avatar"
-            />
-            <span class="user-name">{{ currentAdmin.username || '管理员' }}</span>
-            <el-icon class="user-arrow"><ArrowDown /></el-icon>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="logout">
-                <el-icon><SwitchButton /></el-icon>
-                退出登录
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
+      <el-button circle><el-icon><Bell /></el-icon></el-button>
+      <el-dropdown placement="bottom" :show-timeout="100" :hide-timeout="150">
+        <div class="user-badge">
+          <el-avatar :size="28" :src="currentAdmin.avatar" class="user-badge-avatar">{{ currentAdmin.username?.[0] || 'U' }}</el-avatar>
+          <span class="user-badge-name">{{ currentAdmin.username || '管理员' }}</span>
+          <el-icon class="user-arrow"><ArrowDown /></el-icon>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="logout">
+              <el-icon><SwitchButton /></el-icon>
+              退出登录
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </header>
 </template>
@@ -41,7 +36,7 @@
 import { useAuthStore, useUserStore } from '@/stores'
 import router from '@/router'
 import { ElMessage } from 'element-plus'
-import { House, ArrowDown, SwitchButton } from '@element-plus/icons-vue'
+import { House, ArrowDown, SwitchButton, Bell } from '@element-plus/icons-vue'
 import { authApi } from '@/api/index.js'
 
 interface AdminUser {
@@ -129,31 +124,28 @@ const logout = async (): Promise<void> => {
 }
 
 /* 用户区 */
-.user-area {
+.user-badge {
   display: flex;
   align-items: center;
-}
-.user-trigger {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-radius: 8px;
+  gap: 7px;
+  padding: 4px 10px 4px 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #334155;
   cursor: pointer;
   transition: background 0.15s ease;
 }
-.user-trigger:hover {
+.user-badge:hover {
   background: #f1f5f9;
 }
-.user-avatar {
-  border: 2px solid #e2e8f0;
+.user-badge-avatar {
   flex-shrink: 0;
 }
-.user-name {
-  font-size: 13px;
-  color: #1a1d2e;
+.user-badge-name {
   font-weight: 500;
-  max-width: 100px;
+  max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
