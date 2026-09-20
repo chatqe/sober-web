@@ -1,18 +1,31 @@
 <template>
-  <header class="my-header">
+  <div class="my-header">
     <div class="header-left">
-      <div class="logo-area">
-        <div class="logo-dot"></div>
-        <span class="logo-title">后台管理</span>
+      <div class="icon-group">
+        <el-tooltip content="侧边栏" placement="bottom" :show-timeout="200">
+          <div class="icon-btn" @click="toggleSidebar"><el-icon><Menu /></el-icon></div>
+        </el-tooltip>
+        <el-tooltip content="刷新" placement="bottom" :show-timeout="200">
+          <div class="icon-btn" @click="handleRefresh"><el-icon><Refresh /></el-icon></div>
+        </el-tooltip>
+        <el-tooltip content="工作台" placement="bottom" :show-timeout="200">
+          <div class="icon-btn" @click="router.push('/admin/main')"><el-icon><Monitor /></el-icon></div>
+        </el-tooltip>
+      </div>
+      <div class="breadcrumb">
+        <span class="crumb-item">仪表盘</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{{ currentTabTitle }}</span>
       </div>
     </div>
     <div class="header-right">
-      <div class="home-btn" @click="router.push({ path: '/' })">
+      <div class="home-btn" @click="router.push('/')">
         <el-icon><House /></el-icon>
-        <span>首页</span>
       </div>
-      <el-divider direction="vertical" class="header-divider" />
       <el-button circle><el-icon><Bell /></el-icon></el-button>
+      <el-button circle @click="toggleFullscreen"><el-icon><FullScreen /></el-icon></el-button>
+      <el-button circle><el-icon><Moon /></el-icon></el-button>
+      <el-divider direction="vertical" class="header-divider" />
       <el-dropdown placement="bottom" :show-timeout="100" :hide-timeout="150">
         <div class="user-badge">
           <el-avatar :size="28" :src="currentAdmin.avatar" class="user-badge-avatar">{{ currentAdmin.username?.[0] || 'U' }}</el-avatar>
@@ -33,10 +46,11 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore, useUserStore } from '@/stores'
-import router from '@/router'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore, useUserStore, useAdminTabsStore } from '@/stores'
 import { ElMessage } from 'element-plus'
-import { House, ArrowDown, SwitchButton, Bell } from '@element-plus/icons-vue'
+import { House, ArrowDown, SwitchButton, Bell, FullScreen, Moon, Menu, Refresh, Monitor } from '@element-plus/icons-vue'
 import { authApi } from '@/api/index.js'
 
 interface AdminUser {
@@ -46,9 +60,33 @@ interface AdminUser {
   [key: string]: any
 }
 
-const userStore = useUserStore()
+const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
+const userStore = useUserStore()
+const tabStore = useAdminTabsStore()
+
 const currentAdmin = userStore.currentAdmin as AdminUser
+const currentTabTitle = computed(
+  () => tabStore.tabs.find(t => t.path === route.path)?.title || '工作台'
+)
+
+// 全屏切换
+const toggleFullscreen = (): void => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {})
+  } else {
+    document.exitFullscreen().catch(() => {})
+  }
+}
+
+const handleRefresh = (): void => {
+  window.location.reload()
+}
+
+const toggleSidebar = (): void => {
+  // TODO: 实现侧边栏折叠逻辑
+}
 
 const logout = async (): Promise<void> => {
   try {
@@ -70,57 +108,78 @@ const logout = async (): Promise<void> => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 0 20px;
 }
 
-/* 左侧 Logo */
+/* 左侧 */
 .header-left {
   display: flex;
   align-items: center;
+  gap: 14px;
 }
-.logo-area {
+.icon-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 2px;
 }
-.logo-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  flex-shrink: 0;
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #475467;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
-.logo-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #1a1d2e;
-  letter-spacing: 0.5px;
+.icon-btn:hover {
+  background: #fff;
+  color: #4f46e5;
 }
 
-/* 右侧区域 */
+/* 面包屑 */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+.crumb-item {
+  color: #475467;
+}
+.crumb-sep {
+  font-size: 11px;
+}
+.crumb-current {
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+/* 右侧 */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 .home-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
   color: #475467;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s, color 0.15s;
 }
 .home-btn:hover {
-  background: #f1f5f9;
+  background: #fff;
   color: #4f46e5;
 }
 .header-divider {
-  height: 16px;
+  height: 14px;
 }
 
 /* 用户区 */
@@ -129,7 +188,7 @@ const logout = async (): Promise<void> => {
   align-items: center;
   gap: 7px;
   padding: 4px 10px 4px 4px;
-  background: #f8fafc;
+  background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
   font-size: 13px;
@@ -138,7 +197,7 @@ const logout = async (): Promise<void> => {
   transition: background 0.15s ease;
 }
 .user-badge:hover {
-  background: #f1f5f9;
+  background: #eef2ff;
 }
 .user-badge-avatar {
   flex-shrink: 0;

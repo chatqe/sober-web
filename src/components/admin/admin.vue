@@ -1,10 +1,13 @@
 <template>
   <div class="admin-container">
-    <myHeader />
     <sidebar />
-    <div class="content-box">
-      <div class="content">
-        <router-view />
+    <div class="right-panel">
+      <my-header />
+      <tab-bar />
+      <div class="content-box">
+        <div class="content">
+          <router-view />
+        </div>
       </div>
     </div>
   </div>
@@ -13,41 +16,29 @@
 <script setup lang="ts">
 import MyHeader from "@/components/admin/common/myHeader.vue";
 import Sidebar from "@/components/admin/common/sidebar.vue";
+import TabBar from "@/components/admin/common/tabBar.vue";
 </script>
 
 <style scoped>
 .admin-container {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  grid-template-rows: 70px 1fr;
-  grid-template-areas:
-    'sidebar header'
-    'sidebar main';
+  display: flex;
   height: 100vh;
   overflow: hidden;
 }
 
 .sidebar {
-  grid-area: sidebar;
-  min-height: 0;
-  overflow-y: auto;
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e2e8f0;
 }
 
-.my-header {
-  grid-area: header;
-}
-
-.content-box {
-  grid-area: main;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 30px;
-  background: #f1f5f9;
-}
-
-.content {
-  width: 100%;
-  height: 100%;
-  background: #fff;
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 </style>

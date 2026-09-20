@@ -7,6 +7,7 @@ export default pinia
 
 export {useToolbarStore} from './modules/toolbar'
 export {useAuthStore} from './modules/auth'
+export {useAdminTabsStore} from './modules/adminTabs'
 export {useSortInfoStore} from './modules/categoryInfo'
 export {useUserStore} from './modules/user'
 export {useWebInfoStore} from './modules/webInfo'
