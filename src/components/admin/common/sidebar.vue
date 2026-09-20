@@ -75,7 +75,7 @@ const menuItems = computed(() => [
 .sidebar {
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: #fff;
   border-right: 1px solid #e2e8f0;
 }
 

@@ -42,10 +42,12 @@ import Sidebar from "@/components/admin/common/sidebar.vue";
   min-height: 0;
   overflow-y: auto;
   padding: 30px;
+  background: #f1f5f9;
 }
 
 .content {
   width: 100%;
   height: 100%;
+  background: #fff;
 }
 </style>

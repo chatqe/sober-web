@@ -65,7 +65,7 @@ const logout = async (): Promise<void> => {
 <style scoped>
 .my-header {
   height: 70px;
-  background: #fff;
+  background: #f1f5f9;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
