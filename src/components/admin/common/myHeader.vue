@@ -69,10 +69,6 @@ const logout = async (): Promise<void> => {
 
 <style scoped>
 .my-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   height: 70px;
   background: #fff;
   border-bottom: 1px solid #e2e8f0;
@@ -80,7 +76,6 @@ const logout = async (): Promise<void> => {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  z-index: 1001;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 

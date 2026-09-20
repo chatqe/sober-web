@@ -73,17 +73,10 @@ const menuItems = computed(() => [
 <style scoped>
 /* ── Sidebar 容器 ── */
 .sidebar {
-  position: fixed;
-  left: 0;
-  top: 70px;
-  bottom: 0;
-  width: 200px;
   display: flex;
   flex-direction: column;
   background: #f8fafc;
   border-right: 1px solid #e2e8f0;
-  z-index: 1000;
-  overflow: hidden;
 }
 
 .sidebar::-webkit-scrollbar { width: 0; }

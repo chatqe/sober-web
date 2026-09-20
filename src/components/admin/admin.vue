@@ -16,20 +16,36 @@ import Sidebar from "@/components/admin/common/sidebar.vue";
 </script>
 
 <style scoped>
+.admin-container {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: 70px 1fr;
+  grid-template-areas:
+    'sidebar header'
+    'sidebar main';
+  height: 100vh;
+  overflow: hidden;
+}
 
-  .content-box {
-    position: absolute;
-    left: 200px;
-    right: 0;
-    top: 70px;
-    bottom: 0;
-  }
+.sidebar {
+  grid-area: sidebar;
+  min-height: 0;
+  overflow-y: auto;
+}
 
-  .content {
-    width: auto;
-    height: 100%;
-    padding: 30px;
-    overflow-y: scroll;
-  }
+.my-header {
+  grid-area: header;
+}
 
+.content-box {
+  grid-area: main;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+}
 </style>
