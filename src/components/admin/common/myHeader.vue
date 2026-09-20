@@ -145,7 +145,7 @@ const logout = async (): Promise<void> => {
 .my-header {
   display: flex;
   flex-direction: column;
-  background: rgba(250, 251, 252, 1);
+  background: transparent;
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }

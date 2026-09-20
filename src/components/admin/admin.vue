@@ -48,6 +48,7 @@ onMounted(() => {
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+  background: rgba(250, 251, 252, 1);
 }
 .content-box {
   flex: 1;
