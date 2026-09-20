@@ -10,8 +10,8 @@
     <el-menu
       class="sidebar-menu"
       :default-active="currentRoutePath"
-      :router="true"
       :unique-opened="true"
+      @select="handleMenuSelect"
     >
       <template v-for="item in menuItems" :key="item.index">
         <template v-if="item.subs?.length">
@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import router from '@/router'
-import { useAuthStore, useUserStore } from '@/stores'
+import { useAuthStore, useUserStore, useAdminTabsStore } from '@/stores'
 import {
   House, Setting, User, Document, Notebook,
   EditPen, ChatDotRound, Paperclip, CreditCard, Sugar, Monitor,
@@ -53,6 +53,7 @@ import {
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const tabStore = useAdminTabsStore()
 const isAdmin = computed(() => authStore.isAdmin || userStore.currentAdmin?.isAdmin || false)
 const currentRoutePath = computed(() => router.currentRoute.value.path)
 
@@ -68,6 +69,16 @@ const menuItems = computed(() => [
   { icon: Setting,   index: '/admin/webEdit',     title: '网站设置', isAdmin: true  },
   { icon: User,      index: '/admin/userList',    title: '用户管理', isAdmin: true  },
 ].filter(item => isAdmin.value || !item.isAdmin) as any[])
+
+const handleMenuSelect = (index: string): void => {
+  const currentPath = router.currentRoute.value.path
+  if (index === currentPath) {
+    // 点击当前页：强制添加回页签（watch 不会触发）
+    tabStore.addTab(router.currentRoute.value as any)
+  } else {
+    router.push(index)
+  }
+}
 </script>
 
 <style scoped>
