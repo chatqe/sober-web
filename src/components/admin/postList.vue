@@ -10,23 +10,23 @@
           <el-option key="1" label="是" :value="true"></el-option>
           <el-option key="2" label="否" :value="false"></el-option>
         </el-select>
-        <el-select v-model="pagination.sortId" placeholder="分类" class="filter-select">
+        <el-select v-model="pagination.cateId" placeholder="分类" class="filter-select">
           <el-option v-for="item in sorts" :key="item.id" :label="item.categoryName" :value="item.id" />
         </el-select>
-        <el-select v-model="pagination.labelId" placeholder="标签" class="filter-select">
+        <el-select v-model="pagination.tagId" placeholder="标签" class="filter-select">
           <el-option v-for="item in labelsTemp" :key="item.id" :label="item.tagName" :value="item.id" />
         </el-select>
-        <el-input v-model="pagination.searchKey" placeholder="文章标题" class="filter-input" clearable />
+        <el-input v-model="pagination.titleKey" placeholder="文章标题" class="filter-input" clearable />
         <el-button type="primary" @click="searchArticles()">搜索</el-button>
         <el-button @click="clearSearch()">清除</el-button>
         <el-button type="primary" @click="$router.push({ path: '/admin/postEdit' })">新增文章</el-button>
       </div>
       <el-table :data="articles" border class="table" stripe header-cell-class-name="table-header">
         <el-table-column prop="id" label="ID" width="55" align="center" />
-        <el-table-column prop="username" label="作者" width="100" align="center" />
+        <el-table-column prop="authorName" label="作者" width="100" align="center" />
         <el-table-column prop="articleTitle" label="文章标题" align="center" show-overflow-tooltip />
-        <el-table-column prop="sort.categoryName" label="分类" align="center" width="100" />
-        <el-table-column prop="label.tagName" label="标签" align="center" width="100" />
+        <el-table-column prop="categoryName" label="分类" align="center" width="100" />
+        <el-table-column prop="tagName" label="标签" align="center" width="100" />
         <el-table-column prop="viewCount" label="浏览" width="70" align="center" />
         <el-table-column prop="likeCount" label="点赞" width="70" align="center" />
         <el-table-column prop="commentCount" label="评论" width="70" align="center" />
@@ -119,10 +119,10 @@ interface Pagination {
   current: number;
   size: number;
   total: number;
-  searchKey: string;
+  titleKey: string;
   recommendStatus: boolean | null;
-  sortId: number | null;
-  labelId: number | null;
+  cateId: number | null;
+  tagId: number | null;
 }
 
 interface ApiResponse<T> {
@@ -152,10 +152,10 @@ const pagination = reactive<Pagination>({
   current: 1,
   size: 10,
   total: 0,
-  searchKey: "",
+  titleKey: "",
   recommendStatus: null,
-  sortId: null,
-  labelId: null
+  cateId: null,
+  tagId: null
 })
 const articles = ref<Article[]>([])
 const sorts = ref<Category[]>([])
@@ -163,8 +163,8 @@ const labels = ref<Tag[]>([])
 const labelsTemp = ref<Tag[]>([])
 
 // 监听分类变化，更新标签列表
-watch(() => pagination.sortId, (newVal) => {
-  pagination.labelId = null
+watch(() => pagination.cateId, (newVal) => {
+  pagination.tagId = null
   if (newVal && labels.value && labels.value.length > 0) {
     labelsTemp.value = labels.value.filter(l => l.categoryId === newVal)
   }
@@ -193,10 +193,10 @@ const clearSearch = (): void => {
     current: 1,
     size: 10,
     total: 0,
-    searchKey: "",
+    titleKey: "",
     recommendStatus: null,
-    sortId: null,
-    labelId: null
+    cateId: null,
+    tagId: null
   })
   getArticles()
 }
@@ -204,18 +204,17 @@ const clearSearch = (): void => {
 // 获取文章列表
 const getArticles = async (): Promise<void> => {
   try {
-    const res: any = await articleApi.getArticleList({
+    const res: any = await articleApi.listAdminArticle({
       pageNum: pagination.current,
       pageSize: pagination.size,
-      searchKey: pagination.searchKey,
-      recommendStatus: pagination.recommendStatus || undefined,
-      sortId: pagination.sortId ? String(pagination.sortId) : undefined,
-      labelId: pagination.labelId || undefined,
-      isAdmin: isAdmin.value
+      titleKey: pagination.titleKey || undefined,
+      recommend: pagination.recommendStatus !== null ? pagination.recommendStatus : undefined,
+      cateId: pagination.cateId || undefined,
+      tagId: pagination.tagId || undefined,
     })
     if (res && Object.keys(res).length > 0) {
-      articles.value = res.list
-      pagination.total = res.total
+      articles.value = res.list || []
+      pagination.total = res.total || 0
     }
   } catch (error) {
     ElMessage({

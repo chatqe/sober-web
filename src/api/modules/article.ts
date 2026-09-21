@@ -17,6 +17,7 @@ import type {
   ResourceInfo,
 } from '../types';
 import { getArticle } from '../generated/article';
+import { getAdminArticle } from '../generated/admin-article';
 import type { ListCategoryArticleResult } from '../generated/article';
 
 
@@ -39,6 +40,23 @@ export const getArticleById = async (id: number): Promise<ArticleDetail> => {
 export const getArticleList = async (params: ArticleListParams): Promise<ArticleListResponse> => {
     const res = await request.post<ArticleListResponse>('/article/listPage', params);
     return res.data;
+};
+
+/**
+ * 管理后台文章分页列表（调用 /admin/article/pageList）
+ * @param params - AdminArticlePageReqDTO
+ * @returns {Promise<{ list: any[]; total: number }>}
+ */
+export const listAdminArticle = async (params: {
+  pageNum?: number;
+  pageSize?: number;
+  titleKey?: string;
+  cateId?: number;
+  tagId?: number;
+  recommend?: boolean;
+}): Promise<{ list: any[]; total: number }> => {
+  const res = await getAdminArticle().pageList(params);
+  return res.data;
 };
 
 /**
