@@ -18,46 +18,46 @@ type AppRouteRecordRaw = RouteRecordRaw & {
 const routes: AppRouteRecordRaw[] = [
     {
         path: '/',
-        component: () => import('../components/home.vue'),
+        component: () => import('../views/front/home/index.vue'),
         children: [
             {
                 path: "", // 路径建议使用空字符串，与 path: '/' 组合成根路径
                 name: "index",
-                component: () => import('../components/index.vue')
+                component: () => import('../views/front/index.vue')
             },
             {
                 path: "/sort",
                 name: "sort",
-                component: () => import('../components/sort.vue')
+                component: () => import('../views/front/sort/index.vue')
             }, {
                 path: "/article",
                 name: "article",
-                component: () => import('../components/article.vue')
+                component: () => import('../views/front/article/index.vue')
             }, {
                 path: "/weiYan",
                 name: "weiYan",
-                component: () => import('../components/weiYan.vue')
+                component: () => import('../views/front/weiYan/index.vue')
             }, {
                 path: "/love",
                 name: "love",
-                component: () => import('../components/love.vue')
+                component: () => import('../views/front/love/index.vue')
             }, {
                 path: "/favorite",
                 name: "favorite",
-                component: () => import('../components/favorite.vue'),
+                component: () => import('../views/front/favorite/index.vue'),
                 children: [
                     {
                         path: "music",
                         name: "favMusic",
-                        component: () => import('../components/music.vue')
+                        component: () => import('../views/front/music/index.vue')
                     }, {
                         path: "friend",
                         name: "favFriend",
-                        component: () => import('../components/friend.vue')
+                        component: () => import('../views/front/friend/index.vue')
                     }, {
                         path: "collect",
                         name: "favCollect",
-                        component: () => import('../components/collect.vue')
+                        component: () => import('../views/front/collect/index.vue')
                     },
                 ]
             }, {
@@ -66,29 +66,29 @@ const routes: AppRouteRecordRaw[] = [
                 meta: {
                     gradDir: 'to top'   // gradientDirection 渐变方向 由下往上渐变；不写或写 'to bottom' 就是默认由上到下
                 },
-                component: () => import('../components/travel.vue')
+                component: () => import('../views/front/travel/index.vue')
             }, {
                 path: "/message",
                 name: "message",
-                component: () => import('../components/message.vue')
+                component: () => import('../views/front/message/index.vue')
             },
             // {
             //     path: "/friend",
             //     name: "friend",
-            //     component: () => import('../components/friend.vue')
+            //     component: () => import('../views/front/friend/index.vue')
             // },
             {
                 path: "/about",
                 name: "about",
-                component: () => import('../components/about.vue')
+                component: () => import('../views/front/about/index.vue')
             }, {
                 path: "/user",
                 name: "user",
-                component: () => import('../components/user.vue')
+                component: () => import('../views/front/user/index.vue')
             }, {
                 path: "/letter",
                 name: "letter",
-                component: () => import('../components/letter.vue')
+                component: () => import('../views/front/letter/index.vue')
             }
         ]
     },
@@ -96,64 +96,64 @@ const routes: AppRouteRecordRaw[] = [
         path: '/admin',
         redirect: '/admin/main',
         meta: {requiresAuth: true},
-        component: () => import('../components/admin/admin.vue'),
+        component: () => import('../layouts/AdminLayout/index.vue'),
         children: [
             {
                 path: 'welcome',
                 name: 'welcome',
-                component: () => import('../components/admin/welcome.vue')
+                component: () => import('../views/admin/dashboard/welcome.vue')
             },
             {
                 path: 'main',
                 name: 'main',
-                component: () => import('../components/admin/main.vue')
+                component: () => import('../views/admin/dashboard/index.vue')
             }, {
                 path: 'webEdit',
                 name: 'webEdit',
-                component: () => import('../components/admin/webEdit.vue')
+                component: () => import('../views/admin/settings/WebEdit.vue')
             }, {
                 path: 'userList',
                 name: 'userList',
-                component: () => import('../components/admin/userList.vue')
+                component: () => import('../views/admin/user/List.vue')
             }, {
                 path: 'postList',
                 name: 'postList',
-                component: () => import('../components/admin/postList.vue')
+                component: () => import('../views/admin/post/List.vue')
             }, {
                 path: 'postEdit',
                 name: 'postEdit',
-                component: () => import('../components/admin/postEdit.vue')
+                component: () => import('../views/admin/post/Edit.vue')
             }, {
                 path: 'categoryList',
                 name: 'categoryList',
-                component: () => import('../components/admin/categoryList.vue')
+                component: () => import('../views/admin/category/List.vue')
             }, {
                 path: 'commentList',
                 name: 'commentList',
-                component: () => import('../components/admin/commentList.vue')
+                component: () => import('../views/admin/comment/List.vue')
             }, {
                 path: 'treeHoleList',
                 name: 'treeHoleList',
-                component: () => import('../components/admin/danmakuList.vue')
+                component: () => import('../views/admin/danmaku/List.vue')
             }, {
                 path: 'resourceList',
                 name: 'resourceList',
-                component: () => import('../components/admin/resourceList.vue')
+                component: () => import('../views/admin/resource/List.vue')
             }, {
                 path: 'loveList',
                 name: 'loveList',
-                component: () => import('../components/admin/loveList.vue')
+                component: () => import('../views/admin/love/List.vue')
             }, {
                 path: 'resourcePathList',
                 name: 'resourcePathList',
-                component: () => import('../components/admin/resourcePathList.vue')
+                component: () => import('../views/admin/resource/PathList.vue')
             }
         ]
     },
     {
         path: '/verify',
         name: 'verify',
-        component: () => import('../components/admin/verify.vue')
+        component: () => import('../views/admin/login/index.vue')
     }
 ]
 

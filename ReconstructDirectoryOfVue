@@ -1,0 +1,73 @@
+## 二、目标目录结构（必须遵循）
+
+src/
+├── api/                    # 接口
+├── assets/                 # 静态资源
+├── components/             # 全局可复用组件
+│   ├── base/               # 无业务基础 UI
+│   ├── business/           # 业务组件，按域再分
+│   │   ├── auth/
+│   │   ├── comment/
+│   │   ├── article/
+│   │   └── ...
+│   └── media/              # 音频/视频/图片/上传
+├── composables/            # useXxx.ts
+├── layouts/                # 布局壳
+│   ├── AdminLayout/
+│   │   ├── index.vue
+│   │   └── components/
+│   │       ├── Sidebar/
+│   │       │   ├── index.vue
+│   │       │   ├── SidebarItem.vue
+│   │       │   └── SidebarLogo.vue
+│   │       ├── Header/
+│   │       │   ├── index.vue
+│   │       │   ├── HeaderBreadcrumb.vue
+│   │       │   ├── HeaderActions.vue
+│   │       │   └── UserDropdown.vue
+│   │       ├── TagsView/
+│   │       │   ├── index.vue
+│   │       │   └── TagsViewItem.vue
+│   │       └── AppMain.vue
+│   └── FrontLayout/
+│       ├── index.vue
+│       └── components/
+│           ├── Aside.vue
+│           ├── Footer.vue
+│           └── NavSearch.vue
+├── router/
+├── stores/
+├── styles/
+├── utils/
+└── views/                  # 页面，与路由一一对应
+    ├── admin/
+    │   ├── dashboard/index.vue
+    │   ├── post/List.vue
+    │   ├── post/Edit.vue
+    │   ├── user/List.vue
+    │   ├── comment/List.vue
+    │   ├── category/List.vue
+    │   ├── danmaku/List.vue
+    │   ├── love/List.vue
+    │   ├── resource/List.vue
+    │   ├── resource/PathList.vue
+    │   ├── settings/WebEdit.vue
+    │   └── login/index.vue
+    └── front/
+        ├── home/index.vue
+        ├── article/index.vue
+        ├── article/ArticleList.vue
+        ├── user/index.vue
+        ├── message/index.vue
+        ├── music/index.vue
+        ├── travel/index.vue
+        ├── love/index.vue
+        ├── funny/index.vue
+        ├── friend/index.vue
+        ├── letter/index.vue
+        ├── collect/index.vue
+        ├── favorite/index.vue
+        ├── danmaku/index.vue
+        ├── sort/index.vue
+        ├── about/index.vue
+        └── weiYan/index.vue
