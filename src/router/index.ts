@@ -18,7 +18,7 @@ type AppRouteRecordRaw = RouteRecordRaw & {
 const routes: AppRouteRecordRaw[] = [
     {
         path: '/',
-        component: () => import('../views/front/home/index.vue'),
+        component: () => import('../layouts/FrontLayout/index.vue'),
         children: [
             {
                 path: "", // 路径建议使用空字符串，与 path: '/' 组合成根路径
@@ -82,15 +82,16 @@ const routes: AppRouteRecordRaw[] = [
                 name: "about",
                 component: () => import('../views/front/about/index.vue')
             }, {
-                path: "/user",
-                name: "user",
-                component: () => import('../views/front/user/index.vue')
-            }, {
                 path: "/letter",
                 name: "letter",
                 component: () => import('../views/front/letter/index.vue')
             }
         ]
+    },
+    {
+        path: "/user",
+        name: "user",
+        component: () => import('../views/front/user/index.vue')
     },
     {
         path: '/admin',
