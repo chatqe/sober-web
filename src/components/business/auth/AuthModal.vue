@@ -382,10 +382,12 @@ const resetPwdForFgtPwd = async () => {
               </div>
 
               <div class="sign-box__form">
+                <form @submit.prevent="login">
                 <div>
                   <div>
                     <div class="line-form">
                       <input v-model="account" type="text" placeholder="用户名/邮箱"
+                             autocomplete="username"
                              class="line-form-input">
                     </div>
                     <div class="line-form eye-pos" style="margin-top: 20px;">
@@ -421,6 +423,7 @@ const resetPwdForFgtPwd = async () => {
                     </i>
                   </div>
                 </div>
+                </form>
               </div>
             </div>
 
@@ -430,11 +433,12 @@ const resetPwdForFgtPwd = async () => {
                 <div class="sign-box__title">注册</div>
                 <div class="sign-box__button" @click="changeLoginCard">已有账号？立即登录 &gt;</div>
               </div>
+              <form @submit.prevent="register">
               <div>
                 <div>
                   <div class="line-form">
                     <input v-model="username" type="text" maxlength="30" placeholder="用户名"
-                           class="line-form-input">
+                           autocomplete="username" class="line-form-input">
                   </div>
                   <div class="line-form eye-pos" style="margin-top: 20px;">
                     <input v-model="registPwd"
@@ -463,6 +467,7 @@ const resetPwdForFgtPwd = async () => {
                   <i aria-hidden="true"></i> 注册
                 </div>
               </div>
+              </form>
             </div>
 
             <!-- 忘记密码容器 -->
