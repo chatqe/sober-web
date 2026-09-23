@@ -274,8 +274,8 @@ const showAdmire = (): void => {
 const getRecommendArticles = async (): Promise<void> => {
   try {
     const res = await articleApi.getArticleList(pagination.value)
-    if (!$common.isEmpty(res.data)) {
-      recommendArticles.value = res.data.list
+    if (!$common.isEmpty(res)) {
+      recommendArticles.value = res.list
     }
   } catch (error: any) {
     ElMessage({

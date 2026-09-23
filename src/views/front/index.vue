@@ -260,10 +260,10 @@ const handleCurrentChange = (): void => {
 
 const getArticles = async (): Promise<void> => {
   try {
-const response = await articleApi.getArticleList(pagination.value as any)
-    if (!$common.isEmpty((response as any).data)) {
-      articles.value = (response as any).data.list
-      pagination.value.total = (response as any).data.total
+    const response = await articleApi.getArticleList(pagination.value as any)
+    if (!$common.isEmpty(response)) {
+      articles.value = (response as any).list
+      pagination.value.total = (response as any).total
     }
   } catch (error: any) {
     ElMessage({

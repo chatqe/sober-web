@@ -92,8 +92,8 @@ const handleCurrentChange = () => {
 // 监听路由变化
 watch(() => route.query, () => {
   pagination.value = {
-    current: 1,
-    size: 10,
+    pageNum: 1,
+    pageSize: 10,
     total: 0,
     searchKey: "",
     sortId: route.query.sortId,
@@ -149,8 +149,8 @@ const getCategories = async () => {
 const listArticle = (tag) => {
   tagId.value = tag.id
   pagination.value = {
-    current: 1,
-    size: 10,
+    pageNum: 1,
+    pageSize: 10,
     total: 0,
     searchKey: "",
     sortId: route.query.sortId ? parseInt(route.query.sortId) : null,
@@ -165,9 +165,9 @@ const listArticle = (tag) => {
 const getArticles = async () => {
   try {
     const res = await articleApi.getArticleList(pagination.value)
-    if (!$common.isEmpty(res.data)) {
-      articles.value = res.data.list
-      pagination.value.total = res.data.total
+    if (!$common.isEmpty(res)) {
+      articles.value = res.list
+      pagination.value.total = res.total
     }
   } catch (error) {
     ElMessage({
