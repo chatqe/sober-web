@@ -139,10 +139,10 @@ const footerCfg = computed(() => {
 
 let unwatchScrollTop: WatchStopHandle | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  await getWebInfo()
   getBgImg()
   toolStore.changeToolbarStatus({ enter: false, visible: true })
-  getWebInfo()
   getSortInfo()
   getSysConfig()
   uiStore.setMobile(window.innerWidth < 1100)
@@ -169,9 +169,13 @@ watch(() => uiStore.mouseAnimation, (val) => {
 })
 
 function getBgImg(): void {
-  if (webInfoStore.webInfo?.randomCover?.length) {
-    const src = webInfoStore.webInfo.randomCover[Math.floor(Math.random() * webInfoStore.webInfo.randomCover.length)]
-    currBgImg.value = `url(${src})`
+  const covers: string[] = webInfoStore.webInfo?.randomCover?.length
+    ? webInfoStore.webInfo.randomCover
+    : webInfoStore.webInfo?.backgroundImage
+      ? [webInfoStore.webInfo.backgroundImage]
+      : []
+  if (covers.length) {
+    currBgImg.value = `url(${covers[Math.floor(Math.random() * covers.length)]})`
   }
 }
 

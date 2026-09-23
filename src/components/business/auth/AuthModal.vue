@@ -216,6 +216,7 @@ const login = async () => {
       }
       account.value = ""
       loginPwd.value = ""
+      close()
       await router.push({path: '/'})
     }
   } catch (error) {
@@ -275,6 +276,7 @@ const register = async () => {
       registPwd.value = ""
       code.value = ""
       email.value = ""
+      close()
       await router.push({path: '/'})
     }
   } catch (error) {
