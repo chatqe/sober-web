@@ -45,7 +45,7 @@ const allFiles = [
   'src/components/sort.vue',
   'src/components/travel.vue',
   'src/components/user.vue',
-  'src/components/weiYan.vue',
+  'src/components/moment.vue',
   'src/components/weiYan1.vue',
 ]
 

@@ -34,7 +34,7 @@
             <div class="my-menu">🏡 <span>首页</span></div>
           </li>
 
-          <li @click="navigate({ path: '/weiYan' })">
+          <li @click="navigate({ path: '/moment' })">
             <div class="my-menu">🏖️ <span>随笔</span></div>
           </li>
 

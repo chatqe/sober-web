@@ -34,9 +34,9 @@ const routes: AppRouteRecordRaw[] = [
                 name: "article",
                 component: () => import('../views/front/article/index.vue')
             }, {
-                path: "/weiYan",
+                path: "/moment",
                 name: "weiYan",
-                component: () => import('../views/front/weiYan/index.vue')
+                component: () => import('@/views/front/moment/index.vue')
             }, {
                 path: "/love",
                 name: "love",

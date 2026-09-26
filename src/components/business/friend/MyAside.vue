@@ -286,7 +286,7 @@ const getRecommendArticles = async (): Promise<void> => {
 }
 
 const showTip = (): void => {
-  router.push({path: '/weiYan'})
+  router.push({path: '/moment'})
 }
 </script>
 

@@ -36,7 +36,7 @@
           <li @click="navigate({ path: '/' })">
             <div>🏡 <span>首页</span></div>
           </li>
-          <li @click="navigate({ path: '/weiYan' })">
+          <li @click="navigate({ path: '/moment' })">
             <div>🏖️ <span>随笔</span></div>
           </li>
           <li>
