@@ -1,11 +1,13 @@
 <template>
   <div class="moment-page">
-    <!-- 顶部横幅区域 -->
-    <div class="moment-banner">
-      <div class="banner-bg"></div>
-      <div class="banner-content">
-        <!-- 个人信息区 -->
-        <div class="banner-profile">
+    <!-- 背景 Hero：透出 FrontLayout 背景 -->
+    <div class="moment-hero"></div>
+
+    <!-- Moment 内容区：压入 Hero 底部 -->
+    <div class="moment-content">
+      <!-- 个人信息区 + Tab -->
+      <div class="moment-header-card">
+        <div class="moment-profile">
           <el-avatar
             :src="userStore.currentUser?.avatar || defaultAvatar"
             :size="72"
@@ -39,43 +41,43 @@
           >我的动态</span>
         </div>
       </div>
-    </div>
 
-    <!-- 加载中 -->
-    <div v-if="loading && !moments.length" class="moment-loading">
-      <span class="loading-dot"></span>
-      <span class="loading-dot"></span>
-      <span class="loading-dot"></span>
-    </div>
+      <!-- 加载中 -->
+      <div v-if="loading && !moments.length" class="moment-loading">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </div>
 
-    <!-- 空状态 -->
-    <div v-else-if="!loading && !moments.length" class="moment-empty">
-      <div class="empty-icon">📝</div>
-      <p>暂无动态</p>
-      <p class="empty-hint">快来发布第一条动态吧</p>
-    </div>
+      <!-- 空状态 -->
+      <div v-else-if="!loading && !moments.length" class="moment-empty">
+        <div class="empty-icon">📝</div>
+        <p>暂无动态</p>
+        <p class="empty-hint">快来发布第一条动态吧</p>
+      </div>
 
-    <!-- 动态列表 -->
-    <div v-else class="moment-list">
-      <MomentCard
-        v-for="moment in moments"
-        :key="moment.id"
-        :moment="moment"
-        @deleted="handleDeleted"
-        @login="handleLogin"
-      />
-    </div>
+      <!-- 动态列表 -->
+      <div v-else class="moment-list">
+        <MomentCard
+          v-for="moment in moments"
+          :key="moment.id"
+          :moment="moment"
+          @deleted="handleDeleted"
+          @login="handleLogin"
+        />
+      </div>
 
-    <!-- 分页 -->
-    <div v-if="pagination.total > pagination.pageSize" class="moment-pagination">
-      <proPage
-        :current="pagination.pageNum"
-        :size="pagination.pageSize"
-        :total="pagination.total"
-        :button-size="3"
-        :color="$constant?.pageColor || '#ee7752'"
-        @toPage="handlePageChange"
-      />
+      <!-- 分页 -->
+      <div v-if="pagination.total > pagination.pageSize" class="moment-pagination">
+        <proPage
+          :current="pagination.pageNum"
+          :size="pagination.pageSize"
+          :total="pagination.total"
+          :button-size="3"
+          :color="$constant?.pageColor || '#ee7752'"
+          @toPage="handlePageChange"
+        />
+      </div>
     </div>
 
     <!-- 发布按钮（浮动） -->
@@ -227,57 +229,44 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ── 页面容器：不遮挡 FrontLayout 背景 ── */
 .moment-page {
-  max-width: 780px;
-  margin: 0 auto;
-  padding: 0 16px 60px;
-  background: rgba(240, 240, 240, 0.85);
+  width: 100%;
   min-height: calc(100vh - 120px);
 }
 
-/* 顶部横幅 */
-.moment-banner {
+/* ── Hero：纯背景区域，透出 FrontLayout 背景图 ── */
+.moment-hero {
+  height: 30vh;
+  min-height: 220px;
+}
+
+/* ── 内容区：叠层压入 Hero 底部 ── */
+.moment-content {
+  width: min(960px, calc(100% - 32px));
+  margin: -70px auto 0;
   position: relative;
-  margin: 0 0 20px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  z-index: 2;
 }
 
-.banner-bg {
-  height: 140px;
-  background: linear-gradient(135deg, #ee7752 0%, #e73c7e 50%, #23a6d5 100%);
-  opacity: 0.9;
-}
-
-.banner-bg::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-.banner-content {
-  position: relative;
-  padding: 0 20px 16px;
+/* ── Header Card（profile + tabs）── */
+.moment-header-card {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 0 0 12px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
 /* 个人信息区 */
-.banner-profile {
+.moment-profile {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: -36px;
-  margin-bottom: 16px;
+  padding: 20px 24px 16px;
 }
 
 .profile-avatar {
-  border: 4px solid #fff;
+  border: 3px solid #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
 }
@@ -329,13 +318,12 @@ onMounted(() => {
 /* Tabs */
 .moment-tabs {
   display: flex;
-  gap: 0;
   border-top: 1px solid #f0f0f0;
-  padding-top: 12px;
+  padding-top: 0;
 }
 
 .tab-item {
-  padding: 10px 20px;
+  padding: 12px 20px;
   font-size: 14px;
   color: #888;
   cursor: pointer;
@@ -419,6 +407,11 @@ onMounted(() => {
 
 /* 动态列表 */
 .moment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 0;
   animation: list-fade-in 0.3s ease;
 }
 
@@ -476,7 +469,6 @@ onMounted(() => {
   font-size: 13px;
 }
 
-/* Dialog overlay */
 :deep(.moment-publish-dialog .el-dialog) {
   border-radius: 12px;
   overflow: hidden;
@@ -494,5 +486,42 @@ onMounted(() => {
 :deep(.moment-publish-dialog .el-dialog__footer) {
   padding: 12px 20px 16px;
   border-top: 1px solid #f0f0f0;
+}
+
+/* ── 响应式 ── */
+@media (max-width: 768px) {
+  .moment-hero {
+    height: 24vh;
+    min-height: 170px;
+  }
+
+  .moment-content {
+    width: calc(100% - 20px);
+    margin-top: -50px;
+  }
+
+  .moment-profile {
+    padding: 16px 16px 12px;
+  }
+
+  .profile-avatar {
+    --el-avatar-size: 56px;
+  }
+
+  .profile-name {
+    font-size: 16px;
+  }
+
+  .tab-item {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .moment-publish-btn {
+    bottom: 60px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
 }
 </style>
