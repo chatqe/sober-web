@@ -90,12 +90,12 @@ export const saveSort = async (data: CategorySaveReqDTO): Promise<any> => {
 // 更新分类
 export const updateSort = async (data: CategorySaveReqDTO): Promise<any> => {
     if (!data.id) return Promise.reject(new Error('分类ID不能为空'));
-    return _adminCategoryApi.update2(data.id, data);
+    return _adminCategoryApi.update3(data.id, data);
 };
 
 // 删除分类
 export const deleteSort = async (params: { id: number }): Promise<any> => {
-    return _adminCategoryApi.delete4(params.id);
+    return _adminCategoryApi.delete5(params.id);
 };
 
 // ===== 标签（Label）管理 API =====
@@ -108,11 +108,11 @@ export const saveLabel = async (data: TagSaveReqDTO): Promise<any> => {
 // 更新标签
 export const updateLabel = async (data: TagSaveReqDTO): Promise<any> => {
     if (!data.id) return Promise.reject(new Error('标签ID不能为空'));
-    return _adminTagApi.update(data.id, data);
+    return _adminTagApi.update1(data.id, data);
 };
 
 // 删除标签
 export const deleteLabel = async (params: { id: number }): Promise<any> => {
-    return _adminTagApi.delete1(params.id);
+    return _adminTagApi.delete2(params.id);
 };
 
