@@ -47,7 +47,7 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 /src/api/generated/
-src/types/modules/
+/src/types/modules/
 
 # Webpack
 .cache/
@@ -95,5 +95,6 @@ components.d.ts
 node_modules/.vite/
 
 
+/src/types/modules/
 /src/types/modules/
 /src/types/modules/
