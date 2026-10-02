@@ -99,12 +99,12 @@ function getRandomColor() {
 // });
 
 // 获取弹幕数据
-const getTreeHole = async () => {
+const danmakuList = async () => {
   try {
-    const res = await danmakuApi.latest();
+    const res = await danmakuApi.list();
     if (!$common.isEmpty(res.data)) {
       barrageList.value = res.data.map((m: any) => ({
-        id: m.id,
+        id: String(m.createTime || Math.random()),
         avatar: m.avatar,
         msg: m.message,
         time: ~~(Math.random() * 5 + 10)
@@ -118,7 +118,7 @@ const getTreeHole = async () => {
   }
 };
 
-getTreeHole();
+danmakuList();
 
 // 提交消息
 const submitMessage = async () => {
@@ -167,7 +167,7 @@ const submitMessage = async () => {
 
 // 生命周期
 // onMounted(() => {
-//   // getTreeHole();
+//   // danmakuList();
 // });
 </script>
 
