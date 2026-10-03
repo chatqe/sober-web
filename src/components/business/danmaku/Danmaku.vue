@@ -1,57 +1,74 @@
 <template>
-  <div v-if="!$common.isEmpty(danmakuList)" class="shadow-box-mini background-opacity wow danmaku-card">
-    <div style="font-weight: bold;margin-bottom: 10px">🧨最新动态</div>
-    <div class="danmaku-container">
-      <vue-danmaku
-        ref="danmaku"
-        v-model:danmus="danmakuList"
-        :isSuspend="true"
-        :top="5"
-        useSlot
-        loop
-        :speeds="120"
-        :channelWidth="20"
-        :step="2"
-        :randomChannel="true">
-        <template #danmu="{ danmu }">
-          <div class="danmu-item">
-            <img v-if="danmu.avatar" class="danmu-avatar" :src="danmu.avatar" alt=""/>
-            <span>{{ danmu.message }}</span>
-          </div>
-        </template>
-      </vue-danmaku>
+  <div class="shadow-box background-opacity wow new-treehole-box "
+       v-if="!$common.isEmpty(danmakuList)">
+    <div style="font-weight: bold;margin-bottom: 20px">🧨最新树洞</div>
+    <div class="seamless-scroll-container">
+      <div class="seamless-scroll-content">
+        <Vue3SeamlessScroll
+            class="scroll-wrap"
+            :list="danmakuList"
+            :wheel="true"
+            :step="1.5"
+            :v-model="true"
+            :hover="true">
+          <ul class="ui-wrap">
+            <li v-for="(item, i) in danmakuList" :key="i" class="li-item">
+              <div style="display: flex">
+                <el-avatar style="margin-bottom: 10px" :size="36" :src="item.avatar"></el-avatar>
+                <div style="margin-left: 10px;height: 36px;line-height: 36px;overflow: hidden;max-width: 80px">
+                  {{ item.message }}
+                </div>
+              </div>
+            </li>
+          </ul>
+        </Vue3SeamlessScroll>
+      </div>
     </div>
   </div>
 </template>
 
+
 <script setup lang="ts">
 import {inject, onMounted, ref} from 'vue'
 import type {Ref} from 'vue'
-import vueDanmaku from 'vue-danmaku'
+import {ElMessage} from 'element-plus'
+import {Vue3SeamlessScroll} from "vue3-seamless-scroll";
 import {danmakuApi} from '@/api/modules'
 
 interface CommonUtils {
   isEmpty: (value: any) => boolean
+
   [key: string]: any
 }
 
 const $common = inject<CommonUtils>('$common')!
 
+interface ApiResponse {
+  data: any
+
+  [key: string]: any
+}
+
 const danmakuList: Ref<any[]> = ref([])
 
 const getDanmaku = async (): Promise<void> => {
   try {
-    const res = await danmakuApi.latest()
+    const res: ApiResponse = await danmakuApi.latest()
     if (!$common.isEmpty(res.data)) {
-      danmakuList.value = res.data.map((item: any) => ({
-        id: item.id,
-        avatar: item.avatar,
-        message: item.message || '',
-        time: Math.floor(Math.random() * 5 + 10)
-      }))
+      try {
+        danmakuList.value = res.data
+      } catch (error: any) {
+        ElMessage({
+          message: error.message,
+          type: "error"
+        })
+      }
     }
-  } catch (e: any) {
-    danmakuList.value = []
+  } catch (error: any) {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    })
   }
 }
 
@@ -61,43 +78,41 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.danmaku-card {
-  padding: 8px;
-  border-radius: 10px;
-  margin-top: 30px;
-  animation: hideToShow 1s ease-in-out;
-  background: var(--card-bg);
+
+.scroll-wrap {
+  height: 300px;
   overflow: hidden;
 }
 
-.danmaku-container {
-  height: 60px;
+/*重置ul浏览器默认样式*/
+.ui-wrap {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.li-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.new-treehole-box {
+  background: var(--springBg) center center / cover no-repeat;
+  padding: 25px;
+  border-radius: 10px;
+  animation: hideToShow 1s ease-in-out;
+  margin-top: 30px;
+}
+
+/* 无缝滚动容器样式 */
+.seamless-scroll-container {
+  height: 300px;
   overflow: hidden;
   position: relative;
 }
 
-.danmaku {
-  width: 100%;
-  height: 100%;
-}
-
-.danmu-item {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  white-space: nowrap;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--greyFont);
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 50px;
-}
-
-.danmu-item .danmu-avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  margin-right: 6px;
-  object-fit: cover;
+.seamless-scroll-content {
+  will-change: transform;
+  transition: none;
 }
 </style>
