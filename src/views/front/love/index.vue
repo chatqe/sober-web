@@ -607,8 +607,8 @@ const addFamily = async () => {
 
   try {
     const res = await familyApi.getFamily()
-    if (!$common.isEmpty(res.data)) {
-      Object.assign(userLove, res.data)
+    if (!$common.isEmpty(res)) {
+      Object.assign(userLove, res)
     }
   } catch (error) {
     ElMessage({
@@ -649,9 +649,9 @@ const getPhotoTitles = async () => {
 const getAdminFamily = async () => {
   try {
     const res = await familyApi.getAdminFamily()
-    if (!$common.isEmpty(res.data)) {
-      Object.assign(love, res.data)
-      adminLove.value = res.data
+    if (!$common.isEmpty(res)) {
+      Object.assign(love, res)
+      adminLove.value = res
       getLove()
     }
   } catch (error) {
@@ -718,8 +718,8 @@ const changeCard = (newCard) => {
 const getRandomFamily = async () => {
   try {
     const res = await familyApi.listRandomFamily()
-    if (!$common.isEmpty(res.data)) {
-      randomFamily.value = res.data
+    if (!$common.isEmpty(res)) {
+      randomFamily.value = res
     }
   } catch (error) {
     ElMessage({

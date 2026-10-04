@@ -146,11 +146,11 @@ async function listFunny(): Promise<void> {
 async function listResourcePath(): Promise<void> {
   try {
     const res = await webInfoApi.listResourcePath(pagination.value)
-    if (!res.data) return
-    if ($common.isEmpty(res.data.records)) return
+    if (!res) return
+    if ($common.isEmpty(res.list)) return
     funnys.value.forEach(funny => {
       if (funny.classify === pagination.value.classify) {
-        funny.data = res.data.records as FunnyItem[]
+        funny.data = res.list as FunnyItem[]
       }
     })
     pagination.value.classify = ""

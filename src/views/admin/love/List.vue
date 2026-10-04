@@ -148,9 +148,9 @@ const getLoves = async (): Promise<void> => {
     loading.value = true
     const res = await familyApi.listFamily({ query: { ...pagination, status: 1 } as any })
 
-    if (res.data?.list) {
-      loves.value = res.data.list
-      pagination.value.total = res.data.total
+    if (res?.list) {
+      loves.value = res.list
+      pagination.value.total = res.total
     }
   } catch (error: any) {
     ElMessage.error(error.message || '获取数据失败')

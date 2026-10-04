@@ -55,7 +55,7 @@ const pagination = reactive({
 const getDanmakus = async (): Promise<void> => {
   try {
     const res = await danmakuApi.list()
-    const records = res.data?.records ?? []
+    const records = res.data?.list ?? []
     pagination.total = res.data?.total ?? 0
     const start = (pagination.current - 1) * pagination.size
     danmakus.value = records.slice(start, start + pagination.size) as Danmaku[]

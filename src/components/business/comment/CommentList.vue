@@ -239,20 +239,20 @@ function emoji(commentsList: Comment[], flag: boolean): void {
 function getComments(pageData: Pagination, comment: Comment = {id: 0, source: 0, type: '', userId: 0, likeCount: 0, commentContent: '', commentInfo: '', createTime: ''}, isToPage: boolean = false): void {
   commentApi.listComment(pageData)
     .then((res) => {
-      if (!res.data || !res.data.records) return
-      if ($common.isEmpty(res.data) || $common.isEmpty(res.data.records)) return
-      
+      if (!res || !res.records) return
+      if ($common.isEmpty(res) || $common.isEmpty(res.records)) return
+
       if ($common.isEmpty(comment)) {
-        comments.value = res.data.records
-        pageData.total = res.data.total
+        comments.value = res.records
+        pageData.total = res.total
         emoji(comments.value, true)
       } else {
         if (isToPage === false) {
-          comment.childComments = res.data
+          comment.childComments = res
         } else {
-          comment.childComments.total = res.data.total
+          comment.childComments.total = res.total
           if (!comment.childComments.records) comment.childComments.records = []
-          comment.childComments.records = comment.childComments.records.concat(res.data.records)
+          comment.childComments.records = comment.childComments.records.concat(res.records)
         }
         emoji(comment.childComments.records, false)
       }
