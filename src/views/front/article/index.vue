@@ -538,17 +538,17 @@ const getNews = async (): Promise<void> => {
       source: article.value.id
     })
     
-    if (!res.data) {
+    if (!res) {
       return;
     }
-    
-    res.data.records.forEach(c => {
+
+    res.list.forEach(c => {
       c.content = c.content.replace(/\n{2,}/g, '<div style="height: 12px"></div>');
       c.content = c.content.replace(/\n/g, '<br/>');
       c.content = $common.faceReg(c.content);
       c.content = $common.pictureReg(c.content);
     });
-    treeHoleList.value = res.data.records;
+    treeHoleList.value = res.list;
   } catch (error: any) {
     ElMessage({
       message: error.message || '获取消息失败',
@@ -603,8 +603,8 @@ const getArticle = async (passwordVal?: string): Promise<void> => {
   try {
     const res = await articleApi.getArticleById(Number(id.value))
     
-    if (!$common.isEmpty(res.data)) {
-      article.value = res.data;
+    if (!$common.isEmpty(res)) {
+      article.value = res;
       
       // 检查是否点赞
       const checkHasLike = (): void => {
@@ -635,9 +635,9 @@ const getArticle = async (passwordVal?: string): Promise<void> => {
       if (!password.value) {
         localStorage.setItem("article_password_" + id.value, password.value);
       }
-      
+
       showPasswordDialog.value = false;
-      
+
       // 检查是否已订阅
       if (!currentUser.value || !currentUser.value.subscribe) {
         return;

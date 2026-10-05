@@ -243,9 +243,9 @@ const search = () => {
 const getResourcePaths = async () => {
   try {
     const res = await resourceApi.listResourcePath(pagination);
-    if (res.data && Object.keys(res.data).length > 0) {
-      resourcePaths.value = res.data.records;
-      pagination.total = res.data.total;
+    if (res && Object.keys(res).length > 0) {
+      resourcePaths.value = res.list;
+      pagination.total = res.total;
     }
   } catch (error) {
     ElMessage({

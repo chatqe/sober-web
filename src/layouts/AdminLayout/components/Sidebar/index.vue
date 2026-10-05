@@ -63,7 +63,7 @@ const menuItems = computed(() => [
   { icon: EditPen,   index: '/admin/commentList',  title: '评论管理', isAdmin: false },
   { icon: Notebook,  index: '/admin/categoryList', title: '分类管理', isAdmin: true  },
   { icon: Sugar,     index: '/admin/loveList',     title: '表白墙',   isAdmin: true  },
-  { icon: ChatDotRound, index: '/admin/treeHoleList', title: '弹幕管理', isAdmin: true },
+  { icon: ChatDotRound, index: '/admin/danmaku', title: '弹幕管理', isAdmin: true },
   { icon: Paperclip, index: '/admin/resourceList', title: '资源管理', isAdmin: true  },
   { icon: CreditCard, index: '/admin/resourcePathList', title: '资源聚合', isAdmin: true },
   { icon: Setting,   index: '/admin/webEdit',     title: '网站设置', isAdmin: true  },

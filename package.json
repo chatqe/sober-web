@@ -14,7 +14,8 @@
     "api-gen": "node scripts/api-gen.js",
     "api-gen-t": "node scripts/api-gen.js",
     "orval": "orval --config orval.config.ts",
-    "orval:watch": "orval --config orval.config.ts --watch"
+    "orval:watch": "orval --config orval.config.ts --watch",
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^0.0.7",

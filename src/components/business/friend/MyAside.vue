@@ -217,8 +217,8 @@ onMounted(async () => {
   getRecommendArticles()
   try {
     const res = await categoryApi.dict()
-    if (res?.data && Array.isArray(res.data)) {
-      const allValues = res.data.flatMap((item: any) => Object.values(item).map(String))
+    if (res && Array.isArray(res)) {
+      const allValues = res.flatMap((item: any) => Object.values(item).map(String))
       tags.value = [...new Set(allValues)] as string[]
     }
   } catch (e) {

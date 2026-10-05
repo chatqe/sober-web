@@ -62,14 +62,20 @@ http.interceptors.response.use((resp) => {
 });
 
 /**
- * 自定义请求函数
- * 作为 orval 的 mutator 使用，统一处理 API 请求和响应
- *
- * @param config - Axios 请求配置对象
- * @returns 响应数据
+ * 条件类型：从 R<T> 中提取 data 字段的实际类型。
+ * 要求同时存在 code 和 data 才剥壳，防止误伤有 data 字段的业务类型。
  */
-export const handleResponse = <T>(config: AxiosRequestConfig): Promise<T> => {
-    return http.request(config).then(({ data }) => data as T);
+type UnwrapR<T> = T extends { code?: number; data?: infer U } ? NonNullable<U> : T
+
+/**
+ * Orval mutator
+ * - 运行时：剥掉 R 信封，返回业务数据
+ * - 类型上：UnwrapR<T> 把 R<T> 自动推导为 T
+ */
+export const handleResponse = <T>(config: AxiosRequestConfig): Promise<UnwrapR<T>> => {
+    return http.request(config).then(({ data }) => {
+        return (data as { code?: number; data?: UnwrapR<T> })?.data as UnwrapR<T>;
+    });
 };
 
 /**

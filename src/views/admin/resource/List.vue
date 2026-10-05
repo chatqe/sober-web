@@ -173,9 +173,9 @@ const getResources = async (): Promise<void> => {
       });
       return;
     }
-    if (!($common.isEmpty(res.data))) {
-      resources.value = res.data.records;
-      pagination.total = res.data.total;
+    if (!($common.isEmpty(res))) {
+      resources.value = res.list;
+      pagination.total = res.total;
     }
   } catch (error: any) {
     ElMessage({

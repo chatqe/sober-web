@@ -201,9 +201,9 @@ function clickFriend(path: string): void {
 async function getFriends(): Promise<void> {
   try {
     const res = await webApi.listFriend()
-    if (!res.data) return
-    if (!res.data.length) return
-    friendList.value = res.data as FriendData
+    if (!res) return
+    if (!res.length) return
+    friendList.value = res as FriendData
   } catch (error: any) {
     ElMessage.error(error.message)
   }

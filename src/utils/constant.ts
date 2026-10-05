@@ -69,9 +69,9 @@ export const APP_CONSTANTS = {
 
   // 友链页面默认数据
   friendWebName: '青肆博客',
-  friendUrl: 'https://youngwanton.top',
+  friendUrl: 'https://soberup.top',
   friendAvatar: 'https://img.soberup.top/qingsi/static/109951165563896271.jpg',
-  friendIntroduction: '这是一个 Vue2 Vue3 与 SpringBoot 结合的产物～',
+  friendIntroduction: '这是一个 Vue3 与 SpringBoot 结合的产物～',
   friendCover: 'https://img.soberup.top/qingsi/static/4d8c408eb91af725a36.jpg',
   friendBG: 'http://img.soberup.top/backgroundImg/12125413457542341.jpg',
   friendLetterTop: 'https://cdn.cbd.int/hexo-butterfly-envelope/lib/before.png',
