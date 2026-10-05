@@ -23,8 +23,8 @@ export const useSortInfoStore = defineStore('sortInfo', () => {
     const loadHomeStats = async (): Promise<void> => {
         try {
             const res = await categoryApi.homeStats()
-            if (res && res.data && res.data.categories) {
-                sortInfo.value = res.data.categories
+            if (res && res.categories) {
+                sortInfo.value = res.categories
                     .map((c) => ({
                         id: c.id ?? 0,
                         name: c.name ?? '',
@@ -45,8 +45,8 @@ export const useSortInfoStore = defineStore('sortInfo', () => {
     const loadListNavBar = async (): Promise<void> => {
         try {
             const res = await categoryApi.listNavBar()
-            if (res && res.data) {
-                listNavBar.value = res.data
+            if (res) {
+                listNavBar.value = res
                     .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
             }
         } catch (e) {
@@ -57,8 +57,8 @@ export const useSortInfoStore = defineStore('sortInfo', () => {
     const loadTags = async (): Promise<void> => {
         try {
             const res = await categoryApi.dict()
-            if (res && res.data && Array.isArray(res.data)) {
-                const allValues = res.data.flatMap((item: any) => Object.values(item).map(String))
+            if (res && Array.isArray(res)) {
+                const allValues = res.flatMap((item: any) => Object.values(item).map(String))
                 tags.value = [...new Set(allValues.map(v => String(v)))]
             }
         } catch (e) {

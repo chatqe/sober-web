@@ -102,8 +102,8 @@ function getRandomColor() {
 const danmakuList = async () => {
   try {
     const res = await danmakuApi.list();
-    if (!$common.isEmpty(res.data)) {
-      barrageList.value = res.data.map((m: any) => ({
+    if (!$common.isEmpty(res)) {
+      barrageList.value = res.map((m: any) => ({
         id: String(m.createTime || Math.random()),
         avatar: m.avatar,
         msg: m.message,
@@ -141,11 +141,11 @@ const submitMessage = async () => {
 
   try {
     const res = await danmakuApi.save(danmakuMsg);
-    if (!$common.isEmpty(res.data)) {
+    if (!$common.isEmpty(res)) {
       barrageList.value.push({
-        id: res.data.id,
-        avatar: res.data.avatar,
-        msg: res.data.message,
+        id: res.id,
+        avatar: res.avatar,
+        msg: res.message,
         time: Math.floor(Math.random() * 5 + 10)
       });
       ElMessage({

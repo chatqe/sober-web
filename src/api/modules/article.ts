@@ -19,6 +19,7 @@ import type {
 import { getArticle } from '../generated/article';
 import { getAdminArticle } from '../generated/admin-article';
 import type { ListCategoryArticleResult } from '../generated/article';
+import type { AdminArticlePageRespVO } from '../../types/modules/adminArticlePageRespVO';
 
 
 
@@ -54,9 +55,9 @@ export const listAdminArticle = async (params: {
   cateId?: number;
   tagId?: number;
   recommend?: boolean;
-}): Promise<{ list: any[]; total: number }> => {
+}): Promise<AdminArticlePageRespVO> => {
   const res = await getAdminArticle().pageList(params);
-  return res.data;
+  return res;
 };
 
 /**

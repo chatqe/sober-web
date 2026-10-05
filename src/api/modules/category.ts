@@ -23,11 +23,11 @@ export const getSortAndLabel = async (): Promise<SortAndLabelResponse> => {
         _categoryApi.dict1(),
         _tagApi.dict()
     ]);
-    const sorts: CategoryInfo[] = (sortRes.data || []).map((item: any) => ({
+    const sorts: CategoryInfo[] = (sortRes || []).map((item: any) => ({
         id: Number(item.value),
         name: item.label
     }));
-    const labels: TagInfo[] = (labelRes.data || []).map((item: any) => ({
+    const labels: TagInfo[] = (labelRes || []).map((item: any) => ({
         id: Number(item.value),
         name: item.label,
         categoryId: item.cateId

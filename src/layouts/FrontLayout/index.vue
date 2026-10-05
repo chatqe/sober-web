@@ -217,9 +217,9 @@ function toTop(): void {
 async function getWebInfo(): Promise<void> {
   try {
     const res = await webApi.getWebInfo()
-    if (res && res.data && !$common.isEmpty(res.data)) {
-      webInfoStore.loadWebInfo(res.data as any)
-      localStorage.setItem('defaultStoreType', res.data.defaultStoreType || '')
+    if (res && !$common.isEmpty(res)) {
+      webInfoStore.loadWebInfo(res as any)
+      localStorage.setItem('defaultStoreType', res.defaultStoreType || '')
     }
   } catch (error: any) {
     console.error('[getWebInfo error]', error)
@@ -230,8 +230,8 @@ async function getWebInfo(): Promise<void> {
 async function getSysConfig(): Promise<void> {
   try {
     const res = await systemApi.getSysConfig()
-    if (res && res.data && !$common.isEmpty(res.data)) {
-      sysConfigStore.loadSysConfig(res.data)
+    if (res && !$common.isEmpty(res)) {
+      sysConfigStore.loadSysConfig(res as any)
     }
   } catch (error: any) {
     console.error('[getSysConfig error]', error)

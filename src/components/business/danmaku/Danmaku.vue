@@ -53,10 +53,10 @@ const danmakuList: Ref<any[]> = ref([])
 
 const getDanmaku = async (): Promise<void> => {
   try {
-    const res: ApiResponse = await danmakuApi.latest()
-    if (!$common.isEmpty(res.data)) {
+    const res = await danmakuApi.latest()
+    if (!$common.isEmpty(res)) {
       try {
-        danmakuList.value = res.data
+        danmakuList.value = res
       } catch (error: any) {
         ElMessage({
           message: error.message,
