@@ -54,11 +54,10 @@ const pagination = reactive({
 
 const getDanmakus = async (): Promise<void> => {
   try {
-    const res = await danmakuApi.list()
-    const records = res.data?.list ?? []
-    pagination.total = res.data?.total ?? 0
-    const start = (pagination.current - 1) * pagination.size
-    danmakus.value = records.slice(start, start + pagination.size) as Danmaku[]
+    const res = await danmakuApi.adminList({ pageNum: pagination.current, pageSize: pagination.size })
+    const records = res.list ?? []
+    pagination.total = res.total ?? 0
+    danmakus.value = records as Danmaku[]
   } catch (error: any) {
     ElMessage.error(error.message || '获取弹幕列表失败')
   }
