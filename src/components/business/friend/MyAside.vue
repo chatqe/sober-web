@@ -142,6 +142,7 @@ import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import {articleApi, categoryApi} from '@/api/index.js'
 import Danmaku from "../danmaku/Danmaku.vue"
 import TagCloud from 'TagCloud'
+import type { ArticleDetail } from '@/api/types'
 
 // 定义注入的类型
 interface CommonUtils {
@@ -161,14 +162,6 @@ interface Pagination {
   recommendStatus: boolean
 }
 
-interface Article {
-  id: number
-  articleTitle: string
-  articleCover?: string
-  username: string
-  createTime: string
-  [key: string]: any
-}
 
 interface SortItem {
   id: number
@@ -204,7 +197,7 @@ const pagination: Ref<Pagination> = ref({
   size: 5,
   recommendStatus: true
 })
-const recommendArticles: Ref<Article[]> = ref([])
+const recommendArticles: Ref<ArticleDetail[]> = ref([])
 const admires: Ref<any[]> = ref([])
 const showAdmireDialog: Ref<boolean> = ref(false)
 const articleSearch: Ref<string> = ref("")

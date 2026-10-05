@@ -105,6 +105,29 @@
 - **影响**：git status 噪音，干扰真实变更识别
 - **建议**：加入 `.gitignore` 或清理（需单独决策）
 
+### 9. Danmaku.vue vue3-seamless-scroll as any 断言
+
+- **现象**：`src/components/business/danmaku/Danmaku.vue` 中 `<Vue3SeamlessScroll>` 的 5 个 props（`list`/`wheel`/`step`/`v-model`/`hover`）使用了 `as any` 类型断言
+- **根因**：`vue3-seamless-scroll@3.0.2` 的 `.d.ts` 将 props 声明为 `ComputedGetter<T>`（函数），但组件内部直接读值（Vue 3 响应式系统自动 unref），类型声明与实际运行时不符
+- **尝试过的方案**：
+  - `.d.ts` declare module 覆盖 → 被 `skipLibCheck: true` + bundler moduleResolution 忽略，未生效
+  - `computed()` 包装 props → 类型变为 `ComputedRef<T>`，仍不匹配
+  - `@ts-expect-error` 行内注释 → Vue SFC 模板中 `//` 被解析为非法字符（Illegal '/' in tags），导致 build 失败
+  - 最终方案：在 5 个 prop 上各加 `as any` 断言
+- **影响**：不影响运行时行为；仅 TS 类型层面妥协
+- **建议**：升级 `vue3-seamless-scroll` 到修复类型声明的版本，或在本地维护一份正确的类型定义文件
+- **涉及文件**：`src/components/business/danmaku/Danmaku.vue:18-22`
+- **优先级**：低
+
+### 10. 后端返回的 id 类字段为字符串而非数字
+
+- **现象**：`getArticleById` 接口返回的 `id`、`userId`、`categoryId`、`tagId` 字段均为字符串（如 `"1"`），而 `ArticleDetail` / `ArticleVO` 类型声明为 `number`（或 `number | undefined`）
+- **影响**：前端若用 `===` 比较数字会失败（`"1" === 1` → false）；若用于算术运算会得到 `NaN`
+- **涉及文件**：`src/views/front/article/index.vue:144,188`（模板中 `article.id`、`article.userId` 直接传入 prop）
+- **验证结果**：chrome-devtools 截图显示文章详情页正常渲染，无 `undefined` 字样；JS 弱类型自动转换使当前功能不受影响，但类型层面存在隐患
+- **建议**：后端修正 Swagger 定义（`format: int64`），前端在 API 层统一做类型转换；或更新 `ArticleDetail` 类型为 `id?: string | number`
+- **优先级**：中
+
 ---
 
 ## 已解决（本次重构）

@@ -329,6 +329,7 @@ const videoPlayer = defineAsyncComponent(() => import('../../../components/media
 
 // 导入类型
 import type { CommonUtils, AppConstants, Article, Sort, Label, WeiYan } from '@/types'
+import type { ArticleDetail } from '@/api/types'
 
 // 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!
@@ -346,7 +347,7 @@ const webInfo = computed(() => webInfoStore.webInfo)
 // 响应式数据
 const id = ref<string | string[]>(route.query.id as string | string[])
 const subscribe = ref<boolean>(false)
-const article = ref<Article>({} as Article)
+const article = ref<ArticleDetail | null>(null)
 const articleContentHtml = ref<string>("")
 const treeHoleList = ref<WeiYan[]>([])
 const weiYanDialogVisible = ref<boolean>(false)
@@ -513,12 +514,12 @@ const submitWeiYan = async (content: string): Promise<void> => {
   let weiYan: WeiYan = {
     content: content,
     createTime: newsTime.value,
-    source: article.value.id
+    source: article.value?.id ?? 0
   }
 
   try {
     await weiYanApi.saveWeiYan(weiYan)
-    
+
     weiYanDialogVisible.value = false;
     newsTime.value = "";
     getNews();
@@ -535,7 +536,7 @@ const getNews = async (): Promise<void> => {
     const res = await weiYanApi.listWeiYan({
       current: 1,
       size: 9999,
-      source: article.value.id
+      source: article.value?.id ?? 0
     })
     
     if (!res) {
@@ -622,7 +623,7 @@ const getArticle = async (passwordVal?: string): Promise<void> => {
         // 使用MdEditor时，imgShow直接针对整个预览区域
         $common.imgShow(".md-editor-preview img");
         // 对于MdEditor，我们需要获取预览区域的DOM元素
-        const previewElement = document.querySelector(`#article-editor-${article.value.id}-preview`);
+        const previewElement = document.querySelector(`#article-editor-${article.value?.id ?? 0}-preview`);
         if (previewElement) {
           // 将ref设置为预览元素，以便后续函数使用
           entryContentRef.value = previewElement as HTMLElement;

@@ -129,7 +129,7 @@
   }
   
   // 动态导入组件
-  const proButton = defineAsyncComponent(() => import("../common/proButton.vue"))
+  const proButton = defineAsyncComponent(() => import("../../base/ProButton.vue"))
   
   // 注入全局属性
   const $common = inject<CommonUtils>('$common')!
