@@ -133,8 +133,8 @@ const routes: AppRouteRecordRaw[] = [
                 name: 'commentList',
                 component: () => import('../views/admin/comment/List.vue')
             }, {
-                path: 'treeHoleList',
-                name: 'treeHoleList',
+                path: 'danmaku',
+                name: 'danmaku',
                 component: () => import('../views/admin/danmaku/List.vue')
             }, {
                 path: 'resourceList',
