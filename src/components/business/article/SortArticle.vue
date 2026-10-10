@@ -94,7 +94,7 @@
           </span>
         </div>
         <!-- 内容 -->
-<!--        <div class="recent-post-desc">-->
+<!--        <div class="recent-article-desc">-->
 <!--          {{ article.articleContent }}-->
 <!--        </div>-->
         <!-- 分类 标签 -->

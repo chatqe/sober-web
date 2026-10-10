@@ -1,25 +1,27 @@
 <template>
   <div class="page-container">
     <div class="page-card">
-      <div class="section-header">
-        <el-icon size="16"><Document /></el-icon>
-        <span>文章管理</span>
-      </div>
       <div class="toolbar">
-        <el-select v-model="pagination.recommendStatus" placeholder="是否推荐" class="filter-select">
-          <el-option key="1" label="是" :value="true"></el-option>
-          <el-option key="2" label="否" :value="false"></el-option>
-        </el-select>
-        <el-select v-model="pagination.cateId" placeholder="分类" class="filter-select">
-          <el-option v-for="item in sorts" :key="item.id" :label="item.categoryName" :value="item.id" />
-        </el-select>
-        <el-select v-model="pagination.tagId" placeholder="标签" class="filter-select">
-          <el-option v-for="item in labelsTemp" :key="item.id" :label="item.tagName" :value="item.id" />
-        </el-select>
-        <el-input v-model="pagination.titleKey" placeholder="文章标题" class="filter-input" clearable />
-        <el-button type="primary" @click="searchArticles()">搜索</el-button>
-        <el-button @click="clearSearch()">清除</el-button>
-        <el-button type="primary" @click="$router.push({ path: '/admin/postEdit' })">新增文章</el-button>
+        <div class="toolbar-row">
+          <el-select v-model="pagination.cateId" placeholder="分类" class="filter-select">
+            <el-option v-for="item in sorts" :key="item.id" :label="item.categoryName" :value="item.id" />
+          </el-select>
+          <el-select v-model="pagination.tagId" placeholder="标签" class="filter-select">
+            <el-option v-for="item in labelsTemp" :key="item.id" :label="item.tagName" :value="item.id" />
+          </el-select>
+          <el-select v-model="pagination.recommendStatus" placeholder="是否推荐" class="filter-select">
+            <el-option key="1" label="是" :value="true"></el-option>
+            <el-option key="2" label="否" :value="false"></el-option>
+          </el-select>
+          <el-input v-model="pagination.titleKey" placeholder="文章标题" class="filter-input" clearable>
+            <template #prefix><el-icon size="14"><Document /></el-icon></template>
+          </el-input>
+          <el-button type="primary" @click="searchArticles()">搜索</el-button>
+          <el-button @click="clearSearch()">清除</el-button>
+        </div>
+        <div class="toolbar-row">
+          <el-button type="primary" @click="$router.push({ path: '/admin/article/edit' })">新增文章</el-button>
+        </div>
       </div>
       <el-table :data="articles" border class="table" stripe header-cell-class-name="table-header">
         <el-table-column prop="id" label="ID" width="55" align="center" />
@@ -312,7 +314,7 @@ const handleDelete = async (item: Article): Promise<void> => {
 
 // 编辑文章
 const handleEdit = (item: Article): void => {
-  router.push({ path: '/admin/postEdit', query: { id: item.id } })
+  router.push({ path: '/admin/article/edit', query: { id: item.id } })
 }
 
 // 组件挂载时获取数据
@@ -331,22 +333,16 @@ onMounted((): void => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1d2e;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
 .toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.toolbar-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 .filter-select { width: 120px; }

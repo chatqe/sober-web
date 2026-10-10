@@ -7,7 +7,7 @@
  * @since 2026-08-15
  *
  * API 路径约定：
- * - Path A（手写 modules/*.ts 用 request.get/post）：response interceptor 已解包，
+ * - Path A（手写 modules/*.ts 用 request.get/article）：response interceptor 已解包，
  *   返回值即业务类型 T，直接访问 res.xxx，不需要 res.data。
  * - Path B（Orval 生成代码，通过 responseHandler.ts handleResponse）：
  *   已同步解包，返回 R*VO 时剥除信封，直接返回 T。

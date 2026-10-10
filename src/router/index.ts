@@ -117,13 +117,13 @@ const routes: AppRouteRecordRaw[] = [
                 name: 'userList',
                 component: () => import('../views/admin/user/List.vue')
             }, {
-                path: 'postList',
-                name: 'postList',
-                component: () => import('../views/admin/post/List.vue')
+                path: 'article/list',
+                name: 'articleList',
+                component: () => import('@/views/admin/article/List.vue')
             }, {
-                path: 'postEdit',
-                name: 'postEdit',
-                component: () => import('../views/admin/post/Edit.vue')
+                path: 'article/edit',
+                name: 'articleEdit',
+                component: () => import('@/views/admin/article/Edit.vue')
             }, {
                 path: 'categoryList',
                 name: 'categoryList',
@@ -148,6 +148,10 @@ const routes: AppRouteRecordRaw[] = [
                 path: 'resourcePathList',
                 name: 'resourcePathList',
                 component: () => import('../views/admin/resource/PathList.vue')
+            }, {
+                path: 'tag/list',
+                name: 'tagList',
+                component: () => import('../views/admin/tag/List.vue')
             }
         ]
     },

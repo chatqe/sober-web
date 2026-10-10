@@ -321,7 +321,7 @@ const saveArticle = async (value) => {
       message: "保存成功！",
       type: "success"
     });
-    router.push({path: '/postList'});
+    router.push({path: '/article/list'});
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage({
@@ -352,7 +352,7 @@ const updateArticle = async (value) => {
       message: "保存成功！",
       type: "success"
     });
-    router.push({path: '/postList'});
+    router.push({path: '/article/list'});
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage({
