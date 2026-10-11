@@ -1,10 +1,6 @@
 <template>
   <div class="page-container">
     <div class="page-card">
-      <div class="section-header">
-        <el-icon size="16"><ChatDotRound /></el-icon>
-        <span>评论管理</span>
-      </div>
       <div class="toolbar">
         <el-select v-if="isAdmin" v-model="pagination.commentType" placeholder="评论类型" class="filter-select">
           <el-option label="文章评论" value="article"/>
@@ -42,7 +38,7 @@
 import { ref, onMounted, inject, computed } from 'vue'
 import type { Ref } from 'vue'
 import {useAuthStore, useUserStore} from '@/stores'
-import { ChatDotRound } from '@element-plus/icons-vue'
+
 import {ElMessage, ElMessageBox} from "element-plus";
 import {commentApi} from "@/api/index.js";
 
@@ -186,12 +182,6 @@ const handleDelete = async (item: Comment): Promise<void> => {
   padding: 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
-}
-.section-header {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 15px; font-weight: 600; color: #1a1d2e;
-  margin-bottom: 16px; padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
 }
 .toolbar {
   display: flex; align-items: center; gap: 10px;

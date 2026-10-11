@@ -64,7 +64,7 @@ const menuItems = computed(() =>
       { index: '/admin/article/list', title: '文章列表' },
       { index: '/admin/article/edit', title: '文章编辑' },
     ]},
-    { icon: EditPen,       index: '/admin/commentList',      title: '评论管理', isAdmin: false },
+    { icon: EditPen,       index: '/admin/comment/list',      title: '评论管理', isAdmin: false },
     { icon: Notebook,      index: '/admin/categoryList',     title: '分类管理', isAdmin: true  },
     { icon: Sugar,         index: '/admin/loveList',         title: '表白墙',   isAdmin: true  },
     { icon: ChatDotRound,  index: '/admin/danmaku',          title: '弹幕管理', isAdmin: true  },

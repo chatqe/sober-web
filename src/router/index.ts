@@ -129,7 +129,7 @@ const routes: AppRouteRecordRaw[] = [
                 name: 'categoryList',
                 component: () => import('../views/admin/category/List.vue')
             }, {
-                path: 'commentList',
+                path: 'comment/list',
                 name: 'commentList',
                 component: () => import('../views/admin/comment/List.vue')
             }, {
