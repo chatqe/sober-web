@@ -2,6 +2,7 @@
   <div class="index-container">
     <!-- 导航栏 -->
     <NavBar />
+    <div class="navbar-placeholder"></div>
 
     <div id="main-container">
       <router-view></router-view>
@@ -254,6 +255,10 @@ async function getSortInfo(): Promise<void> {
 </script>
 
 <style scoped>
+.navbar-placeholder {
+  height: 60px;
+}
+
 .index-container {
   min-height: 100vh;
   background-image: v-bind(currBgImg);

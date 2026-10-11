@@ -191,7 +191,6 @@ onMounted(async () => {
 <style scoped>
 .sort-container {
   /*background: var(--background);*/
-  padding-top: 40px;
   display: flex; /* 解决margin折叠问题*/
   flex-direction: column;
 }
