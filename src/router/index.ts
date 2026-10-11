@@ -152,6 +152,10 @@ const routes: AppRouteRecordRaw[] = [
                 path: 'tag/list',
                 name: 'tagList',
                 component: () => import('../views/admin/tag/List.vue')
+            }, {
+                path: 'message/list',
+                name: 'messageList',
+                component: () => import('../views/admin/message/List.vue')
             }
         ]
     },

@@ -73,6 +73,7 @@ const menuItems = computed(() =>
     { icon: CollectionTag, index: '/admin/tag/list',         title: '标签管理', isAdmin: true  },
     { icon: Setting,       index: '/admin/webEdit',          title: '网站设置', isAdmin: true  },
     { icon: User,          index: '/admin/user/list',         title: '用户管理', isAdmin: true  },
+    { icon: CollectionTag, index: '/admin/message/list',      title: '留言管理', isAdmin: true  },
   ] as any[]).filter(item => isAdmin.value || !item.isAdmin)
 )
 
