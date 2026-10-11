@@ -133,7 +133,7 @@ const routes: AppRouteRecordRaw[] = [
                 name: 'commentList',
                 component: () => import('../views/admin/comment/List.vue')
             }, {
-                path: 'danmaku',
+                path: 'danmaku/list',
                 name: 'danmaku',
                 component: () => import('../views/admin/danmaku/List.vue')
             }, {

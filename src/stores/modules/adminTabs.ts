@@ -18,7 +18,7 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   '/admin/category/list': '分类管理',
   '/admin/tag/list': '标签管理',
   '/admin/comment/list': '评论管理',
-  '/admin/danmaku': '弹幕管理',
+  '/admin/danmaku/list': '弹幕管理',
   '/admin/resourceList': '资源管理',
   '/admin/resourcePathList': '资源聚合',
   '/admin/loveList': '表白墙',
