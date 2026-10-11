@@ -80,8 +80,12 @@
             </template>
           </el-dropdown>
 
+          <li @click="navigate({ path: '/danmaku' })">
+            <div class="my-menu">📪 <span>弹幕</span></div>
+          </li>
+
           <li @click="navigate({ path: '/message' })">
-            <div class="my-menu">📪 <span>留言</span></div>
+            <div class="my-menu">💬 <span>留言</span></div>
           </li>
 
           <li v-if="adminLogin" @click="goAdmin({ path: '/admin' })">

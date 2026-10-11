@@ -1,253 +1,642 @@
 <template>
-  <div>
-    <div><!--  :src="randomCover" -->
-      <el-image style="animation: header-effect 2s"
-                class="background-image"
-                v-once
-                lazy
+  <div class="message-page">
+    <!-- 顶部标题区域 -->
+    <div class="message-header">
+      <div class="message-header-inner">
+        <h1 class="message-title">留言板</h1>
+        <p class="message-desc">说出你的心里话，我会认真看的~</p>
+      </div>
+    </div>
 
-                fit="cover">
-        <template #error>
-          <div class="image-slot background-image-error"></div>
-        </template>
-      </el-image>
-      <!-- 输入框 -->
-      <div class="message-in" style="text-align: center">
-        <h2 class="message-title">树洞</h2>
-        <div>
-          <input class="message-input"
-                 type="text"
-                 style="outline: none;width: 70%"
-                 placeholder="留下点什么啦~"
-                 v-model="messageContent"
-                 @click="show = true"
-                 maxlength="60"/>
-          <button v-show="show"
-                  style="margin-left: 12px;cursor: pointer;width: 20%"
-                  @click="submitMessage"
-                  class="message-input">发射
-          </button>
+    <!-- 留言列表区域 -->
+    <div class="message-list">
+      <!-- 空状态 -->
+      <div v-if="comments.length === 0" class="message-empty">
+        <span>还没有留言，来做第一个留言的人吧~</span>
+      </div>
+
+      <!-- 留言卡片列表 -->
+      <div v-for="(item, index) in comments" :key="index" class="message-card">
+        <!-- 卡片头部 -->
+        <div class="message-card-header">
+          <el-avatar :size="40" :src="item.avatar" class="message-avatar"/>
+          <div class="message-card-info">
+            <span class="message-username">{{ item.username }}</span>
+            <span class="message-master-tag" v-if="item.userId === masterUserId">楼主</span>
+            <span class="message-time">{{ $common.getDateDiff(item.createTime) }}</span>
+          </div>
+          <div class="message-card-actions">
+            <span class="message-reply-btn" @click="openReplyDialog(item)">回复</span>
+          </div>
+        </div>
+
+        <!-- 留言内容 -->
+        <div class="message-card-content" v-html="item.commentContent"></div>
+
+        <!-- 子回复列表 -->
+        <div v-if="item.childComments && item.childComments.records && item.childComments.records.length > 0" class="message-replies">
+          <div v-for="(reply, i) in item.childComments.records" :key="i" class="message-reply">
+            <el-avatar :size="32" :src="reply.avatar" class="message-reply-avatar"/>
+            <div class="message-reply-content">
+              <div class="message-reply-header">
+                <span class="message-reply-username">{{ reply.username }}</span>
+                <span class="message-reply-master-tag" v-if="reply.userId === masterUserId">楼主</span>
+                <span class="message-reply-time">{{ $common.getDateDiff(reply.createTime) }}</span>
+              </div>
+              <div class="message-reply-text">
+                <template v-if="reply.parentCommentId !== item.id && reply.parentUserId !== reply.userId">
+                  <span class="message-reply-to">@{{ reply.parentUsername }} </span>:
+                </template>
+                <span v-html="reply.commentContent"></span>
+              </div>
+              <span class="message-reply-btn" @click="openReplyDialog(reply, item)">回复</span>
+            </div>
+          </div>
+          <!-- 展开更多回复 -->
+          <div v-if="item.childComments.records.length < (item.childComments.total || 0)" class="message-expand" @click="expandReply(item)">
+            展开 {{ item.childComments.total - item.childComments.records.length }} 条回复
+          </div>
+        </div>
+
+        <!-- 分页 -->
+        <proPage
+          v-if="item.childComments && item.childComments.total > 5"
+          :current="item.childComments.current || 1"
+          :size="5"
+          :total="item.childComments.total"
+          :buttonSize="3"
+          :color="$constant.commentPageColor"
+          @toPage="(page: number) => childPageChange(item, page)"
+        />
+      </div>
+
+      <!-- 总分页 -->
+      <proPage
+        v-if="pagination.total > pagination.size"
+        :current="pagination.current"
+        :size="pagination.size"
+        :total="pagination.total"
+        :buttonSize="6"
+        :color="$constant.commentPageColor"
+        @toPage="toPage"
+      />
+    </div>
+
+    <!-- 留言输入区域 -->
+    <div class="message-input-area">
+      <div class="message-input-box">
+        <div class="message-input-header">
+          <span class="message-input-title">💬 说点什么吧</span>
+          <span class="message-total">{{ pagination.total }} 条留言</span>
+        </div>
+        <textarea
+          v-model="commentContent"
+          class="message-textarea"
+          placeholder="写下你的留言..."
+          maxlength="1000"
+        ></textarea>
+        <div class="message-input-footer">
+          <div class="message-input-tools">
+            <span class="message-emoji-btn" @click="showEmoji = !showEmoji">😊</span>
+          </div>
+          <button class="message-submit-btn" @click="submitComment">发布留言</button>
+        </div>
+        <!-- 表情选择 -->
+        <div v-if="showEmoji" class="message-emoji-panel">
+          <Emoji @addEmoji="addEmoji" :showEmoji="showEmoji"/>
         </div>
       </div>
-      <!-- 弹幕 -->
-      <div class="danmaku-container">
-        <vue-danmaku class="danmaku"
-                     ref="danmaku"
-                     v-model:danmus="barrageList"
-                     :isSuspend="true"
-                     :top="6" useSlot loop
-                     :speeds="110"
-                     :randomChannel="true">
-          <template #danmu="{  danmu }">
-            <div class="danmu-item" :style="{ color: getRandomColor() }">
-              <img class="img" :src="danmu.avatar" alt=""/>
-              <span style="margin-right: 5px;">{{ danmu.msg }}</span>
-            </div>
-          </template>
-        </vue-danmaku>
-      </div>
     </div>
-    <div class="comment-wrap">
-      <div class="comment-content">
-        <comment :source="source" :type="'message'" :userId="userId"></comment>
+
+    <!-- 回复弹窗 -->
+    <el-dialog
+      v-model="replyDialogVisible"
+      title="回复留言"
+      width="400px"
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
+      <div class="reply-dialog-content">
+        <div v-if="replyTarget" class="reply-target">
+          <span>回复 @{{ replyTarget.username }}：</span>
+        </div>
+        <textarea
+          v-model="replyContent"
+          class="reply-textarea"
+          placeholder="写下你的回复..."
+          maxlength="500"
+        ></textarea>
       </div>
-      <!--<myFooter></myFooter>-->
-    </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="replyDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitReply">发送</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, defineAsyncComponent, inject, onMounted, ref} from 'vue';
-import {useUserStore, useWebInfoStore} from '@/stores';
-import {ElMessage} from 'element-plus';
-import vueDanmaku from 'vue-danmaku'
-import {danmakuApi} from '@/api/modules';
-import type {CommonUtils} from '@/types'
+import { ref, reactive, onMounted, inject, defineAsyncComponent } from 'vue'
+import { ElMessage } from 'element-plus'
+import { commentApi } from '@/api/modules'
+import type { CommonUtils, AppConstants } from '@/types'
+import proPage from '@/components/base/ProPage.vue'
 
-// 获取注入的全局属性
 const $common = inject<CommonUtils>('$common')!
+const $constant = inject<AppConstants>('$constant')!
 
-// 异步导入组件
-const comment = defineAsyncComponent(() => import('@/components/business/comment/CommentList.vue'))
-const myFooter = defineAsyncComponent(() => import('@/components/business/MyFooter.vue'))
+const Emoji = defineAsyncComponent(() => import('@/components/business/comment/Emoji.vue'))
 
-// 响应式数据
-const show = ref(false);
-const messageContent = ref("");
-const barrageList = ref([]);
-const source = ref(1);
-const userId = ref(0);
+// 配置
+const SOURCE_ID = 0  // 留言板专属 bizId
+const COMMENT_TYPE = 2  // MESSAGE = 2 (树洞留言)
 
-// 状态管理
-const userStore = useUserStore();
-const webInfoStore = useWebInfoStore();
+// 状态
+const comments = ref<any[]>([])
+const commentContent = ref('')
+const showEmoji = ref(false)
+const replyDialogVisible = ref(false)
+const replyContent = ref('')
+const replyTarget = ref<any>(null)
+const floorComment = ref<any>(null)
 
-const colorList = ref(['rgb(204,255,255)', 'white', 'rgb(204,255,204)', 'white', 'rgb(0,255,255)', 'white', 'rgb(255,204,255)', 'pink'],)
+// 获取当前用户ID（楼主人）
+const masterUserId = ref<number>(0)
 
-// 生成随机颜色的函数
-function getRandomColor() {
-  return colorList.value[Math.floor(Math.random() * 8)]
+// 分页
+const pagination = reactive({
+  current: 1,
+  size: 10,
+  total: 0,
+  keyword: ''
+})
+
+// 加载留言列表
+const loadComments = async () => {
+  try {
+    const res = await commentApi.listComment({
+      pageNum: pagination.current,
+      pageSize: pagination.size,
+      bizId: SOURCE_ID,
+      commentType: String(COMMENT_TYPE),
+      order: 'createTime',
+      desc: true
+    })
+    if (res) {
+      comments.value = res.records || []
+      pagination.total = res.total || 0
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取留言失败')
+  }
 }
 
-// 计算属性
-// const randomCover = computed(() => {
-//   const covers = webInfoStore.webInfo?.randomCover || [];
-//   if (covers.length > 0) {
-//     return covers[Math.floor(Math.random() * covers.length)];
-//   }
-//   return '';
-// });
-
-// 获取弹幕数据
-const danmakuList = async () => {
+// 获取留言数量
+const loadTotal = async () => {
   try {
-    const res = await danmakuApi.list();
-    if (!$common.isEmpty(res)) {
-      barrageList.value = res.map((m: any) => ({
-        id: String(m.createTime || Math.random()),
-        avatar: m.avatar,
-        msg: m.message,
-        time: ~~(Math.random() * 5 + 10)
-      }))
+    const res = await commentApi.getCommentTotal(SOURCE_ID, String(COMMENT_TYPE))
+    if (res) {
+      pagination.total = res.count || 0
     }
   } catch (error: any) {
-    ElMessage({
-      message: error.message || '获取弹幕失败',
-      type: "error"
-    });
+    // 忽略错误
   }
-};
+}
 
-danmakuList();
-
-// 提交消息
-const submitMessage = async () => {
-  if (messageContent.value.trim() === "") {
-    ElMessage({
-      message: "你还没写呢~",
-      type: "warning"
-    });
-    return;
-  }
-
-  let danmakuMsg: any = {
-    message: messageContent.value.trim()
-  };
-
-  const currentUser = userStore.currentUser as any;
-  if (!$common.isEmpty(currentUser) && !$common.isEmpty(currentUser.avatar)) {
-    danmakuMsg.avatar = currentUser.avatar;
+// 提交留言
+const submitComment = async () => {
+  if (!commentContent.value.trim()) {
+    ElMessage.warning('你还没写呢~')
+    return
   }
 
   try {
-    const res = await danmakuApi.save(danmakuMsg);
-    if (!$common.isEmpty(res)) {
-      barrageList.value.push({
-        id: res.id,
-        avatar: res.avatar,
-        msg: res.message,
-        time: Math.floor(Math.random() * 5 + 10)
-      });
-      ElMessage({
-        message: "发送成功！",
-        type: "success"
-      });
-    }
+    await commentApi.saveComment({
+      bizId: SOURCE_ID,
+      bizType: COMMENT_TYPE,
+      content: commentContent.value.trim()
+    })
+    ElMessage.success('留言成功！')
+    commentContent.value = ''
+    showEmoji.value = false
+    await loadComments()
+    await loadTotal()
   } catch (error: any) {
-    ElMessage({
-      message: error.message || '发送失败',
-      type: "error"
-    });
+    ElMessage.error(error.message || '留言失败')
+  }
+}
+
+// 打开回复弹窗
+const openReplyDialog = (target: any, floor?: any) => {
+  replyTarget.value = target
+  floorComment.value = floor || target
+  replyContent.value = ''
+  replyDialogVisible.value = true
+}
+
+// 提交回复
+const submitReply = async () => {
+  if (!replyContent.value.trim()) {
+    ElMessage.warning('你还没写呢~')
+    return
   }
 
-  messageContent.value = "";
-  show.value = false;
-};
+  try {
+    await commentApi.saveComment({
+      bizId: SOURCE_ID,
+      bizType: COMMENT_TYPE,
+      floorCommentId: floorComment.value?.id,
+      content: replyContent.value.trim(),
+      parentCommentId: replyTarget.value.id,
+      parentUserId: replyTarget.value.userId
+    })
+    ElMessage.success('回复成功！')
+    replyDialogVisible.value = false
+    replyContent.value = ''
+    await loadComments()
+  } catch (error: any) {
+    ElMessage.error(error.message || '回复失败')
+  }
+}
 
+// 分页跳转
+const toPage = (page: number) => {
+  pagination.current = page
+  loadComments()
+}
 
-// 生命周期
-// onMounted(() => {
-//   // danmakuList();
-// });
+// 展开子回复
+const expandReply = async (comment: any) => {
+  if (!comment.childComments) {
+    comment.childComments = { current: 0, total: 0, records: [] }
+  }
+  comment.childComments.current = (comment.childComments.current || 1) + 1
+  try {
+    const res = await commentApi.listComment({
+      pageNum: comment.childComments.current,
+      pageSize: 5,
+      bizId: SOURCE_ID,
+      commentType: String(COMMENT_TYPE),
+      rootId: comment.id
+    })
+    if (res) {
+      if (!comment.childComments.records) {
+        comment.childComments.records = []
+      }
+      comment.childComments.records = comment.childComments.records.concat(res.records || [])
+      comment.childComments.total = res.total || 0
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载回复失败')
+  }
+}
+
+// 子回复分页
+const childPageChange = async (comment: any, page: number) => {
+  if (!comment.childComments) return
+  comment.childComments.current = page
+  try {
+    const res = await commentApi.listComment({
+      pageNum: page,
+      pageSize: 5,
+      bizId: SOURCE_ID,
+      commentType: String(COMMENT_TYPE),
+      rootId: comment.id
+    })
+    if (res) {
+      comment.childComments.records = res.records || []
+      comment.childComments.total = res.total || 0
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载回复失败')
+  }
+}
+
+// 添加表情
+const addEmoji = (emoji: string) => {
+  commentContent.value += emoji
+}
+
+// 处理用户信息
+const handleUser = () => {
+  const currentUser = (window as any).__user
+  if (currentUser?.id) {
+    masterUserId.value = currentUser.id
+  }
+}
+
+onMounted(() => {
+  handleUser()
+  loadComments()
+  loadTotal()
+})
 </script>
 
 <style scoped>
+.message-page {
+  min-height: calc(100vh - 60px);
+  background: var(--background);
+  padding-bottom: 40px;
+}
 
-.message-in {
-  position: absolute;
-  left: 50%;
-  top: 40%;
-  transform: translate(-50%, -50%);
-  color: var(--white);
-  animation: hideToShow 2.5s;
-  width: 360px;
-  z-index: 10;
+/* 顶部标题 */
+.message-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 60px 20px;
+  text-align: center;
+  color: #fff;
+}
+
+.message-header-inner {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .message-title {
-  user-select: none;
-  text-align: center;
+  font-size: 32px;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 
-.message-input {
-  border-radius: 1.2rem;
-  border: var(--white) 1px solid;
-  color: var(--white);
-  background: var(--transparent);
-  padding: 10px 10px;
+.message-desc {
+  font-size: 14px;
+  opacity: 0.9;
 }
 
-.message-input::-webkit-input-placeholder {
-  color: var(--white);
-}
-
-.danmaku-container {
-  position: absolute;
-  top: 50px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(100% - 50px);
-  width: 100%;
-  user-select: none;
-  overflow: hidden;
-}
-
-.danmaku {
-  width: 100%;
-  height: 100%;
-}
-
-.danmu-item {
-  display: inline-flex;
-  padding: 5px 6px;
-  white-space: nowrap;
-  background-color: rgba(0, 0, 0, 0.8);
-  border-radius: 50px;
-  font-size: 16px;
-  line-height: 1; /* 让字体天然高度生效 */
-  align-items: center;
-  z-index: 10;
-}
-
-.danmu-item .img {
-  width: 30px;
-  height: 30px;
-  border-radius: 50px;
-  margin-right: 9px;
-}
-
-.comment-wrap {
-  background: var(--background);
-/*  position: absolute;*/
-
-  top: 100vh;
-  width: 100%;
-}
-
-.comment-content {
+/* 留言列表 */
+.message-list {
   max-width: 800px;
-  margin: 0 auto;
-  padding: 40px 20px;
+  margin: -30px auto 0;
+  padding: 0 16px;
+}
+
+.message-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--greyFont);
+  font-size: 14px;
+}
+
+/* 留言卡片 */
+.message-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.message-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.message-avatar {
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.message-card-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+}
+
+.message-username {
+  font-weight: 600;
+  color: var(--orangeRed);
+  font-size: 14px;
+}
+
+.message-master-tag {
+  background: var(--green);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.message-time {
+  font-size: 12px;
+  color: var(--greyFont);
+}
+
+.message-card-actions {
+  flex-shrink: 0;
+}
+
+.message-reply-btn {
+  font-size: 12px;
+  color: #fff;
+  background: var(--themeBackground);
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.message-reply-btn:hover {
+  opacity: 0.8;
+}
+
+.message-card-content {
+  padding: 12px 0;
+  line-height: 1.6;
+  color: var(--black);
+  word-break: break-word;
+}
+
+/* 子回复 */
+.message-replies {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--lightGray);
+}
+
+.message-reply {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.message-reply-avatar {
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.message-reply-content {
+  flex: 1;
+  font-size: 13px;
+}
+
+.message-reply-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.message-reply-username {
+  font-weight: 600;
+  color: var(--orangeRed);
+}
+
+.message-reply-master-tag {
+  background: var(--green);
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.message-reply-time {
+  font-size: 11px;
+  color: var(--greyFont);
+}
+
+.message-reply-text {
+  color: var(--black);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.message-reply-to {
+  color: var(--blue);
+}
+
+.message-expand {
+  text-align: center;
+  font-size: 12px;
+  color: var(--themeBackground);
+  cursor: pointer;
+  padding: 8px;
+}
+
+.message-expand:hover {
+  text-decoration: underline;
+}
+
+/* 输入区域 */
+.message-input-area {
+  max-width: 800px;
+  margin: 24px auto 0;
+  padding: 0 16px;
+}
+
+.message-input-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.message-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.message-input-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.message-total {
+  font-size: 13px;
+  color: var(--greyFont);
+}
+
+.message-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--lightGray);
+  border-radius: 8px;
+  resize: none;
+  font-size: 14px;
+  line-height: 1.6;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.message-textarea:focus {
+  border-color: var(--themeBackground);
+}
+
+.message-input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.message-input-tools {
+  display: flex;
+  gap: 12px;
+}
+
+.message-emoji-btn {
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.message-emoji-btn:hover {
+  transform: scale(1.2);
+}
+
+.message-submit-btn {
+  background: var(--themeBackground);
+  color: #fff;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.message-submit-btn:hover {
+  opacity: 0.85;
+}
+
+.message-emoji-panel {
+  margin-top: 12px;
+}
+
+/* 回复弹窗 */
+.reply-dialog-content {
+  padding: 10px 0;
+}
+
+.reply-target {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--greyFont);
+}
+
+.reply-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px;
+  border: 1px solid var(--lightGray);
+  border-radius: 8px;
+  resize: none;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.reply-textarea:focus {
+  border-color: var(--themeBackground);
 }
 </style>
+

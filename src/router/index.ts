@@ -72,6 +72,11 @@ const routes: AppRouteRecordRaw[] = [
                 name: "message",
                 component: () => import('../views/front/message/index.vue')
             },
+            {
+                path: "/danmaku",
+                name: "danmaku",
+                component: () => import('../views/front/danmaku/index.vue')
+            },
             // {
             //     path: "/friend",
             //     name: "friend",
@@ -134,7 +139,7 @@ const routes: AppRouteRecordRaw[] = [
                 component: () => import('../views/admin/comment/List.vue')
             }, {
                 path: 'danmaku/list',
-                name: 'danmaku',
+                name: 'adminDanmakuList',
                 component: () => import('../views/admin/danmaku/List.vue')
             }, {
                 path: 'resourceList',

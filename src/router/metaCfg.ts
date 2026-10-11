@@ -48,6 +48,9 @@ export const routeMeta: RouteMetaMap = {
     message: {
         gradDir,
     },
+    danmaku: {
+        gradDir,
+    },
     user: {
         visible: false,
     }
