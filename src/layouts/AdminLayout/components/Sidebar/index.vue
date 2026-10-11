@@ -65,14 +65,14 @@ const menuItems = computed(() =>
       { index: '/admin/article/edit', title: '文章编辑' },
     ]},
     { icon: EditPen,       index: '/admin/comment/list',      title: '评论管理', isAdmin: false },
-    { icon: Notebook,      index: '/admin/categoryList',     title: '分类管理', isAdmin: true  },
+    { icon: Notebook,      index: '/admin/category/list',     title: '分类管理', isAdmin: true  },
     { icon: Sugar,         index: '/admin/loveList',         title: '表白墙',   isAdmin: true  },
     { icon: ChatDotRound,  index: '/admin/danmaku',          title: '弹幕管理', isAdmin: true  },
     { icon: Paperclip,     index: '/admin/resourceList',     title: '资源管理', isAdmin: true  },
     { icon: CreditCard,    index: '/admin/resourcePathList', title: '资源聚合', isAdmin: true  },
     { icon: CollectionTag, index: '/admin/tag/list',         title: '标签管理', isAdmin: true  },
     { icon: Setting,       index: '/admin/webEdit',          title: '网站设置', isAdmin: true  },
-    { icon: User,          index: '/admin/userList',         title: '用户管理', isAdmin: true  },
+    { icon: User,          index: '/admin/user/list',         title: '用户管理', isAdmin: true  },
   ] as any[]).filter(item => isAdmin.value || !item.isAdmin)
 )
 

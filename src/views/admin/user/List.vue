@@ -1,23 +1,24 @@
 <template>
   <div class="page-container">
     <div class="page-card">
-      <div class="section-header">
-        <el-icon size="16"><User /></el-icon>
-        <span>用户管理</span>
-      </div>
       <div class="toolbar">
-        <el-select v-model="pagination.userType" placeholder="用户类型" class="filter-select">
-          <el-option key="1" label="Boss" :value="0"></el-option>
-          <el-option key="2" label="管理员" :value="1"></el-option>
-          <el-option key="3" label="普通用户" :value="2"></el-option>
-        </el-select>
-        <el-select v-model="pagination.userStatus" placeholder="用户状态" class="filter-select">
-          <el-option key="1" label="启用" :value="true"></el-option>
-          <el-option key="2" label="禁用" :value="false"></el-option>
-        </el-select>
-        <el-input v-model="pagination.searchKey" placeholder="用户名/手机号" class="filter-input" clearable />
-        <el-button type="primary" @click="searchUser()">搜索</el-button>
-        <el-button @click="clearSearch()">清除</el-button>
+        <div class="toolbar-row">
+          <el-select v-model="pagination.userType" placeholder="用户类型" class="filter-select">
+            <el-option key="1" label="Boss" :value="0"></el-option>
+            <el-option key="2" label="管理员" :value="1"></el-option>
+            <el-option key="3" label="普通用户" :value="2"></el-option>
+          </el-select>
+          <el-select v-model="pagination.userStatus" placeholder="用户状态" class="filter-select">
+            <el-option key="1" label="启用" :value="true"></el-option>
+            <el-option key="2" label="禁用" :value="false"></el-option>
+          </el-select>
+          <el-input v-model="pagination.searchKey" placeholder="用户名/手机号" class="filter-input" clearable />
+          <el-button type="primary" @click="searchUser()">搜索</el-button>
+          <el-button @click="clearSearch()">清除</el-button>
+        </div>
+        <div class="toolbar-row">
+          <el-button type="primary" @click="openAddUser">新增用户</el-button>
+        </div>
       </div>
       <el-table :data="users" border class="table" stripe header-cell-class-name="table-header">
         <el-table-column prop="id" label="ID" width="55" align="center" />
@@ -102,7 +103,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import type { Ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { User } from '@element-plus/icons-vue'
 import { userApi } from '@/api/index.js'
 import type { ChangeUserTypeUserType } from '@/types/modules/changeUserTypeUserType'
 
@@ -276,6 +276,11 @@ const searchUser = (): void => {
   getUsers()
 }
 
+// 新增用户（暂无后端 API，预留入口）
+const openAddUser = (): void => {
+  ElMessage.info('新增用户功能待接入后端接口')
+}
+
 // 关闭对话框
 const handleClose = (): void => {
   Object.assign(changeUser, {
@@ -323,22 +328,18 @@ onMounted(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1d2e;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
+
 .toolbar {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .filter-select { width: 120px; }

@@ -1,14 +1,9 @@
 <template>
   <div class="page-container">
     <div class="page-card">
-      <div class="section-header">
-        <el-icon size="16"><Notebook /></el-icon>
-        <span>分类列表</span>
-        <div class="header-actions">
-          <el-button type="primary" size="small" @click="openAddSort">
-            <el-icon><Plus /></el-icon>
-            新增分类
-          </el-button>
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <el-button type="primary" @click="openAddSort">新增分类</el-button>
         </div>
       </div>
 
@@ -188,7 +183,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Notebook, CollectionTag, Plus, Edit, Delete, ArrowDown
+  CollectionTag, Plus, Edit, Delete, ArrowDown
 } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/modules/admin'
 
@@ -376,18 +371,6 @@ onMounted(() => { getSortInfo() })
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
 }
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1d2e;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
-.header-actions { display: flex; gap: 8px; }
 
 /* 展开行面板 */
 .tag-expand-panel {

@@ -113,7 +113,7 @@ const routes: AppRouteRecordRaw[] = [
                 name: 'webEdit',
                 component: () => import('../views/admin/settings/WebEdit.vue')
             }, {
-                path: 'userList',
+                path: 'user/list',
                 name: 'userList',
                 component: () => import('../views/admin/user/List.vue')
             }, {
@@ -125,7 +125,7 @@ const routes: AppRouteRecordRaw[] = [
                 name: 'articleEdit',
                 component: () => import('@/views/admin/article/Edit.vue')
             }, {
-                path: 'categoryList',
+                path: 'category/list',
                 name: 'categoryList',
                 component: () => import('../views/admin/category/List.vue')
             }, {
