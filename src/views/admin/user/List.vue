@@ -331,10 +331,10 @@ onMounted(() => {
 
 .toolbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 16px;
-  flex-wrap: wrap;
 }
 .toolbar-row {
   display: flex;
