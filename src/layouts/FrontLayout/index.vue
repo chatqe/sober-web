@@ -50,10 +50,15 @@
             </div>
           </li>
           <li @click="navigate({ path: '/love' })">
-            <div>❤️‍🔥 <span>家</span></div>
+            <div>❤️‍🔥 <span>小窝</span></div>
           </li>
-          <li @click="navigate({ path: '/favorite' })">
+          <li>
             <div>🧰 <span>百宝箱</span></div>
+            <div>
+              <div class="sortMenu" @click="navigate({ name: 'favMusic' })">🎧︎ 音乐</div>
+              <div class="sortMenu" @click="navigate({ name: 'favCollect' })">收藏夹</div>
+              <div class="sortMenu" @click="navigate({ name: 'favFriend' })">💃 友链</div>
+            </div>
           </li>
           <li @click="navigate({ path: '/danmaku' })">
             <div>📪 <span>弹幕</span></div>

@@ -28,7 +28,7 @@
       </div>
 
       <!-- 桌面端导航列表 -->
-      <div v-else>
+      <div v-else class="desktop-nav">
         <ul class="scroll-menu">
           <li @click="navigate({ path: '/' })">
             <div class="my-menu">🏡 <span>首页</span></div>
@@ -91,36 +91,36 @@
           <li v-if="adminLogin" @click="goAdmin({ path: '/admin' })">
             <div class="my-menu">💻️ <span>后台</span></div>
           </li>
-
-          <!-- 个人中心 -->
-          <li>
-            <div v-if="$common.isEmpty(userStore.currentUser)" class="login-wrap">
-              <button class="login-avtar" @click="uiStore.openAuthModal()">
-                <IconEpUserFilled class="icon-user" />
-              </button>
-            </div>
-            <el-dropdown v-else placement="bottom">
-              <el-avatar
-                class="user-avatar"
-                :size="36"
-                style="margin-top: 12px"
-                :src="userStore.currentUser?.avatar || webInfoStore.webInfo?.avatar"
-              />
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="navigate({ path: '/user' })">
-                    <el-icon style="margin-right: 8px; vertical-align: -2px"><User /></el-icon>
-                    <span>个人中心</span>
-                  </el-dropdown-item>
-                  <el-dropdown-item @click="handleLogout">
-                    <el-icon style="margin-right: 8px; vertical-align: -2px"><SwitchButton /></el-icon>
-                    <span>退出</span>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </li>
         </ul>
+      </div>
+
+      <!-- 个人中心 -->
+      <div v-if="!mobile" class="user-center">
+        <div v-if="$common.isEmpty(userStore.currentUser)" class="login-wrap">
+          <button class="login-avtar" @click="uiStore.openAuthModal()">
+            <IconEpUserFilled class="icon-user" />
+          </button>
+        </div>
+        <el-dropdown v-else placement="bottom">
+          <el-avatar
+            class="user-avatar"
+            :size="36"
+            style="margin-top: 12px"
+            :src="userStore.currentUser?.avatar || webInfoStore.webInfo?.avatar"
+          />
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="navigate({ path: '/user' })">
+                <el-icon style="margin-right: 8px; vertical-align: -2px"><User /></el-icon>
+                <span>个人中心</span>
+              </el-dropdown-item>
+              <el-dropdown-item @click="handleLogout">
+                <el-icon style="margin-right: 8px; vertical-align: -2px"><SwitchButton /></el-icon>
+                <span>退出</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </div>
   </transition>
@@ -223,6 +223,12 @@ async function handleLogout(): Promise<void> {
   align-items: center;
 }
 
+.desktop-nav {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .scroll-menu li {
   list-style: none;
   margin: 0 12px;
@@ -264,6 +270,13 @@ async function handleLogout(): Promise<void> {
 
 .scroll-menu li .my-menu span {
   color: var(--white);
+}
+
+.user-center {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  margin-right: 25px;
 }
 
 .login-wrap {
