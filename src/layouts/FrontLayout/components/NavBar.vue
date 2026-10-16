@@ -280,7 +280,7 @@ async function handleLogout(): Promise<void> {
     width: fit-content;
     max-width: 84%;
     margin-inline: auto;
-    padding-inline: 1.25rem;
+    padding-inline: 1.5rem;
   }
 }
 

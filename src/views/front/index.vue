@@ -23,8 +23,9 @@
           </template>
         </el-image>
 
-        <!-- 导航区底部渐变蒙版：叠加在背景图之上，保证全宽态白字可读 -->
-        <div class="banner-nav-overlay"></div>
+        <!-- 导航区底部渐变蒙版：叠加在背景图之上，保证全宽态白字可读；
+             滚动进入胶囊态后随 not-top 淡出，避免残留 -->
+        <div class="banner-nav-overlay" :class="{ 'nav-overlay-hide': notTop }"></div>
 
         <!-- 首页文字 -->
         <div class="signature-wall myCenter my-animation-hideToShow">
@@ -140,7 +141,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, inject, nextTick, onMounted, ref } from 'vue'
 import type { Ref } from 'vue'
-import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
+import {useScrollStore, useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {articleApi} from '@/api/index.js'
@@ -168,6 +169,7 @@ const MyAside = defineAsyncComponent(() => import('../../components/business/fri
 const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
 const sortInfoStore = useSortInfoStore()
+const scrollStore = useScrollStore()
 
 const loading: Ref<boolean> = ref(false)
 const showAside: Ref<boolean> = ref(true)
@@ -196,6 +198,9 @@ const backgroundImage = computed(() => {
   const bgImage = webInfoStore.webInfo?.backgroundImage
   return !$common.isEmpty(bgImage) ? bgImage : $constant.index_image
 })
+
+// 导航区渐变蒙版：仅全宽态（未滚动出顶部）显示，与 NavBar 的 not-top 同步淡出
+const notTop = computed(() => scrollStore.scrollY > 20)
 
 const webTitle = computed(() => webInfoStore.webInfo?.webTitle || '')
 const notices = computed(() => webInfoStore.webInfo?.notices || [])
@@ -337,16 +342,23 @@ onMounted(() => {
   content: '';
 }
 
-/* 导航区渐变蒙版：仅覆盖顶部导航带（60px 全宽态），自上而下变透明 */
+/* 导航区渐变蒙版：仅覆盖顶部导航带（60px 全宽态），自上而下变透明；
+   透明度取 0.26，与 banner 原有 ::before 遮罩（0.2）接近，避免双重叠加过深 */
 .banner-nav-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 60px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0));
   pointer-events: none;
   z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* 胶囊态：蒙版淡出（与 NavBar not-top 阈值 20px 保持一致） */
+.banner-nav-overlay.nav-overlay-hide {
+  opacity: 0;
 }
 
 .background-image-index-error {
