@@ -5,7 +5,7 @@ const pinia = createPinia().use(persist)
 
 export default pinia
 
-export {useToolbarStore} from './modules/toolbar'
+export {useScrollStore} from './modules/scroll'
 export {useAuthStore} from './modules/auth'
 export {useAdminTabsStore} from './modules/adminTabs'
 export {useSortInfoStore} from './modules/categoryInfo'

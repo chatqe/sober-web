@@ -2,7 +2,6 @@
   <div class="index-container">
     <!-- 导航栏 -->
     <NavBar />
-    <div class="navbar-placeholder"></div>
 
     <div id="main-container">
       <router-view></router-view>
@@ -101,14 +100,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { WatchStopHandle, Ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteLocationRaw } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { SwitchButton, User } from '@element-plus/icons-vue'
 import { useUiStore } from '@/stores/modules/ui'
-import { useAuthStore, useSortInfoStore, useSysConfigStore, useToolbarStore, useUserStore, useWebInfoStore } from '@/stores'
+import { useAuthStore, useSortInfoStore, useSysConfigStore, useScrollStore, useUserStore, useWebInfoStore } from '@/stores'
 import { authApi, systemApi, webApi } from '@/api'
 import MyFooter from '@/components/business/MyFooter.vue'
 import { routeMeta } from '@/router/metaCfg'
@@ -127,16 +126,17 @@ const userStore = useUserStore()
 const webInfoStore = useWebInfoStore()
 const sysConfigStore = useSysConfigStore()
 const sortInfoStore = useSortInfoStore()
-const toolStore = useToolbarStore()
+const scrollStore = useScrollStore()
 
-const scrollTop: Ref<number> = ref(0)
-const toolButton: Ref<boolean> = ref(false)
 const currBgImg: Ref<string> = ref('')
 
 const adminLogin = computed(() => authStore.isAdmin)
 const sortInfo = computed(() =>
   sortInfoStore.sortInfo.filter((item: any) => item.isShow !== 0),
 )
+
+// 回顶按钮：滚动超过一屏 + 30px 后显示
+const toolButton = computed(() => scrollStore.scrollY - scrollStore.innerHeight > 30)
 
 const footerCfg = computed(() => {
   for (let i = route.matched.length - 1; i >= 0; i--) {
@@ -146,32 +146,29 @@ const footerCfg = computed(() => {
   return undefined
 })
 
-let unwatchScrollTop: WatchStopHandle | null = null
-
 onMounted(async () => {
   await getWebInfo()
   getBgImg()
-  toolStore.changeToolbarStatus({ enter: false, visible: true })
   getSortInfo()
   getSysConfig()
   uiStore.setMobile(window.innerWidth < 1100)
+  scrollStore.init()
   window.addEventListener('resize', handleResize)
-  window.addEventListener('scroll', onScrollPage)
   if (uiStore.mouseAnimation) import('../../utils/mousedown.js').then(m => m.default())
-  unwatchScrollTop = watch(scrollTop, (newVal: number, oldVal: number) => {
-    const enter = newVal > window.innerHeight / 2
-    const top = newVal - oldVal < 0
-    const isShow = newVal - window.innerHeight > 30
-    toolButton.value = isShow
-    toolStore.changeToolbarStatus({ enter, visible: top })
-  })
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  window.removeEventListener('scroll', onScrollPage)
-  if (unwatchScrollTop) unwatchScrollTop()
+  scrollStore.destroy()
 })
+
+// 路由切换后页面高度变化，重算 scrollHeight
+watch(
+  () => route.fullPath,
+  () => {
+    nextTick(() => scrollStore.measure())
+  },
+)
 
 watch(() => uiStore.mouseAnimation, (val) => {
   if (val) import('../../utils/mousedown.js').then(m => m.default())
@@ -190,10 +187,6 @@ function getBgImg(): void {
 
 function handleResize(): void {
   uiStore.setMobile(window.innerWidth < 1100)
-}
-
-function onScrollPage(): void {
-  scrollTop.value = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
 }
 
 function navigate(to: RouteLocationRaw): void {
@@ -260,8 +253,8 @@ async function getSortInfo(): Promise<void> {
 </script>
 
 <style scoped>
-.navbar-placeholder {
-  height: 60px;
+#main-container {
+  padding-top: 60px;
 }
 
 .index-container {

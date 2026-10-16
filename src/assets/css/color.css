@@ -67,6 +67,15 @@
 
     --white: white;
 
+    /* 导航栏胶囊态专用变量（暗色值在 uiStore.changeColor 中同步） */
+    --navbar-capsule-bg: rgba(255, 255, 255, 0.88);
+    --navbar-capsule-border: rgba(255, 255, 255, 0.7);
+    --navbar-capsule-shadow:
+      0 8px 30px rgba(30, 41, 59, 0.08),
+      0 2px 6px rgba(30, 41, 59, 0.04);
+    --navbar-text: #333333;
+    --navbar-text-hover: #000000;
+
     --red: red;
     --lightRed: #ff4b2b;
     --maxLightRed: #ff416c;

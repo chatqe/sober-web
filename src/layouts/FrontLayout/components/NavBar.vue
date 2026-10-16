@@ -1,12 +1,12 @@
 <template>
   <transition name="el-fade-in-linear">
     <div
-      v-show="toolbar.visible || mobile"
       @mouseenter="hoverEnter = true"
       @mouseleave="hoverEnter = false"
       :class="[
-        { enter: toolbar.enter },
-        { hoverEnter: (hoverEnter || route.path.includes('/favorite') || route.path === '/travel') && !toolbar.enter },
+        { 'not-top': notTop },
+        { 'is-hidden': !dataShow },
+        { hoverEnter: (hoverEnter || route.path.includes('/favorite') || route.path === '/travel') && !notTop },
       ]"
       class="toolbar-content myBetween"
     >
@@ -16,16 +16,18 @@
       </div>
 
       <!-- 手机导航按钮 -->
-      <div
+      <button
         v-if="mobile"
+        type="button"
         class="toolbar-mobile-menu"
+        aria-label="打开菜单"
+        :aria-expanded="uiStore.toolbarDrawer"
         @click="uiStore.openToolbarDrawer()"
-        :class="{ enter: toolbar.enter }"
       >
         <el-icon class="mobile-menu-icon">
           <Menu />
         </el-icon>
-      </div>
+      </button>
 
       <!-- 桌面端导航列表 -->
       <div v-else class="desktop-nav">
@@ -42,9 +44,13 @@
             <div class="my-menu">🌏 <span>旅拍</span></div>
           </li>
 
-          <el-dropdown popper-class="new-el-dropdown" :hide-timeout="500" placement="bottom">
+          <el-dropdown
+            popper-class="new-el-dropdown"
+            :hide-timeout="500"
+            placement="bottom"
+          >
             <li>
-              <div class="my-menu">📒 <span>记录</span></div>
+              <div class="my-menu" @mouseenter="recordExpanded = true" @mouseleave="recordExpanded = false">📒 <span>记录</span></div>
             </li>
             <template #dropdown>
               <el-dropdown-menu>
@@ -61,9 +67,13 @@
             <div class="my-menu">❤️‍🔥 <span>小窝</span></div>
           </li>
 
-          <el-dropdown popper-class="new-el-dropdown" :hide-timeout="500" placement="bottom">
+          <el-dropdown
+            popper-class="new-el-dropdown"
+            :hide-timeout="500"
+            placement="bottom"
+          >
             <li>
-              <div class="my-menu">🧰 <span>百宝箱</span></div>
+              <div class="my-menu" @mouseenter="toolboxExpanded = true" @mouseleave="toolboxExpanded = false">🧰 <span>百宝箱</span></div>
             </li>
             <template #dropdown>
               <el-dropdown-menu>
@@ -101,11 +111,14 @@
             <IconEpUserFilled class="icon-user" />
           </button>
         </div>
-        <el-dropdown v-else placement="bottom">
+        <el-dropdown
+          v-else
+          placement="bottom"
+          @visible-change="(v: boolean) => (userExpanded = v)"
+        >
           <el-avatar
             class="user-avatar"
             :size="36"
-            style="margin-top: 12px"
             :src="userStore.currentUser?.avatar || webInfoStore.webInfo?.avatar"
           />
           <template #dropdown>
@@ -137,7 +150,7 @@ import { useUiStore } from '@/stores/modules/ui'
 import { useAuthStore } from '@/stores/modules/auth'
 import { useWebInfoStore } from '@/stores/modules/webInfo'
 import { useUserStore } from '@/stores/modules/user'
-import { useToolbarStore } from '@/stores/modules/toolbar'
+import { useScrollStore } from '@/stores/modules/scroll'
 import { useSortInfoStore } from '@/stores/modules/categoryInfo'
 import type { CommonUtils } from '@/types'
 
@@ -148,14 +161,36 @@ const uiStore = useUiStore()
 const authStore = useAuthStore()
 const webInfoStore = useWebInfoStore()
 const userStore = useUserStore()
-const toolStore = useToolbarStore()
+const scrollStore = useScrollStore()
 const sortInfoStore = useSortInfoStore()
 
-const toolbar = computed(() => toolStore.toolbar)
 const adminLogin = computed(() => authStore.isAdmin)
 const mobile = computed(() => uiStore.mobile)
 
 const hoverEnter = ref(false)
+
+// dropdown 展开追踪：任一展开时导航不隐藏
+const recordExpanded = ref(false)
+const toolboxExpanded = ref(false)
+const userExpanded = ref(false)
+const dropdownExpanded = computed(
+  () => recordExpanded.value || toolboxExpanded.value || userExpanded.value,
+)
+
+// 隐藏阈值：视口高度 35%（对应原版写死的 350px）
+const hideThreshold = computed(() => Math.max(350, scrollStore.innerHeight * 0.35))
+
+// 胶囊态：滚动超过 20px
+const notTop = computed(() => scrollStore.scrollY > 20)
+
+// 是否显示：移动端始终显示；dropdown 展开时不隐藏；
+// 超过阈值后仅在向上滚动（或阈值以内）时显示，向下滚动上滑隐藏
+const dataShow = computed(() => {
+  if (mobile.value) return true
+  if (dropdownExpanded.value) return true
+  if (scrollStore.scrollY < hideThreshold.value) return true
+  return scrollStore.direction !== 'down'
+})
 
 const sortItems = computed(() =>
   sortInfoStore.sortInfo.filter((item: any) => item.isShow !== 0),
@@ -191,17 +226,59 @@ async function handleLogout(): Promise<void> {
   height: 60px;
   color: var(--white);
   user-select: none;
-  transition: all 0.3s ease-in-out;
+  top: 0;
+  transition:
+    top 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease,
+    border-radius 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-inline 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.toolbar-content.enter,
 .toolbar-content.hoverEnter {
   box-shadow: 0 1px 3px 0 rgba(0, 34, 77, 0.05);
 }
 
-.toolbar-content.enter {
-  background: var(--mini-nav-mask);
-  color: var(--white);
+/* 胶囊态：边框 + 背景 + 阴影 + 模糊 + 距顶 16px（对齐原版 top: 1rem） */
+.toolbar-content.not-top {
+  top: 16px;
+  background-color: var(--navbar-capsule-bg);
+  border: 1px solid var(--navbar-capsule-border);
+  border-radius: 16px;
+  box-shadow: var(--navbar-capsule-shadow);
+  padding-inline: 0.375rem;
+  color: var(--navbar-text);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+/* 桌面端胶囊态：内容自适应宽度 + 居中（left:0 right:0 + margin auto 平分，max-width 84% 兜底） */
+@media (min-width: 800px) {
+  .toolbar-content.not-top {
+    left: 0;
+    right: 0;
+    width: fit-content;
+    max-width: 84%;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+}
+
+/* 上滑隐藏：位移后释放事件层，避免 fixed 盒子继续拦截顶部点击 */
+.toolbar-content.is-hidden {
+  transform: translateY(-5rem);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar-content,
+  .toolbar-content.not-top {
+    transition: none !important;
+  }
 }
 
 .toolbar-title {
@@ -210,9 +287,23 @@ async function handleLogout(): Promise<void> {
 }
 
 .toolbar-mobile-menu {
-  font-size: 30px;
-  margin-right: 15px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-menu-icon {
+  font-size: 26px;
 }
 
 .scroll-menu {
@@ -272,11 +363,22 @@ async function handleLogout(): Promise<void> {
   color: var(--white);
 }
 
+.toolbar-content.not-top .scroll-menu li .my-menu span {
+  color: var(--navbar-text);
+}
+
 .user-center {
   display: flex;
   align-items: center;
   height: 60px;
   margin-right: 25px;
+}
+
+.user-center :deep(.el-dropdown) {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0;
 }
 
 .login-wrap {
@@ -320,5 +422,6 @@ async function handleLogout(): Promise<void> {
   cursor: pointer;
   transition: all 0.3s;
   user-select: none;
+  margin-top: 0;
 }
 </style>

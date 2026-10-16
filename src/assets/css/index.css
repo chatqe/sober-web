@@ -217,11 +217,18 @@ body {
  */
 
 
+.new-el-dropdown .el-dropdown-menu__item {
+    padding: 0 16px;
+    min-height: 40px;
+}
+
 .new-el-dropdown .el-dropdown-menu__item > div {
     text-align: center !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    min-height: 40px;
+    line-height: 1;
 }
 
 .new-el-dropdown .el-dropdown-menu__item:hover {
