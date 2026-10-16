@@ -267,6 +267,16 @@ async function getSortInfo(): Promise<void> {
   background-blend-mode: overlay;
 }
 
+/* 兜底层：随机背景图加载失败时露出主题渐变（同首页 banner fallback） */
+.index-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--gradualBackground);
+  background-blend-mode: overlay;
+}
+
 .toolbarDrawer {
   position: relative;
   background: var(--toolbar) center center / cover no-repeat;

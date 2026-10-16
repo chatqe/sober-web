@@ -412,6 +412,7 @@ body {
 .cd-top {
   position: fixed;
   z-index: 100;
+  top: 0;
 }
 
 /*磨砂背景*/

@@ -226,7 +226,11 @@ async function handleLogout(): Promise<void> {
   height: 60px;
   color: var(--white);
   user-select: none;
-  top: 0;
+  /* 全宽态：完全透明（含 0 值毛玻璃层）；胶囊态变量可过渡为实色+blur，
+     用 rgba 中间值避免过渡中颜色通道跳变（白 0.88 ↔ 黑 0.88 直接过渡会闪灰） */
+  background-color: rgba(255, 255, 255, 0);
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
   transition:
     top 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
@@ -236,7 +240,9 @@ async function handleLogout(): Promise<void> {
     margin-inline 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.15s ease,
     background-color 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    -webkit-backdrop-filter 0.3s ease,
+    backdrop-filter 0.3s ease;
 }
 
 .toolbar-content.hoverEnter {
@@ -252,8 +258,18 @@ async function handleLogout(): Promise<void> {
   box-shadow: var(--navbar-capsule-shadow);
   padding-inline: 0.375rem;
   color: var(--navbar-text);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  transition:
+    top 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease,
+    border-radius 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-inline 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    -webkit-backdrop-filter 0.3s ease,
+    backdrop-filter 0.3s ease;
 }
 
 /* 桌面端胶囊态：内容自适应宽度 + 居中（left:0 right:0 + margin auto 平分，max-width 84% 兜底） */
@@ -284,6 +300,15 @@ async function handleLogout(): Promise<void> {
 .toolbar-title {
   margin-left: 30px;
   cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+
+/* 胶囊态：白底深字，关闭投影 */
+.toolbar-content.not-top .toolbar-title {
+  text-shadow: none;
 }
 
 .toolbar-mobile-menu {
@@ -334,6 +359,11 @@ async function handleLogout(): Promise<void> {
   color: var(--themeBackground);
 }
 
+/* hover 上浮反馈（胶囊态图标为 emoji，i 标签动画仅对 iconfont 生效，保留） */
+.scroll-menu li:hover .my-menu {
+  transform: translateY(-1px);
+}
+
 .scroll-menu li:hover .my-menu i {
   color: var(--themeBackground);
   animation: scale 1.5s ease-in-out infinite;
@@ -359,8 +389,24 @@ async function handleLogout(): Promise<void> {
   outline: none;
 }
 
+.scroll-menu li .my-menu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition:
+    text-shadow 0.3s ease,
+    color 0.3s ease;
+}
+
+.toolbar-content.not-top .scroll-menu li .my-menu {
+  text-shadow: none;
+}
+
 .scroll-menu li .my-menu span {
   color: var(--white);
+  transition: color 0.3s ease;
 }
 
 .toolbar-content.not-top .scroll-menu li .my-menu span {
@@ -399,19 +445,24 @@ async function handleLogout(): Promise<void> {
   outline: 0;
   border: none;
   touch-action: manipulation;
-  transition-duration: .2s;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   height: 30px;
   width: 30px;
 }
 
+/* 登录图标：圆形 hover 光晕 + 微上浮 */
 .login-avtar:hover {
   box-shadow: 0 0 12px 5px color-mix(in srgb, var(--lightGreen) 100%, transparent);
+  transform: translateY(-1px);
 }
 
 .icon-user {
   width: 32px;
   height: 32px;
   color: var(--grey);
+  transition: color 0.2s ease;
 }
 
 .icon-user:hover {
@@ -423,5 +474,20 @@ async function handleLogout(): Promise<void> {
   transition: all 0.3s;
   user-select: none;
   margin-top: 0;
+}
+
+/* 用户操作区：胶囊态加竖线分隔 + 圆角 hover 背景光晕（全宽态透明底不显形） */
+.user-center {
+  border-left: 1px solid transparent;
+}
+
+.toolbar-content.not-top .user-center {
+  border-left-color: var(--navbar-capsule-border);
+  padding-left: 14px;
+}
+
+.user-avatar:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 12px 3px color-mix(in srgb, var(--lightGreen) 45%, transparent);
 }
 </style>
