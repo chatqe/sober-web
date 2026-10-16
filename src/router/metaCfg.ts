@@ -51,6 +51,9 @@ export const routeMeta: RouteMetaMap = {
     danmaku: {
         gradDir,
     },
+    about: {
+        gradDir,
+    },
     user: {
         visible: false,
     }

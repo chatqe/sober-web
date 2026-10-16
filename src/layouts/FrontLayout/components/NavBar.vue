@@ -98,6 +98,10 @@
             <div class="my-menu">💬 <span>留言</span></div>
           </li>
 
+          <li @click="navigate({ path: '/about' })">
+            <div class="my-menu">📖 <span>关于</span></div>
+          </li>
+
           <li v-if="adminLogin" @click="goAdmin({ path: '/admin' })">
             <div class="my-menu">💻️ <span>后台</span></div>
           </li>

@@ -65,6 +65,9 @@
           <li @click="navigate({ path: '/message' })">
             <div>💬 <span>留言</span></div>
           </li>
+          <li @click="navigate({ path: '/about' })">
+            <div>📖 <span>关于</span></div>
+          </li>
           <li v-if="adminLogin" @click="goAdmin({ path: '/admin' })">
             <div>💻️ <span>后台</span></div>
           </li>
