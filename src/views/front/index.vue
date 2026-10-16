@@ -350,15 +350,16 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 60px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0));
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0));
   pointer-events: none;
   z-index: 1;
   transition: opacity 0.3s ease;
 }
 
-/* 胶囊态：蒙版淡出（与 NavBar not-top 阈值 20px 保持一致） */
+/* 胶囊态：蒙版彻底移除（visibility + opacity 双保险） */
 .banner-nav-overlay.nav-overlay-hide {
   opacity: 0;
+  visibility: hidden;
 }
 
 .background-image-index-error {
