@@ -21,8 +21,8 @@ pnpm dev
 
 | 变量 | 开发环境 | 生产环境 |
 |------|---------|---------|
-| VITE_BASE_URL | http://localhost:18081 | https://youngwanton.top/api |
-| VITE_WEB_URL | http://localhost | https://youngwanton.top |
+| VITE_BASE_URL | http://localhost:18081 | https://soberup.top/api |
+| VITE_WEB_URL | http://localhost | https://soberup.top |
 | VITE_UPLOAD_URL | http://localhost:8080/upload | - |
 | VITE_IM_URL | http://localhost:81 | - |
 | VITE_WEBSOCKET_URL | ws://localhost:8080/ws | - |

@@ -11,7 +11,7 @@
         <div v-for="(tag, index) in categoryTags" :key="index"
              :class="{isActive: !$common.isEmpty(tagId) && parseInt(tagId) === tag.id}"
              @click="listArticle(tag)">
-          <proTag :info="tag.name+' '+tag.countOfTag"
+          <proTag :info="tag.countOfTag ? tag.name + ' ' + tag.countOfTag : tag.name"
                   :color="$constant.before_color_list[Math.floor(Math.random() * 6)]"
                   style="margin: 12px">
           </proTag>
@@ -51,7 +51,7 @@ import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {useSortInfoStore} from '@/stores'
 import {articleApi} from '@/api/index.js'
-import {adminApi} from '@/api/modules/admin'
+import {listPublicTag} from '@/api/modules/tag'
 
 const route = useRoute()
 const router = useRouter()
@@ -122,22 +122,13 @@ const getCategory = () => {
   }
 }
 
-// 加载当前分类的标签列表
+// 加载当前分类的标签列表（公开接口，匿名可访问）
 const getCategories = async () => {
   if (!$common.isEmpty(category.value) && category.value.id) {
     try {
-      const res = await adminApi.getTagPage({ categoryId: category.value.id })
-      if (res?.data?.list) {
-        categoryTags.value = res.data.list.map(item => ({
-          ...item,
-          countOfTag: item.articleCount || 0
-        }))
-      } else if (res?.data) {
-        categoryTags.value = res.data.map(item => ({
-          ...item,
-          countOfTag: item.articleCount || 0
-        }))
-      }
+      const res = await listPublicTag(parseInt(category.value.id))
+      // Orval 已剥掉 R 信封，res 即标签数组；TagWebVO 不含文章数，countOfTag 恒为空
+      categoryTags.value = res || []
     } catch (error) {
       categoryTags.value = []
     }

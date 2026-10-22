@@ -196,8 +196,8 @@ function toPage(page: number): void {
 function getTotal(): void {
   getCommentTotal(props.source, props.type)
     .then((res) => {
-      if (!res.data) return
-      total.value = res.data
+      // getCommentTotal 已返回后端 data 中的评论数，不能再取 res.data
+      total.value = typeof res === 'number' ? res : 0
     })
     .catch((error: any) => {
       ElMessage.error(error.message || '获取评论数量失败')

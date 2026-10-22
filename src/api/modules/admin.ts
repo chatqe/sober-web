@@ -23,16 +23,16 @@ export const adminApi = {
     adminCategory.pageList3(params),
   getCategoryDetail: (id: number) => adminCategory.getDetail4(id),
   getCategoryDict: () => webCategory.dict1(),
-  saveCategory: (dto: CategorySaveReqDTO) => adminCategory.save5(dto),
+  saveCategory: (dto: CategorySaveReqDTO) => adminCategory.save6(dto),
   updateCategory: (id: number, dto: CategorySaveReqDTO) => adminCategory.update3(id, dto),
-  deleteCategory: (id: number) => adminCategory.delete5(id),
+  deleteCategory: (id: number) => adminCategory.delete6(id),
 
   // 标签 CRUD
   getTagPage: (params?: { categoryId?: number; keyword?: string; pageNum?: number; pageSize?: number }) =>
     adminTag.pageList1(params),
   getTagDetail: (id: number) => adminTag.getDetail2(id),
   getTagDict: () => webTag.dict(),
-  saveTag: (dto: TagSaveReqDTO) => adminTag.save2(dto),
+  saveTag: (dto: TagSaveReqDTO) => adminTag.save3(dto),
   updateTag: (id: number, dto: TagSaveReqDTO) => adminTag.update1(id, dto),
-  deleteTag: (id: number) => adminTag.delete2(id),
+  deleteTag: (id: number) => adminTag.delete3(id),
 };

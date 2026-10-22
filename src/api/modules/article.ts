@@ -35,11 +35,17 @@ export const getArticleById = async (id: number): Promise<ArticleDetail> => {
 
 /**
  * 获取文章列表
+ * 后端 ArticlePageDTO 只认 categoryId，分类页过来的 sortId 需在此改写
  * @param {ArticleListParams} params - 查询参数
  * @returns {Promise<ArticleListResponse>} 文章列表
  */
 export const getArticleList = async (params: ArticleListParams): Promise<ArticleListResponse> => {
-    const res = await request.post<ArticleListResponse>('/article/listPage', params);
+    const {sortId, total, ...rest} = params as Record<string, any>;
+    const payload = {
+        ...rest,
+        categoryId: rest.categoryId ?? sortId ?? undefined
+    };
+    const res = await request.post<ArticleListResponse>('/article/listPage', payload);
     return res.data;
 };
 

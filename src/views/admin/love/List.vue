@@ -146,12 +146,23 @@ const search = (): void => {
 const getLoves = async (): Promise<void> => {
   try {
     loading.value = true
-    const res = await familyApi.listFamily({ query: { ...pagination, status: 1 } as any })
+    const res = await familyApi.listFamily({
+      pageNum: pagination.value.current,
+      pageSize: pagination.value.size,
+      // 后端 FamilyPageQueryDTO.status 为 Integer：1-启用 0-禁用，null 表示不过滤
+      status: pagination.value.status === null ? null : (pagination.value.status ? 1 : 0)
+    })
 
-    if (res?.list) {
-      loves.value = res.list
-      pagination.value.total = res.total
-    }
+    const records: Love[] = res?.list || []
+    pagination.value.total = res?.total || 0
+    // 列表 VO 只有基础字段，背景/头像/倒计时需要逐个取详情补齐
+    loves.value = await Promise.all(records.map(async (item) => {
+      try {
+        return {...item, ...(await familyApi.getFamilyDetail(item.id))}
+      } catch (error) {
+        return item
+      }
+    }))
   } catch (error: any) {
     ElMessage.error(error.message || '获取数据失败')
   } finally {

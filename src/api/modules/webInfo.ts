@@ -84,7 +84,7 @@ export const getSortInfo = async (params?: any): Promise<any> => {
 
 // 保存分类（新增）
 export const saveSort = async (data: CategorySaveReqDTO): Promise<any> => {
-    return _adminCategoryApi.save5(data);
+    return _adminCategoryApi.save6(data);
 };
 
 // 更新分类
@@ -95,14 +95,14 @@ export const updateSort = async (data: CategorySaveReqDTO): Promise<any> => {
 
 // 删除分类
 export const deleteSort = async (params: { id: number }): Promise<any> => {
-    return _adminCategoryApi.delete5(params.id);
+    return _adminCategoryApi.delete6(params.id);
 };
 
 // ===== 标签（Label）管理 API =====
 
 // 保存标签（新增）
 export const saveLabel = async (data: TagSaveReqDTO): Promise<any> => {
-    return _adminTagApi.save2(data);
+    return _adminTagApi.save3(data);
 };
 
 // 更新标签
@@ -113,6 +113,6 @@ export const updateLabel = async (data: TagSaveReqDTO): Promise<any> => {
 
 // 删除标签
 export const deleteLabel = async (params: { id: number }): Promise<any> => {
-    return _adminTagApi.delete2(params.id);
+    return _adminTagApi.delete3(params.id);
 };
 

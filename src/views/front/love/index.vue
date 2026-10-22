@@ -606,7 +606,7 @@ const addFamily = async () => {
   }
 
   try {
-    const res = await familyApi.getFamily()
+    const res = await familyApi.getFamily(userStore.currentUser.id)
     if (!$common.isEmpty(res)) {
       Object.assign(userLove, res)
     }
@@ -648,6 +648,7 @@ const getPhotoTitles = async () => {
 
 const getAdminFamily = async () => {
   try {
+    // 已登录走管理端详情，未登录回退公开列表；未登录不会触发 300 跳转
     const res = await familyApi.getAdminFamily()
     if (!$common.isEmpty(res)) {
       Object.assign(love, res)
@@ -655,10 +656,8 @@ const getAdminFamily = async () => {
       getLove()
     }
   } catch (error) {
-    ElMessage({
-      message: error.message,
-      type: "error"
-    })
+    // 主人卡片属于页面装饰，拉取失败不阻断其他内容
+    console.warn('[love] 获取主人卡片失败', error)
   }
 }
 
