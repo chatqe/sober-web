@@ -154,10 +154,7 @@ const captchaSubConfirm = async () => {
     captchaClose()
     captcha.value = ''
     dialogTitle.value = "邮箱验证码"
-    let params = {}
-    if (!checkParams(params)) return
-    // console.log('params:', params)
-    const res = await authApi.emailCode(params)
+    await authApi.emailCode({email: email.value, bizType: EmailBizType.REGISTER})
     ElMessage.success("验证码已发送，请注意查收！")
   }
   // console.log('res:', res)
