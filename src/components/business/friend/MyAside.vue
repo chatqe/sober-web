@@ -134,13 +134,14 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onMounted, ref, type Ref} from 'vue'
+import {computed, inject, onBeforeUnmount, onMounted, ref, type Ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {Calendar, StarFilled} from '@element-plus/icons-vue'
 import {useUserStore, useWebInfoStore} from '@/stores'
-import {articleApi, categoryApi} from '@/api/index.js'
+import {articleApi} from '@/api/index.js'
 import {portalApi, type PortalOverview} from '@/api/modules/portal'
+import {listTagCloud} from '@/api/modules/tag'
 import Danmaku from "../danmaku/Danmaku.vue"
 import TagCloud from 'TagCloud'
 import type { ArticleDetail } from '@/api/types'
@@ -205,22 +206,20 @@ const articleSearch: Ref<string> = ref("")
 
 const cloudRef = ref<HTMLElement | null>(null)
 const tags: Ref<string[]> = ref([])
+let tagCloudInstance: any = null
 
 // 生命周期
 onMounted(async () => {
   loadPortalOverview()
   getRecommendArticles()
   try {
-    const res = await categoryApi.dict()
-    if (res && Array.isArray(res)) {
-      const allValues = res.flatMap((item: any) => Object.values(item).map(String))
-      tags.value = [...new Set(allValues)] as string[]
-    }
-  } catch (e) {
-    tags.value = ['Vue3', 'Vite', 'TS', 'Pinia', '标签云']
+    tags.value = (await listTagCloud()).filter(name => !!name)
+  } catch (error) {
+    console.error('[tag cloud error]', error)
+    tags.value = []
   }
-  if (cloudRef.value) {
-    ;(TagCloud as any)(cloudRef.value, tags.value, {
+  if (cloudRef.value && tags.value.length > 0) {
+    tagCloudInstance = (TagCloud as any)(cloudRef.value, tags.value, {
       radius: 150,
       maxSpeed: 'fast',
       initSpeed: 'normal',
@@ -228,6 +227,11 @@ onMounted(async () => {
       keep: true
     })
   }
+})
+
+onBeforeUnmount(() => {
+  tagCloudInstance?.destroy()
+  tagCloudInstance = null
 })
 
 // 计算属性

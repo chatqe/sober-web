@@ -5,6 +5,7 @@
 import { getAdminTag } from '../generated/admin-tag'
 import { getTag } from '../generated/tag'
 import type { TagSaveReqDTO } from '../../types/modules/tagSaveReqDTO'
+import request from '@/utils/request'
 
 const adminTag = getAdminTag()
 
@@ -14,6 +15,15 @@ const adminTag = getAdminTag()
  */
 export const listPublicTag = (categoryId?: number) =>
   getTag().list4(categoryId === undefined || categoryId === null ? undefined : { categoryId })
+
+/**
+ * 标签云（匿名可访问，GET /tag/cloud）
+ * 后端仅返回未删除标签的名称，按 sort、id 升序
+ */
+export const listTagCloud = async (): Promise<string[]> => {
+  const res = await request.get<string[]>('/tag/cloud')
+  return res.data ?? []
+}
 
 export const tagApi = {
   getPage: (params?: { categoryId?: number; keyword?: string; pageNum?: number; pageSize?: number }) =>
