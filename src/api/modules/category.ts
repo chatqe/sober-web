@@ -1,12 +1,19 @@
 import {getCategory} from '../generated/category'
 import {getTag} from '../generated/tag'
 import type {SortAndLabelResponse, CategoryInfo, TagInfo} from '../types'
+import type {CategoryWebVO} from '@/types/modules/categoryWebVO'
+import request from '@/utils/request'
 
 const _categoryApi = getCategory()
 const _tagApi = getTag()
 
-// homeStats
-export const homeStats = () => _categoryApi.homeStats()
+/**
+ * 获取公开分类列表（启用且展示，含导航栏与普通分类）
+ */
+export const listCategories = async (): Promise<CategoryWebVO[]> => {
+    const res = await request.get<CategoryWebVO[]>('/category/list')
+    return res.data ?? []
+}
 // dict
 export const dict = () => _categoryApi.dict1()
 // subscribe
@@ -36,7 +43,7 @@ export const getSortAndLabel = async (): Promise<SortAndLabelResponse> => {
 }
 
 export const categoryApi = {
-    homeStats,
+    listCategories,
     dict,
     subscribe: subscribeCategory,
     listNavBar,

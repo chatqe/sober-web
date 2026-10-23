@@ -3,8 +3,8 @@
     <!-- 网站信息 -->
     <!--    <div v-if="!$common.mobile()" class="card-content1 shadow-box background-opacity">-->
     <div class="card-content1 shadow-box background-opacity">
-      <el-avatar style="margin-top: 20px" class="user-avatar" :size="120" :src="webInfo.avatar"></el-avatar>
-      <div class="web-name">{{ webInfo.webName }}</div>
+      <el-avatar style="margin-top: 20px" class="user-avatar" :size="120" :src="displayAvatar"></el-avatar>
+      <div class="web-name">{{ displayWebName }}</div>
       <div class="web-info">
         <div class="blog-info-box">
           <span>文章</span>
@@ -12,11 +12,11 @@
         </div>
         <div class="blog-info-box">
           <span>分类</span>
-          <span class="blog-info-num">{{ sortInfo.length }}</span>
+          <span class="blog-info-num">{{ categoryTotal }}</span>
         </div>
         <div class="blog-info-box">
           <span>访问量</span>
-          <span class="blog-info-num">{{ webInfo.historyAllCount }}</span>
+          <span class="blog-info-num">{{ accessTotal }}</span>
         </div>
       </div>
       <a class="collection-btn" @click="showTip()">
@@ -138,8 +138,9 @@ import {computed, inject, onMounted, ref, type Ref} from 'vue'
 import router from '@/router'
 import {ElMessage} from 'element-plus'
 import {Calendar, StarFilled} from '@element-plus/icons-vue'
-import {useSortInfoStore, useUserStore, useWebInfoStore} from '@/stores'
+import {useUserStore, useWebInfoStore} from '@/stores'
 import {articleApi, categoryApi} from '@/api/index.js'
+import {portalApi, type PortalOverview} from '@/api/modules/portal'
 import Danmaku from "../danmaku/Danmaku.vue"
 import TagCloud from 'TagCloud'
 import type { ArticleDetail } from '@/api/types'
@@ -189,7 +190,6 @@ const $constant = inject<AppConstants>('$constant')!
 // 路由和状态管理
 const webInfoStore = useWebInfoStore()
 const userStore = useUserStore()
-const sortInfoStore = useSortInfoStore()
 
 // 响应式数据
 const pagination: Ref<Pagination> = ref({
@@ -198,6 +198,7 @@ const pagination: Ref<Pagination> = ref({
   recommendStatus: true
 })
 const recommendArticles: Ref<ArticleDetail[]> = ref([])
+const portalOverview: Ref<PortalOverview> = ref({})
 const admires: Ref<any[]> = ref([])
 const showAdmireDialog: Ref<boolean> = ref(false)
 const articleSearch: Ref<string> = ref("")
@@ -207,6 +208,7 @@ const tags: Ref<string[]> = ref([])
 
 // 生命周期
 onMounted(async () => {
+  loadPortalOverview()
   getRecommendArticles()
   try {
     const res = await categoryApi.dict()
@@ -230,11 +232,11 @@ onMounted(async () => {
 
 // 计算属性
 const webInfo = computed<WebInfo>(() => webInfoStore.webInfo)
-const sortInfo = computed(() => {
-  // 过滤不显示的sort列表
-  return sortInfoStore.sortInfo.filter(function(item: any) { return item.isShow !== 0; })
-})
-const articleTotal = computed<number>(() => sortInfoStore.articleTotal)
+const displayAvatar = computed<string | undefined>(() => portalOverview.value.avatar || webInfo.value.avatar)
+const displayWebName = computed<string | undefined>(() => portalOverview.value.webName || webInfo.value.webName)
+const articleTotal = computed<number>(() => portalOverview.value.articleTotal ?? 0)
+const categoryTotal = computed<number>(() => portalOverview.value.categoryTotal ?? 0)
+const accessTotal = computed<number>(() => portalOverview.value.historyAllCount ?? Number(webInfo.value.historyAllCount ?? 0))
 const currentUser = computed(() => userStore.currentUser)
 
 // 定义emit
@@ -262,6 +264,14 @@ const showAdmire = (): void => {
   }
 
   showAdmireDialog.value = true
+}
+
+const loadPortalOverview = async (): Promise<void> => {
+  try {
+    portalOverview.value = await portalApi.getOverview()
+  } catch (error) {
+    console.error('[portal overview error]', error)
+  }
 }
 
 const getRecommendArticles = async (): Promise<void> => {
@@ -323,6 +333,7 @@ const showTip = (): void => {
 
 .blog-info-num {
   margin-top: 12px;
+  white-space: nowrap;
 }
 
 .collection-btn {

@@ -6,7 +6,6 @@
  */
 
 import request from '@/utils/request';
-import {useAuthStore} from '@/stores/modules/auth';
 import type {
   QiniuTokenResponse,
   UploadOptions,
@@ -19,8 +18,6 @@ import type {
  * 上传模块API
  * 提供文件上传相关的功能
  */
-
-const authStore = useAuthStore();
 
 /**
  * 获取七牛云上传token

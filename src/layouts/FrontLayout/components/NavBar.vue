@@ -196,9 +196,7 @@ const dataShow = computed(() => {
   return scrollStore.direction !== 'down'
 })
 
-const sortItems = computed(() =>
-  sortInfoStore.sortInfo.filter((item: any) => item.isShow !== 0),
-)
+const sortItems = computed(() => sortInfoStore.listNavBar)
 
 // NavBar 里 navigate 只负责路由跳转，不关闭 drawer。
 // 原因：NavBar 的菜单只在桌面端渲染（v-else 分支），移动端入口在 FrontLayout 的 el-drawer 里。

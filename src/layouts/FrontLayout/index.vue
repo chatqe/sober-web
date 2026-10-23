@@ -42,7 +42,7 @@
           <li>
             <div>📒 <span>记录</span></div>
             <div>
-              <div v-for="(menu, index) in sortInfo" :key="index" class="sortMenu"
+              <div v-for="(menu, index) in listNavBar" :key="index" class="sortMenu"
                    @click="navigate({ path: '/sort', query: { sortId: menu.id } })">
                 {{ menu.name }}
               </div>
@@ -134,9 +134,7 @@ const scrollStore = useScrollStore()
 const currBgImg: Ref<string> = ref('')
 
 const adminLogin = computed(() => authStore.isAdmin)
-const sortInfo = computed(() =>
-  sortInfoStore.sortInfo.filter((item: any) => item.isShow !== 0),
-)
+const listNavBar = computed(() => sortInfoStore.listNavBar)
 
 // 回顶按钮：滚动超过一屏 + 30px 后显示
 const toolButton = computed(() => scrollStore.scrollY - scrollStore.innerHeight > 30)
@@ -246,7 +244,7 @@ async function getSysConfig(): Promise<void> {
 
 async function getSortInfo(): Promise<void> {
   try {
-    await sortInfoStore.loadHomeStats()
+    await sortInfoStore.loadCategories()
     await sortInfoStore.loadListNavBar()
   } catch (error: any) {
     console.error('[getSortInfo error]', error)

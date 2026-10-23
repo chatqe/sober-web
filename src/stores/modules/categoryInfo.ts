@@ -1,44 +1,29 @@
 import {defineStore} from 'pinia'
-import {computed, ref} from 'vue'
-import type {CategoryStatsVO} from '@/types/modules/categoryStatsVO'
+import {ref} from 'vue'
 import type {CategoryWebVO} from '@/types/modules/categoryWebVO'
 import {categoryApi} from '@/api/modules/category'
 
 interface CategoryState {
-    sortInfo: CategoryStatsVO[]
+    sortInfo: CategoryWebVO[]
     listNavBar: CategoryWebVO[]
     tags: string[]
 }
 
 export const useSortInfoStore = defineStore('sortInfo', () => {
 
-    const sortInfo = ref<CategoryStatsVO[]>([])
+    const sortInfo = ref<CategoryWebVO[]>([])
     const listNavBar = ref<CategoryWebVO[]>([])
     const tags = ref<string[]>([])
 
-    const articleTotal = computed((): number =>
-        sortInfo.value.reduce((prev, curr) => prev + (curr.countOfSort ?? 0), 0)
-    )
-
-    const loadHomeStats = async (): Promise<void> => {
+    const loadCategories = async (): Promise<void> => {
         try {
-            const res = await categoryApi.homeStats()
-            if (res && res.categories) {
-                sortInfo.value = res.categories
-                    .map((c) => ({
-                        id: c.id ?? 0,
-                        name: c.name ?? '',
-                        desc: c.desc,
-                        type: c.type,
-                        isShow: (c as any).isShow ?? 1,
-                        sort: c.sort,
-                        icon: c.icon,
-                        countOfSort: c.countOfSort ?? 0,
-                    }))
-                    .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
+            const res = await categoryApi.listCategories()
+            if (res) {
+                // 后端已按 sort 升序并完成过滤，直接使用
+                sortInfo.value = res
             }
         } catch (e) {
-            console.error('[loadHomeStats error]', e)
+            console.error('[loadCategories error]', e)
         }
     }
 
@@ -46,8 +31,8 @@ export const useSortInfoStore = defineStore('sortInfo', () => {
         try {
             const res = await categoryApi.listNavBar()
             if (res) {
+                // 后端已按 sort 升序并完成过滤，直接使用
                 listNavBar.value = res
-                    .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
             }
         } catch (e) {
             console.error('[loadListNavBar error]', e)
@@ -70,8 +55,7 @@ export const useSortInfoStore = defineStore('sortInfo', () => {
         sortInfo,
         listNavBar,
         tags,
-        articleTotal,
-        loadHomeStats,
+        loadCategories,
         loadListNavBar,
         loadTags,
     }

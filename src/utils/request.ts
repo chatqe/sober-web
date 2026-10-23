@@ -36,10 +36,6 @@ export interface UploadOptions {
   onProgress?: (progressEvent: any) => void;
 }
 
-// 初始化状态管理
-const authStore = useAuthStore();
-const userStore = useUserStore();
-
 // 环境配置
 const baseURL = import.meta.env.VITE_BASE_URL;
 const webUrl = import.meta.env.VITE_WEB_URL;
@@ -59,6 +55,8 @@ const request: AxiosInstance = axios.create({
  * @returns {Object} 认证头配置
  */
 const getAuthHeaders = (isAdmin: boolean): Record<string, string> => {
+    // 延迟到请求发起时获取 store，避免模块求值早于 app.use(pinia)
+    const authStore = useAuthStore();
     return {
         Authorization: isAdmin ? authStore.adminToken : authStore.userToken
     };
@@ -112,6 +110,8 @@ request.interceptors.response.use((resp: AxiosResponse<ApiResponse>) => {
 
     // 跳转
     if (data?.code === API_CODES.CLIENT_REDIRECT_LOGIN) {
+        // 延迟获取 store，避免模块顶层调用触发 no active Pinia
+        const userStore = useUserStore();
         userStore.loadCurrentUser({});
         userStore.loadCurrentAdmin({} as any);
         userStore.clearUserData();

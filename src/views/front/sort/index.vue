@@ -170,7 +170,7 @@ const getArticles = async () => {
 
 // 生命周期
 onMounted(async () => {
-  await sortInfoStore.loadHomeStats()
+  await sortInfoStore.loadCategories()
   getCategory()
   getCategories()
   getArticles()
