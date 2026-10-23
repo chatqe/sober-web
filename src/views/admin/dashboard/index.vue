@@ -30,14 +30,20 @@
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                pathLength="1"
+                class="spark-line"
+                :style="{ animationDelay: `${i * 80}ms` }"
               />
-              <circle :cx="60" :cy="kpi.sparkLastY" r="2.5" :fill="kpi.sparkColor" />
+              <circle :cx="60" :cy="kpi.sparkLastY" r="2.5" :fill="kpi.sparkColor" class="spark-dot" />
             </svg>
           </div>
         </div>
         <div class="kpi-body">
           <div class="kpi-label">{{ kpi.label }}</div>
-          <div class="kpi-value" :style="{ color: kpi.valueColor }">{{ kpi.displayValue }}</div>
+          <div class="kpi-value" :style="{ color: kpi.valueColor }">
+            <AnimatedNumber v-if="loaded" :value="kpi.rawValue" />
+            <template v-else>—</template>
+          </div>
           <div class="kpi-delta" :class="deltaClass(kpi.delta)">
             <span class="delta-arrow">{{ kpi.deltaArrow }}</span>
             {{ kpi.delta }}
@@ -62,8 +68,8 @@
                 fill="none"
                 :stroke="seg.color"
                 stroke-width="12"
-                :stroke-dasharray="`${seg.percent * 1.885} ${188.5 - seg.percent * 1.885}`"
-                :stroke-dashoffset="-seg.cumOffset * 1.885"
+                class="donut-seg"
+                :style="segmentStyle(seg, i)"
                 transform="rotate(-90 40 40)"
               />
               <text x="40" y="37" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">{{ totalSessions }}</text>
@@ -97,7 +103,7 @@
                 :style="{
                   width: barWidth(row.num, maxIp),
                   background: `linear-gradient(90deg, ${['#6366f1','#10b981','#f59e0b','#ec4899','#0ea5e9'][i]}, ${['#818cf8','#34d399','#fbbf24','#f472b6','#38bdf8'][i]})`,
-                  transitionDelay: `${i * 30}ms`
+                  animationDelay: `${i * 30}ms`
                 }"
               ></div>
             </div>
@@ -113,23 +119,38 @@
         <div class="stat-tall-content">
           <div class="tall-stat-row">
             <span class="tall-stat-label">Avg unique pageviews</span>
-            <span class="tall-stat-val">{{ avgPageviews }}</span>
+            <span class="tall-stat-val">
+              <AnimatedNumber v-if="hasHistory" :value="avgPageviewsValue" :formatter="formatOneDecimal" />
+              <template v-else>—</template>
+            </span>
           </div>
           <div class="tall-stat-row">
             <span class="tall-stat-label">Avg time on page</span>
-            <span class="tall-stat-val">{{ avgTimeOnPage }}</span>
+            <span class="tall-stat-val">
+              <AnimatedNumber v-if="hasTodayIps" :value="avgTimeSeconds" :formatter="formatDuration" />
+              <template v-else>—</template>
+            </span>
           </div>
           <div class="tall-stat-row">
             <span class="tall-stat-label">Today IPs</span>
-            <span class="tall-stat-val" style="color:#10b981">{{ formatCount(historyInfo?.ip_count_today) }}</span>
+            <span class="tall-stat-val" style="color:#10b981">
+              <AnimatedNumber v-if="loaded" :value="todayIps" />
+              <template v-else>—</template>
+            </span>
           </div>
           <div class="tall-stat-row">
             <span class="tall-stat-label">Yesterday IPs</span>
-            <span class="tall-stat-val" style="color:#f59e0b">{{ formatCount(historyInfo?.ip_count_yest) }}</span>
+            <span class="tall-stat-val" style="color:#f59e0b">
+              <AnimatedNumber v-if="loaded" :value="yesterdayIps" />
+              <template v-else>—</template>
+            </span>
           </div>
           <div class="tall-stat-row">
             <span class="tall-stat-label">Regions visited</span>
-            <span class="tall-stat-val" style="color:#ec4899">{{ (historyInfo?.ip_history_province || []).length }}</span>
+            <span class="tall-stat-val" style="color:#ec4899">
+              <AnimatedNumber v-if="loaded" :value="regionCount" />
+              <template v-else>—</template>
+            </span>
           </div>
           <div class="tall-sparkline">
             <svg viewBox="0 0 200 50" preserveAspectRatio="none" class="sparkline-wide">
@@ -140,6 +161,8 @@
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                pathLength="1"
+                class="spark-line"
               />
             </svg>
           </div>
@@ -158,7 +181,7 @@
             <div class="bar-track">
               <div
                 class="bar-fill bar-fill-today"
-                :style="{ width: barWidth(row.num, maxTodayProv), transitionDelay: `${i * 30}ms` }"
+                :style="{ width: barWidth(row.num, maxTodayProv), animationDelay: `${i * 30}ms` }"
               ></div>
             </div>
             <span class="bar-value">{{ row.num }}</span>
@@ -192,8 +215,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { webInfoApi } from '@/api/index.js'
+import AnimatedNumber from '@/components/base/AnimatedNumber.vue'
 
 const historyInfo = ref<Record<string, any>>({})
+const loaded = ref(false)
 
 // Period label
 const now = new Date()
@@ -213,7 +238,17 @@ const maxTodayProv = computed(() => Math.max(...todayProvince.value.map(r => Num
 
 const topIpList       = computed(() => ipList.value.slice(0, 5))
 const topProvinces    = computed(() => provinceList.value.slice(0, 5))
-const totalSessions   = computed(() => formatCount(historyInfo.value.ip_history_count))
+const totalSessions   = computed(() => loaded.value ? formatCount(historyInfo.value.ip_history_count) : '—')
+
+// 数值指标：供 AnimatedNumber 做增长动画
+const ipHistoryCount  = computed(() => Number(historyInfo.value.ip_history_count) || 0)
+const todayIps        = computed(() => Number(historyInfo.value.ip_count_today) || 0)
+const yesterdayIps    = computed(() => Number(historyInfo.value.ip_count_yest) || 0)
+const regionCount     = computed(() => (historyInfo.value.ip_history_province || []).length)
+const hasHistory      = computed(() => ipHistoryCount.value > 0)
+const hasTodayIps     = computed(() => todayIps.value > 0)
+const avgPageviewsValue = computed(() => ipHistoryCount.value / 3)
+const avgTimeSeconds  = computed(() => todayIps.value * 45)
 
 // Province donut segments
 const provinceDonut = computed(() => {
@@ -256,7 +291,7 @@ const kpis = computed(() => [
   {
     icon: '🌐',
     label: 'Total Sessions',
-    displayValue: formatCount(historyInfo.value.ip_history_count),
+    rawValue: ipHistoryCount.value,
     delta: '+5.2%',
     deltaArrow: '↑',
     valueColor: '#1e293b',
@@ -267,7 +302,7 @@ const kpis = computed(() => [
   {
     icon: '☀️',
     label: 'Today IPs',
-    displayValue: formatCount(historyInfo.value.ip_count_today),
+    rawValue: todayIps.value,
     delta: '+12.1%',
     deltaArrow: '↑',
     valueColor: '#10b981',
@@ -278,7 +313,7 @@ const kpis = computed(() => [
   {
     icon: '🌙',
     label: 'Yesterday IPs',
-    displayValue: formatCount(historyInfo.value.ip_count_yest),
+    rawValue: yesterdayIps.value,
     delta: '-3.8%',
     deltaArrow: '↓',
     valueColor: '#f59e0b',
@@ -289,7 +324,7 @@ const kpis = computed(() => [
   {
     icon: '🗺️',
     label: 'Regions Visited',
-    displayValue: String((historyInfo.value.ip_history_province || []).length),
+    rawValue: regionCount.value,
     delta: '+2',
     deltaArrow: '↑',
     valueColor: '#ec4899',
@@ -299,21 +334,22 @@ const kpis = computed(() => [
   },
 ])
 
-// Derived stats
-const avgPageviews = computed(() => {
-  const count = Number(historyInfo.value.ip_history_count) || 0
-  return count > 0 ? (count / 3).toFixed(1) : '—'
-})
-
-const avgTimeOnPage = computed(() => {
-  const n = Number(historyInfo.value.ip_count_today) || 0
-  if (!n) return '—'
-  const totalSec = n * 45 // simulated avg
-  return `${Math.floor(totalSec / 60)}m ${totalSec % 60}s`
-})
+// 数字格式化
+const formatOneDecimal = (value: number): string => value.toFixed(1)
+const formatDuration = (value: number): string => {
+  const total = Math.round(value)
+  return `${Math.floor(total / 60)}m ${total % 60}s`
+}
 
 // ── Helpers ──
 const barWidth = (num: number, max: number) => max === 0 ? '0%' : `${Math.round((num / max) * 100)}%`
+
+// 饼图分段的长度/偏移交给 CSS 变量，由 CSS 关键帧完成增长动画
+const segmentStyle = (seg: { percent: number; cumOffset: number }, index: number): Record<string, string> => ({
+  '--seg-len': `${seg.percent * 188.5}`,
+  '--seg-offset': `${-seg.cumOffset * 188.5}`,
+  animationDelay: `${index * 80}ms`,
+})
 const formatCount = (val: any) => (val == null || val === undefined) ? '0' : String(val)
 const regionPct = (row: any) => {
   const total = Math.max(topProvinces.value.reduce((s: number, r: any) => s + (Number(r.num) || 0), 0), 1)
@@ -329,7 +365,10 @@ const deltaClass = (delta: string) => {
 const getHistoryInfo = async () => {
   try {
     const res = await webInfoApi.getHistoryInfo()
-    if (res) historyInfo.value = res
+    if (res) {
+      historyInfo.value = res
+      loaded.value = true
+    }
     else ElMessage({ message: '获取数据失败', type: 'error' })
   } catch (e: any) {
     ElMessage({ message: e.message || '请求失败', type: 'error' })
@@ -451,6 +490,22 @@ onMounted(() => {
   height: 100%;
 }
 
+/* 趋势线描边绘制动画 */
+.spark-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: spark-draw 0.9s ease-out both;
+}
+@keyframes spark-draw {
+  to { stroke-dashoffset: 0; }
+}
+.spark-dot {
+  animation: spark-dot-in 0.3s ease-out 0.7s both;
+}
+@keyframes spark-dot-in {
+  from { opacity: 0; }
+}
+
 .kpi-body { display: flex; flex-direction: column; gap: 3px; }
 
 .kpi-label {
@@ -526,6 +581,16 @@ onMounted(() => {
 }
 
 .donut-svg { width: 100%; height: 100%; }
+
+/* 饼图分段依次展开 */
+.donut-seg {
+  stroke-dasharray: var(--seg-len) 188.5;
+  stroke-dashoffset: var(--seg-offset);
+  animation: donut-grow 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes donut-grow {
+  from { stroke-dasharray: 0 188.5; }
+}
 
 .device-stats {
   flex: 1;
@@ -612,7 +677,12 @@ onMounted(() => {
 .bar-fill {
   height: 100%;
   border-radius: 4px;
+  transform-origin: left center;
   transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: bar-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes bar-grow {
+  from { transform: scaleX(0); }
 }
 
 .bar-fill-today {
@@ -731,6 +801,18 @@ onMounted(() => {
   padding: 6px 0 2px;
   border-top: 1px dashed #e2e8f0;
   margin-top: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donut-seg,
+  .bar-fill,
+  .spark-line,
+  .spark-dot {
+    animation: none;
+  }
+  .spark-line {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* ── Responsive ── */

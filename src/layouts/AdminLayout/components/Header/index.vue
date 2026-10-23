@@ -8,8 +8,8 @@
           </div>
         </el-tooltip>
         <el-tooltip content="刷新" placement="bottom" :show-timeout="200">
-          <div class="icon-btn" @click="handleRefresh">
-            <el-icon><Refresh /></el-icon>
+          <div class="icon-btn" :class="{ 'is-refreshing': refreshing }" @click="handleRefresh">
+            <el-icon class="refresh-icon"><Refresh /></el-icon>
           </div>
         </el-tooltip>
         <div class="breadcrumb">
@@ -84,9 +84,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore, useUserStore, useAdminTabsStore } from '@/stores'
+import { useAuthStore, useUserStore, useAdminTabsStore, useUiStore } from '@/stores'
 import { ElMessage } from 'element-plus'
 import {
   House, ArrowDown, SwitchButton, Bell, FullScreen, Moon, Menu, Refresh,
@@ -107,15 +107,31 @@ const router = useRouter()
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const tabStore = useAdminTabsStore()
+const uiStore = useUiStore()
 
 const currentAdmin = userStore.currentAdmin as AdminUser
 const currentTabTitle = computed(
   () => tabStore.tabs.find(t => t.path === route.path)?.title || '工作台'
 )
 
+const refreshing = ref(false)
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
 const handleRefresh = (): void => {
-  window.location.reload()
+  // 仅重建 .content-box 内的当前页面，保留 Header/Sidebar/TabBar 状态
+  uiStore.refreshContent()
+  // 图标旋转反馈，时长与内容入场动画对齐
+  refreshing.value = true
+  if (refreshTimer) clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(() => {
+    refreshing.value = false
+    refreshTimer = null
+  }, 600)
 }
+
+onBeforeUnmount(() => {
+  if (refreshTimer) clearTimeout(refreshTimer)
+})
 
 const toggleFullscreen = (): void => {
   if (!document.fullscreenElement) {
@@ -172,6 +188,25 @@ const logout = async (): Promise<void> => {
 .icon-btn:hover {
   background: #fff;
   color: #4f46e5;
+}
+.icon-btn.is-refreshing {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+.refresh-icon {
+  transition: transform 0.2s ease;
+}
+.icon-btn.is-refreshing .refresh-icon {
+  animation: refresh-spin 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes refresh-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn.is-refreshing .refresh-icon {
+    animation: none;
+  }
 }
 
 /* 带红点/绿点徽章 */

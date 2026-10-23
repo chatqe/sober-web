@@ -84,6 +84,17 @@ export const useUiStore = defineStore('ui', () => {
     mobile.value = isMobile
   }
 
+  // 内容区刷新标识：自增后触发 router-view 重建，仅刷新当前页面
+  const contentRefreshKey = ref(0)
+
+  // 刷新进度条标识：仅刷新按钮触发，路由切换不播放
+  const contentProgressKey = ref(0)
+
+  function refreshContent(): void {
+    contentRefreshKey.value++
+    contentProgressKey.value++
+  }
+
   return {
     mouseAnimation,
     toggleMouseAnimation,
@@ -97,5 +108,8 @@ export const useUiStore = defineStore('ui', () => {
     closeAuthModal,
     mobile,
     setMobile,
+    contentRefreshKey,
+    contentProgressKey,
+    refreshContent,
   }
 })
