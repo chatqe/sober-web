@@ -35,7 +35,7 @@ Thumbs.db
 # Temporary files
 *.swp
 *.swo
-# *.bak
+*.bak
 *.tmp
 
 # Coverage reports  忽略代码覆盖率报告
@@ -46,6 +46,8 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Orval 生成物不入库：先启动后端，再执行 pnpm orval 本地生成
 /src/api/generated/
 /src/types/modules/
 
@@ -94,7 +96,24 @@ components.d.ts
 # Vite 预构建缓存目录
 node_modules/.vite/
 
+# E2E / 调试截图
+/*.png
+/.playwright-mcp/
+/logs/
+/src/components/structure.txt
 
-/src/types/modules/
-/src/types/modules/
-/src/types/modules/
+# AI 文档备份
+/CLAUDE.md.bak-*
+/CLAUDE.md.before-*
+
+# Shell 重定向事故产物（文件名含全角冒号，用通配符避开非 ASCII 字符）
+/C*UsersUpjqs*.txt
+/E*webqs-web*.cjs
+
+# 一次性调试脚本
+/scripts/test_*.cjs
+/scripts/audit_admin_auth.cjs
+/scripts/apply_view_imports.cjs
+/scripts/p0_verify.ps1
+/scripts/redis_probe.py
+/scripts/run-be.ps1
